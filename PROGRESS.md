@@ -1,7 +1,7 @@
 # Europa · 木卫二 · 深渊: progress
 
 ## State (2026-10-04)
-**Sprint 0 (brainstorm → treatment) in progress.** Folder opened; `tools/physics.py` adapted from Io's (Jupiter 12.3°, Io
+**Sprint 0 (brainstorm → treatment → scaffold) in progress.** Folder opened; `tools/physics.py` adapted from Io's (Jupiter 12.3°, Io
 transits, Io's shadow, horizon sites Conamara / Pwyll, ice + ocean pressure, lens table). Ideas, three directions and
 the reuse map in `BRAINSTORM.md`. Git: `github.com/dizhangai-star/Europa` (`main`), `.gitignore` from Io.
 Direction, descent, format and title picked by the user 2026-10-04 (Decisions).
@@ -11,10 +11,28 @@ wall vs plain light 13×), radiation, shell temperatures, cryobot times, light i
 spectacle list (§2), a 9-clip list ≈ 1:58 (§5), 9:16 climax proposal (§6), questions (§8).
 
 Clip list locked by the user the same day (Decisions).
+**0.3 done 2026-10-04 (branch `sprint-0.3-scaffold`):** scaffold copied from `../Io` and retargeted to Europa.
+- `tools/physics.py`: "Blender local frame" (+Y toward Jupiter along the ground, +X right of it ≈ north at Conamara,
+  Z up; `jupiter_local`, `sun_local(elong, dec)`, `alt_az`, `to_local`, `lit_fraction`): the API Io's libs read.
+  Checked against `altaz`: Jupiter centre 3.5° up, az 269.4° (due west), radius 6.12°, pole pointing right →
+  bands vertical. `--card` → the 09 numbers (2.1× Earth's oceans, 242 / 1,596 bar, lethal in 20 h).
+- `blender/lib`: rig, shot, nodes, retarget, prints, lander as is; `jupiter.py` (Europa distance, `europa_shadow`
+  replaces `io_shadow`), `sky.py` (`sun(…, dec)`), `astronaut.py`, `globe.py` (still Io's relief/colour; only if a
+  view from altitude is needed); `europa_world.py` from `io_world.py`: Europa radius, `europa_body`, lava removed,
+  **surface material still Io's placeholder** until Sprint 2.
+- `render.mjs`, `preview.mjs`, `compile.mjs` (→ `out/europa.mp4`, silent until `audio/music.mjs` exists),
+  `film.config.mjs`, `package.json`, `timeline.js`; `tools/card.mjs` (variant `europa`: EUROPA / 深 渊 + readout),
+  `overlay.mjs` (counter still Io's 03 clock → 06's days · depth · temperature · pressure in Sprint 3),
+  `timeline.mjs` (head kept, joints empty = hard cuts until Sprint 4), `maps.py` (`jupiter` shared; `io`/`far` →
+  `europa` in 0.4). `audio/music-io.mjs` = Io's score kept as a reference only.
+- `clips/01…09` from TREATMENT §5 (118 s): durations locked, **caption times provisional** (set in the animatics),
+  shot files named but not written (Sprint 3). 09 is the card.
+- Smoke tests: `blender/shots/board_astronaut.py --facing jupiter --aimz 1.5` (Cycles, 5.5 s at 40 %): Jupiter on the
+  western horizon, bands vertical, suit lit by the Sun behind the camera; `node preview.mjs 09-title 3` card OK.
 
 ## Next
-0.3 scaffold copy from `../Io`; 0.4 Europa maps (USGS mosaic, Galileo Conamara close-ups). Asset hunt by the user in
-parallel (list in REFERENCES.md "Wanted").
+0.4 Europa maps (USGS mosaic, Galileo Conamara close-ups) + `maps.py europa`. Asset hunt by the user in parallel
+(list in REFERENCES.md "Wanted"). Then Sprint 1 look spike.
 
 ## Sprints (plan, 2026-10-04)
 0. Treatment, physics, scaffold. 0.1 ✅ brainstorm + repo · 0.2 physics rows + `TREATMENT.md` (clip list, beat sheet

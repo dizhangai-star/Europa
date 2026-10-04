@@ -1,0 +1,7 @@
+{
+  "name": "europa",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Europa · 深渊 — Jupiter on the Conamara horizon, then down through the ice to the ocean; rendered in Blender from code, sound by the video kit (Blender Cycles)",
+  "type": "module"
+}

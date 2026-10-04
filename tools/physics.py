@@ -5,7 +5,9 @@ Jupiter hangs at a fixed point in its sky (it rocks ±`libration` over one orbit
 Sun goes round once per synodic day. Jupiter's phase seen from Europa = the Sun's angle from Jupiter in its sky.
 Io, the inner neighbour, passes in front of Jupiter once per Io–Europa synodic period (Ganymede, outside, never can).
 """
+import json
 import math
+import sys
 
 GM_EU = 3202.739          # km³/s²
 R_EU = 1560.8             # km (mean)
@@ -244,6 +246,45 @@ def io_track(fr):
     return ent, end, sky_angle(mv, c, fr)
 
 
+# ---------------------------------------------------------------- Blender local frame (the libs copied from Io)
+# The scene frame at the site (SITE): +Y = toward Jupiter along the ground (azimuth 0), +X = right of it as you face
+# Jupiter, +Z = up. At Conamara Jupiter is about due west, so +X ≈ north and Jupiter's pole lies near horizontal:
+# its bands stand vertical. Same shape as Io's (west, south, up): blender/lib/jupiter.py, sky.py read only this.
+def _local_axes(fr=None):
+    fr = fr or site(*SITE[1:])
+    up = fr[0]
+    c, _ = _norm(from_site((A_EU, 0, 0), fr))
+    fwd, _ = _norm(tuple(a - _dot(c, up) * b for a, b in zip(c, up)))
+    return _cross(fwd, up), fwd, up
+
+
+def to_local(v, fr=None):
+    """Europa-frame vector → local (right, toward Jupiter, up)."""
+    return tuple(_dot(v, ax) for ax in _local_axes(fr))
+
+
+def jupiter_local(fr=None):
+    """Jupiter as seen from the site: (unit direction, distance km, angular radius eq deg, polar deg, axis unit)."""
+    fr = fr or site(*SITE[1:])
+    u, d = _norm(from_site((A_EU, 0, 0), fr))
+    return (to_local(u, fr), d, *jupiter_r_deg(d), to_local((0.0, 0.0, 1.0), fr))
+
+
+def sun_local(elong, dec=0.0, fr=None):
+    """Unit vector (local) toward the Sun at elongation `elong` (deg, east +) and declination `dec`."""
+    return to_local(sun_dir(elong, dec), fr)
+
+
+def alt_az(u):
+    """(elevation, azimuth) deg of a local unit vector; azimuth 0 = toward Jupiter, + = to the right."""
+    return deg(math.asin(u[2])), deg(math.atan2(u[0], u[1]))
+
+
+def lit_fraction(elong):
+    """Fraction of Jupiter's disc lit; phase angle = 180° − |elongation|."""
+    return (1 - math.cos(math.radians(abs(elong)))) / 2
+
+
 # ---------------------------------------------------------------- the ice shell, the cryobot, the water
 T_SURF = 100.0              # K, Conamara surface mean (equatorial ~86–132 K over a day)
 K_ICE = 651.0               # W/m: ice conductivity k = 651/T (Petrenko & Whitworth)
@@ -292,7 +333,16 @@ def ocean(h_ice, d=OCEAN_D):
     return p1 / 1e5, p2 / 1e5, p2 / (RHO_SEA * 9.81), vol
 
 
-if __name__ == '__main__':
+def card(h_ice=ICE_H[1]):
+    """The numbers on the 09 title card (tools/card.mjs reads `python3 tools/physics.py --card`)."""
+    p_base, p_floor, _, vol = ocean(h_ice)
+    return {'oceans': round(vol / EARTH_OCEAN_KM3, 1), 'ocean_km': round(OCEAN_D), 'ice_km': round(h_ice),
+            'base_bar': round(p_base), 'floor_bar': round(p_floor), 'lethal_h': round(LD50_SV / DOSE_SV_DAY * 24)}
+
+
+if __name__ == '__main__' and '--card' in sys.argv:
+    print(json.dumps(card()))
+elif __name__ == '__main__':
     rows = []
     d_sub = A_EU - R_EU
     rj, rjp = jupiter_r_deg()
