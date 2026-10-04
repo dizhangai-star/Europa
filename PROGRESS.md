@@ -1,8 +1,8 @@
 # Europa · 木卫二 · 深渊: progress
 
 ## State (2026-10-05)
-**Sprint 2.4 (the under-ice ocean) done 2026-10-05, branch `sprint-2.4-ocean`, waiting for the user's look
-(findings below).** Sprint 2.3 (the ice-shell interior) done, approved and merged (PR #7). Sprint 2.2 (the cryobot)
+**Sprint 2.4 (the under-ice ocean) done 2026-10-05, approved (melt ceiling; frazil only if 07 wants it, ⚠) and
+merged. Next: Sprint 3, shots one per session (01 first).** Sprint 2.3 (the ice-shell interior) done, approved and merged (PR #7). Sprint 2.2 (the cryobot)
 done, approved and merged (PR #6).
 Sprint 2.1 (the ground) done and
 merged 2026-10-05 (PR #5). Sprint 2.0 (01 framing test) done 2026-10-05
@@ -242,12 +242,13 @@ the hole, 0.5 m at ±60 m). Board **`blender/shots/board_ocean.py`** (`--views e
 4. **⚠ Frazil / freeze ceiling (model, not seen on Europa)**: real physics says the flakes rise 3 mm/s (weak gravity),
    so they hang nearly still and drift with the current: "snow that barely rises". The platelet fringe doesn't read
    either (same index problem). Proposal: keep `melt` for the film; frazil only if 07 wants it, marked ⚠.
+   **Yes (user 2026-10-05): melt ceiling; frazil only if 07 asks for it, ⚠.**
 
 ## Next
 Finding 1 (Io + two shadows in 02): verified, in TREATMENT as C2 and in 02's row (user 2026-10-05).
 01's framing test done (2.0, the turn); the ground done (2.1); the cryobot done (2.2); the shell interior done (2.3,
-approved: puck release in 05, porosity 0.2 %); the under-ice ocean done (2.4, waiting for the user's look: findings
-3–4 need a yes/no). Sprint 2 builds are complete → Sprint 3, shots one per session (01 first). Asset hunt by the user in parallel
+approved: puck release in 05, porosity 0.2 %); the under-ice ocean done (2.4, approved: melt ceiling, frazil ⚠ only if
+07 wants it; particles and 08's sink speed open for those shots). Sprint 2 builds are complete → Sprint 3, shots one per session (01 first). Asset hunt by the user in parallel
 (REFERENCES.md "Wanted": W1 Mixamo kneel/stand, W2–W3 ice sounds and hydrophone).
 
 ## Sprints (plan, 2026-10-04)
@@ -282,6 +283,7 @@ approved: puck release in 05, porosity 0.2 %); the under-ice ocean done (2.4, wa
 - 02 carries Io's shadow + Europa's own shadow on the bands (user 2026-10-05, TREATMENT C2).
 - 01 = **the turn** (user 2026-10-05, finding 2): glowing mesa (~150° from Jupiter) → pan left ~145°, 24 → 35 mm,
   exposure ride −4 EV, slow drift; ends on the disc with a mesa biting its lower limb (scale). TREATMENT 01 row.
+- Under-ice ceiling (user 2026-10-05): **melt** (terraces + scallops); ⚠ frazil only if 07 asks for it.
 - Clip list (user 2026-10-04): TREATMENT §5, 9 clips ≈ 1:58 (horizon · neighbour · the probe · the fall of the Sun ·
   the lid · descent · breakthrough · abyss · title). 9:16 climax = 02 + 04. Jupiter lightning in 04 yes; plume and
   ice glow no. Cryobot 10 kW (1,044 days to 20 km). Radiation fact on the end card, not in 03.
