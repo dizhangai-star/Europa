@@ -2,7 +2,8 @@
 
 ## State (2026-10-05)
 **Sprint 2.3 (the ice-shell interior) done 2026-10-05, branch `sprint-2.3-shell`, waiting for the user's look
-(findings below). Next: Sprint 2.4, the under-ice ocean.** Sprint 2.2 (the cryobot) done, approved and merged (PR #6).
+(findings below), approved 2026-10-05 (puck in 05 yes, porosity 0.2 % kept), PR opened. Next: Sprint 2.4, the
+under-ice ocean.** Sprint 2.2 (the cryobot) done, approved and merged (PR #6).
 Sprint 2.1 (the ground) done and
 merged 2026-10-05 (PR #5). Sprint 2.0 (01 framing test) done 2026-10-05
 (merged, PR #4): 01 = the turn. Sprint 1 (look spike) done 2026-10-05 (merged, PR #3). Sprint 0 (brainstorm → treatment → scaffold → maps) done 2026-10-04. Folder opened; `tools/physics.py` adapted from Io's (Jupiter 12.3°, Io
@@ -201,14 +202,14 @@ beam; row 3: full-res 30 m lid crop + nose).
 2. **The freezing itself is nearly invisible** (ice and water differ by 1.7 % in index; the front is only 1.3 m behind
    the probe near the top). What reads in 05: the clear refrozen column above the probe (a dark rod in the glow) with the
    tether locked in it; a dropped puck frozen into it would make "no way back" concrete (Tunnelbot drops pucks: real).
-   **Proposal for 05: show a puck release and the column closing over it.** Needs the user's yes.
+   **Proposal for 05: show a puck release and the column closing over it.** **Yes (user 2026-10-05).**
 3. Porosity is unknown; the film pick (0.2 %) decides milky vs glassy. Lower φ = see the probe through metres of ice
-   (less glow, more "glass"); higher = only the glow. Kept at 0.2 % unless the user prefers otherwise.
+   (less glow, more "glass"); higher = only the glow. **Keep 0.2 % (user 2026-10-05).**
 
 ## Next
 Finding 1 (Io + two shadows in 02): verified, in TREATMENT as C2 and in 02's row (user 2026-10-05).
 01's framing test done (2.0, the turn); the ground done (2.1); the cryobot done (2.2); the shell interior done (2.3,
-waiting for the user's look and findings 2–3). Next, Sprint 2.4: the under-ice ocean (ceiling from look_lamp, the
+approved: puck release in 05, porosity 0.2 %). Next, Sprint 2.4: the under-ice ocean (ceiling from look_lamp, the
 breakthrough's open column ~110 m long at the base per `refreeze`, particles). Asset hunt by the user in parallel
 (REFERENCES.md "Wanted": W1 Mixamo kneel/stand, W2–W3 ice sounds and hydrophone).
 
@@ -228,6 +229,9 @@ breakthrough's open column ~110 m long at the base per `refreeze`, particles). A
 5. Batch render (overnight, resume) → 4K compile, srt, poster; then the 9:16 climax cut (own portrait cameras).
 
 ## Decisions (locked)
+- 05 (user 2026-10-05, Sprint 2.3 finding 2): the probe releases a relay puck and the clear column freezes over it
+  ("no way back" made visible; the freezing front itself is nearly invisible). Near-surface porosity stays 0.2 %
+  (milky: the probe is a lantern in the ice).
 - Shot rule (user 2026-10-04): within real physics, as spectacular as possible, above all phenomena Earth can't show;
   tentative/lab-predicted ones only marked ⚠ and with a yes (also in CLAUDE.md).
 - Fear (user 2026-10-04): **深渊**, with the horizon and Io as the surface half. Horizon (¾-Jupiter fixed on the
