@@ -1,7 +1,8 @@
 # Europa · 木卫二 · 深渊: progress
 
-## State (2026-10-04)
-**Sprint 0 (brainstorm → treatment → scaffold → maps) done 2026-10-04; next Sprint 1.** Folder opened; `tools/physics.py` adapted from Io's (Jupiter 12.3°, Io
+## State (2026-10-05)
+**Sprint 1 (look spike) done 2026-10-05 (branch `sprint-1-look`), waiting for the user's read of the looks; next
+Sprint 2 (builds).** Sprint 0 (brainstorm → treatment → scaffold → maps) done 2026-10-04. Folder opened; `tools/physics.py` adapted from Io's (Jupiter 12.3°, Io
 transits, Io's shadow, horizon sites Conamara / Pwyll, ice + ocean pressure, lens table). Ideas, three directions and
 the reuse map in `BRAINSTORM.md`. Git: `github.com/dizhangai-star/Europa` (`main`), `.gitignore` from Io.
 Direction, descent, format and title picked by the user 2026-10-04 (Decisions).
@@ -48,10 +49,60 @@ Clip list locked by the user the same day (Decisions).
   `globe.py` `FAR_MAP` still points at Io's `io_far_1km.png` (only if a view from altitude is needed; `europa_wide_1km`
   is the candidate, but its east side is smeared Voyager data).
 
+**Sprint 1 done 2026-10-05: look spike, three boards (not clips), Cycles 64 spp, contact sheet
+`frames/look/sprint1-looks.png`.** All three work in real light; full-res cost per frame: horizon 14–16 s, Io 11 s,
+lamp in water 23 s (the water volume costs little: one homogeneous volume, no ray marching). Film budget ≈ 2,830
+frames × ~18 s ≈ 14 h before the cheaper-way ladder (02 locked camera → plate + border; 04 freeze tail).
+- `blender/shots/look_horizon.py` (`--view jupiter | away | side | wide`): spike chaos plates (convex polygons,
+  ragged cliffs, talus, tilted ridged tops; `physics.CHAOS` film picks) in a hummocky matrix, a lane toward
+  Jupiter, the camera on a low knoll; Sun at 178° (down), the ground lit by Jupiter alone through **`jupiter.lamp`**
+  (an emissive twin of the disc that only diffuse/glossy rays see, radiance = the Lambert radiance from the Sun's
+  direction; the visible disc keeps the camera and the shadows). Without it a 12° lit sphere found by bounce rays
+  would be all noise at night. New `europa_world.ice()` (first pass: PIA19048 tints at Conamara's albedos, clean
+  blue-white streaked cliff faces, frost specular).
+- `blender/shots/look_io.py`: 135 mm, Io (new **`lib/moons.py`**: Io at the same far-scale k as Jupiter and the
+  scaled Europa, map `tools/maps.py io_globe` → `io_globe_2k.png`, albedo 1.5 × `P_GEOM_IO` clamped) mid-transit;
+  it joins Jupiter's Sun's blocker collection, so **Io's shadow and Europa's own shadow fall on the clouds by
+  geometry** (k-scaling about the camera keeps shadows exact).
+- `blender/shots/look_lamp.py`: the ice-shell base (undulating, scalloped bump, SSS, specular ≈ 0 under water),
+  probe Ø 0.25 m × 3 m on a tether, one 50 W spot, water = `physics.water_rgb()` absorption (R/G/B 0.39 / 0.090 /
+  0.0135 per m) + `SEA_SCATTER` 0.02/m, g 0.85, marine-snow point cloud (GN Mesh to Points).
+- physics.py new rows: `own_shadow` (Europa's shadow on Jupiter: at the anti-solar point, on the disc for 2.9 h,
+  mostly the last hours of the night; umbra 0.16° in a 0.37° penumbra), `io_cast_shadow` (mid-transit, Sun 178°:
+  1.85° from Io; Sun 180°: 0.68°), `water_rgb`, `P_GEOM_IO`, `CHAOS`, `SEA_SCATTER`/`SEA_G`/`CRYO_LAMP_W`.
+
+**Findings for the user (Sprint 1):**
+1. ⭐ New real spectacle for 02: at night with full Jupiter, **Io crosses the bands with its own black shadow beside
+   it, and Europa's shadow (our own) sits on Jupiter too**: three dots of two worlds' making. 02's time-lapse could
+   carry all three. **Yes (user 2026-10-05): TREATMENT §2 C2, 02's row.** **Checked online 2026-10-05:** the geometry is the
+   everyday shadow transit (Io + Europa shadows together every ~3.5 d; Hubble's 2015 triple transit shows moons with
+   their shadows strung out beside them); from Earth a moon and its shadow coincide at opposition and part as the
+   phase angle grows, as `io_cast_shadow` gives (seen from Europa they also part as Io leaves the disc centre,
+   because Io is 2.7× nearer than Jupiter). ESA's JUICE NavCam simulation (Airbus 2019) shows Europa in front of
+   Jupiter with its shadow as a black disc. Nobody has seen Europa's own shadow *from Europa* (no one there), so it
+   rests on that geometry, not on a photo: status **real (geometry)**, no ⚠ needed.
+   Sources: earthsky.org/astronomy-essentials/transits-of-jupiters-moons-shadow ·
+   science.nasa.gov/asset/hubble/jupiter-moon-transit-january-24-2015-0710-ut-annotated ·
+   sci.esa.int/web/juice/-/61515-simulated-navcam-view-of-jupiter-and-europa
+2. 01: the disc and the walls it lights can't share one frame: a wall faces Jupiter only when the camera looks
+   away from it (`--view wide` 14 mm proved it: backs of blocks, a stretched disc). Lit walls need raking light
+   (`side`, heading ~125°); facing Jupiter the blocks are silhouettes and the plain is black under a glint path.
+   → 01's move must turn (lit walls → the disc) or cut. **User 2026-10-05: decide in Sprint 2, from several more
+   test frames (headings, lenses, a turn).**
+3. 02 at 135 mm: the 2 km ice horizon is a ruler-straight line (1 px = 0.26 m there): Sprint 2's ground needs
+   knobs/ridges on the horizon silhouette (**yes, user 2026-10-05**). Visible disc: Io sits ~5° up mid-transit, the frame shows 6.4° of it.
+4. Lamp: looking into the beam = one forward-scatter blob (g 0.85); across the beam reads (probe silhouette with a
+   rim, cyan cone, ice ceiling lit blue). Red is gone within metres as physics says. Snow flecks only read inside
+   the beam (place them there in 07). Exposure ≈ +4 EV vs 0 for the sunlit-ice scale.
+5. Stars (Io's `sky.stars`) look too dense and even at 24 mm night exposures: thin them in Sprint 2.
+   (4 and 5: **yes, user 2026-10-05**.)
+
 ## Next
-Sprint 1 look spike (3 Cycles stills, previews free): Conamara horizon with ¾-Jupiter (Jupiter-lit ice) · Io on the
-disc at 135 mm · cryobot lamp in black water (time the water volume). Asset hunt by the user in parallel (REFERENCES.md
-"Wanted": W1 Mixamo kneel/stand, W2–W3 ice sounds and hydrophone).
+Finding 1 (Io + two shadows in 02): verified, in TREATMENT as C2 and in 02's row (user 2026-10-05).
+Sprint 2 opens with 01's framing test (several frames: headings, lenses, a turn; finding 2), then builds, one per
+session: `europa_world` ground (plates/matrix promoted from `look_horizon.py`, ragged horizon, ridges, PIA01403
+pattern) · the cryobot (code-built) · ice-shell interior · under-ice ocean. Asset hunt by the user in parallel
+(REFERENCES.md "Wanted": W1 Mixamo kneel/stand, W2–W3 ice sounds and hydrophone).
 
 ## Sprints (plan, 2026-10-04)
 0. Treatment, physics, scaffold. 0.1 ✅ brainstorm + repo · 0.2 physics rows + `TREATMENT.md` (clip list, beat sheet
@@ -77,6 +128,7 @@ disc at 135 mm · cryobot lamp in black water (time the water volume). Asset hun
 - Descent and people (user 2026-10-04): a small astronaut on the surface (Io's EMU #12622 + Mixamo, reused); below the
   surface a **code-built cryobot** (melt probe) goes down, time-lapse with a counter (depth / pressure / days), then its
   one lamp in the black water. No open 20 km crack (not real), no human under the ice. Real physics throughout.
+- 02 carries Io's shadow + Europa's own shadow on the bands (user 2026-10-05, TREATMENT C2).
 - Clip list (user 2026-10-04): TREATMENT §5, 9 clips ≈ 1:58 (horizon · neighbour · the probe · the fall of the Sun ·
   the lid · descent · breakthrough · abyss · title). 9:16 climax = 02 + 04. Jupiter lightning in 04 yes; plume and
   ice glow no. Cryobot 10 kW (1,044 days to 20 km). Radiation fact on the end card, not in 03.
@@ -89,6 +141,11 @@ disc at 135 mm · cryobot lamp in black water (time the water volume). Asset hun
   so the climax shots get their own portrait cameras/renders (planned in the treatment, rendered last).
 
 ## Notes / lessons
+- Night ground lit by a lit planet: make the planet a light (an emissive twin, `jupiter.lamp`); bounce rays alone
+  find a 12° object too rarely. Far bodies (Jupiter, Io, Europa for the shadows) all at one scale k about the camera
+  → angles and shadows exact.
+- zsh doesn't word-split `$VAR` in a command line: a flags string in a variable runs Blender with one bad argument
+  and prints nothing; write the flags out (or use an array).
 - USGS GeoTIFFs: read the projection centre (GeoKey 3088) — Europa's mosaic is centred on 180°, so its x origin is
   lon 0 E, not −180 (Io's was −180..180). Verify any reprojection on a landmark (here Pwyll's rays), not by eye.
 - Photojournal catalog pages are JS-heavy; the description text sits after ">Description<" in the raw HTML. TIFFs:
