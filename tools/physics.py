@@ -34,7 +34,18 @@ RHO_ICE, RHO_SEA = 920.0, 1030.0                             # kg/m³
 # Conamara Chaos ground (film picks inside the Galileo-era descriptions: ice plates ≲ 10 km across, standing up to
 # ~100–250 m over a hummocky matrix, their tops keeping the older ridged plains; shadow/stereo heights, rough)
 CHAOS = dict(plate_m=(250.0, 2500.0), plate_h=(40.0, 160.0), tilt_deg=(0.0, 4.0), matrix_h=14.0,
-             ridge_h=7.0, ridge_gap=(180.0, 450.0))
+             ridge_h=7.0, ridge_gap=(180.0, 450.0),
+             # the plates are pieces of the older ridged plains, turned and shifted (they fit back together, Spaun et
+             # al. 1998): ridge sets cross at several azimuths (PIA01403: 2–3 per plate), plus fragments of double
+             # ridges (two crests, a central trough; 0.5–2 km wide and ~100–300 m high on the plains, the film's are
+             # the smaller ones that cross the plates)
+             ridge_sets=(35.0, 100.0, 160.0), plate_spin_deg=15.0, double_az=(62.0, 128.0), double_gap=3200.0,
+             double_w=(250.0, 600.0), double_h=(20.0, 70.0),
+             # the matrix: hummocks under a jumble of blocks down to the resolution limit (PIA01182, 9 m/px: house-size
+             # blocks; PIA01403 15 m/px): film picks per scale band (cell m, block size m, height m, share of cells;
+             # three overlapping grids per band)
+             debris=((300.0, (30.0, 200.0), (6.0, 30.0), 0.8), (60.0, (6.0, 40.0), (1.5, 8.0), 0.8),
+                     (8.0, (0.8, 5.0), (0.2, 1.2), 0.6)))
 PLUME_H = 200.0             # km, tentative Hubble water plume (2012/2014), unconfirmed
 
 

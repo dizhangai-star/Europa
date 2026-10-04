@@ -1,6 +1,6 @@
 """Sprint 2.0: 01 "horizon" framing test (finding 2: the disc and the walls it lights can't share one frame).
-Not a clip. One chaos ground (lib/chaos, Sprint 1 spike) over a wide sector, the camera on the knoll; each frame is
-one camera (stills) or the frames make a turn (animation).
+Not a clip. One chaos ground (europa_world.Ground; Sprint 2.0 ran the Sprint 1 spike, same plate layout) over a wide
+sector, the camera on the knoll; each frame is one camera (stills) or the frames make a turn (animation).
 
     # stills: one frame per view "heading:lens:ev[:tilt]" (heading deg, 0 = Jupiter, + = right)
     Blender -b --factory-startup -P blender/shots/test01_framing.py -- --views 170:24:1.5,125:24:0.5,18:24:-2.5 \
@@ -21,8 +21,8 @@ import importlib
 import bpy
 from mathutils import Vector
 import physics
-from lib import nodes, rig, shot, europa_world, jupiter, sky, chaos
-for m in (physics, nodes, rig, shot, europa_world, jupiter, sky, chaos):
+from lib import nodes, rig, shot, europa_world, jupiter, sky
+for m in (physics, nodes, rig, shot, europa_world, jupiter, sky):
     importlib.reload(m)
 P, W = physics, europa_world
 C = P.CHAOS
@@ -47,8 +47,8 @@ def at(az, d):
 HERO = [dict(c=at(150, 600), R=200.0, h=90.0, n=6, rot=120.0, tilt_deg=1.5, tdir_deg=90.0),
         dict(c=at(-7, 2400), R=180.0, h=120.0, n=7, rot=10.0),          # bites the disc's lower-left limb
         dict(c=at(27, 2600), R=650.0, h=150.0, n=6, rot=40.0)]
-plates = chaos.plates(C, seed=A.opt('seed', 7), extra=HERO if A.opt('hero') else ())
-height = chaos.height_fn(C, plates)
+height = W.Ground(C, seed=A.opt('seed', 7), extra=HERO if A.opt('hero') else ())
+plates = height.plates
 
 sc = rig.new_scene('Test01_Framing')
 rig.render_settings(sc, samples=A.samples, res=shot.RES, pct=A.pct)

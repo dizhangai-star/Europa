@@ -1,8 +1,9 @@
 # Europa · 木卫二 · 深渊: progress
 
 ## State (2026-10-05)
-**Sprint 2.0 (01 framing test) done 2026-10-05 (branch `sprint-2.0-framing`): 01 = the turn. Next: Sprint 2 builds,
-starting with the `europa_world` ground.** Sprint 1 (look spike) done 2026-10-05 (merged, PR #3). Sprint 0 (brainstorm → treatment → scaffold → maps) done 2026-10-04. Folder opened; `tools/physics.py` adapted from Io's (Jupiter 12.3°, Io
+**Sprint 2.1 (the `europa_world` ground) done 2026-10-05 (branch `sprint-2.1-ground`), waiting for the user's look at
+`frames/ground/ground-sheet.png`. Next: Sprint 2.2, the cryobot.** Sprint 2.0 (01 framing test) done 2026-10-05
+(merged, PR #4): 01 = the turn. Sprint 1 (look spike) done 2026-10-05 (merged, PR #3). Sprint 0 (brainstorm → treatment → scaffold → maps) done 2026-10-04. Folder opened; `tools/physics.py` adapted from Io's (Jupiter 12.3°, Io
 transits, Io's shadow, horizon sites Conamara / Pwyll, ice + ocean pressure, lens table). Ideas, three directions and
 the reuse map in `BRAINSTORM.md`. Git: `github.com/dizhangai-star/Europa` (`main`), `.gitignore` from Io.
 Direction, descent, format and title picked by the user 2026-10-04 (Decisions).
@@ -112,10 +113,40 @@ one flanking at 27°), stars `--star-density` 0.06 (was 0.35). Frames in `frames
   For Sprint 3: pan faster through the dark middle (hold ~3 s on the mesa, pan ~5 s, hold ~4 s on the disc), add a slow
   forward drift; the caption lands on the disc.
 
+**Sprint 2.1 (the ground) done 2026-10-05, branch `sprint-2.1-ground`.** `lib/chaos.py` promoted into
+**`europa_world.Ground`** (same plate draws, so 2.0's framing and hero plates hold; `look_horizon`, `test01_framing`
+switched to it). Board: `blender/shots/board_ground.py` (`--views h:lens:ev[:tilt]`, `--elong`, `--band a:b:s` for a
+long lens, `--az0/--az1/--nseg-deg/--rmax`, `--hero 1`); sheet `frames/ground/ground-sheet.png` (01 start / end at night,
+02 at 135 mm, 125° night, 04 at 50 mm with the Sun 6° up behind, 90° day). Height field ≈ 3 µs/vertex (7.6 M verts:
+~23 s), Cycles stills 3–5 s at 50 %/32 spp.
+- **Plates** carry the ridged plains as one field turned (±15°) and shifted with each plate (they fit back together):
+  three ridge sets fading along their length + double-ridge fragments (two crests, a trough, 20–70 m): skylines notch.
+  Hand-placed plates (`extra`) keep their plains at 30 % (`plains`), so 01's limb-biting mesa keeps its 2.0 skyline.
+- **Matrix**: billowy hummocks + a jumble of blocks in three bands (`blocks()`: 300 m cells → 30–200 m blocks 6–30 m
+  tall; 60 m → 6–40 m house-size; 8 m → 0.8–5 m boulders), three overlapping grids per band, irregular 7-gons, shards,
+  each face its own slope (~80° sheer … ~30° talus), ragged outlines, lumpy tilted tops, 15 % tilted rafts; talus
+  aprons are rubble slopes on the matrix (debris ×2.5 there). A **clearing** round the camera (`clear`: no 300-m-band
+  blocks within ~400 m, no house-size ones within ~30 m) so the knoll isn't walled in.
+- **Lane toward Jupiter**: no plates; matrix and rubble capped under a skyline that rises from −0.3° near the camera to
+  +0.6° beyond ~3 km (`lane_cap_deg`), so **02's horizon is a ragged line of far blocks and small mesas** (finding 3)
+  and ≤ 21 % of the disc is hidden (16 % at the bare horizon): "¾ above the ice" holds. Day shots toward Jupiter (04)
+  see the capped near ground as a flat plain: 04 sets its own cap or foreground plates.
+- **Far plates** 6–18 km (own draws) out to a 20 km sector.
+- **Masks** → mesh attributes (`plate ridge margin block talus`), read by **`ice()`**: matrix brown ↔ cream laid out by
+  a km noise + **PIA01403** (15 m/px, mask only), block tops and talus fresher; plate tops cream ↔ clean ↔ blue-white,
+  bright crests, dark brown double-ridge margins; steep faces clean blue-white, streaked (as Sprint 1). Io's placeholder
+  `surface()` removed (`board_astronaut` uses `ice()`).
+- physics.py `CHAOS` rows: `ridge_sets`, `plate_spin_deg`, `double_az/gap/w/h`, `debris` bands (film picks inside the
+  published ranges, comments cite PIA01182/01403, Spaun 1998).
+- **Bug found and fixed: MetalRT drops triangles in one 7.6 M-vertex mesh** (holes near the camera showing the sky:
+  the "stars in the ground" also in Sprint 2.0's frames). CPU and MetalRT off were clean; `terrain()` now splits into
+  ≤ 1 M-vertex ring bands (`max_verts`) and MetalRT renders clean. Lesson in the skill's REALISM.md.
+- Open for look-dev in the shots: day exposure (clean cliffs clip at EV 0 with the Sun 6° up), 04's foreground.
+
 ## Next
 Finding 1 (Io + two shadows in 02): verified, in TREATMENT as C2 and in 02's row (user 2026-10-05).
-01's framing test done (2.0, the turn). Next, Sprint 2 builds, one per session: `europa_world` ground (plates/matrix promoted from `look_horizon.py`, ragged horizon, ridges, PIA01403
-pattern) · the cryobot (code-built) · ice-shell interior · under-ice ocean. Asset hunt by the user in parallel
+01's framing test done (2.0, the turn); the ground done (2.1). Next, Sprint 2 builds, one per session: the cryobot
+(code-built) · ice-shell interior · under-ice ocean. Asset hunt by the user in parallel
 (REFERENCES.md "Wanted": W1 Mixamo kneel/stand, W2–W3 ice sounds and hydrophone).
 
 ## Sprints (plan, 2026-10-04)
@@ -157,6 +188,10 @@ pattern) · the cryobot (code-built) · ice-shell interior · under-ice ocean. A
   so the climax shots get their own portrait cameras/renders (planned in the treatment, rendered last).
 
 ## Notes / lessons
+- MetalRT (Blender 5.2, M4 Pro) lost triangles in one 7.6 M-vertex terrain: split big meshes (≤ 1 M verts per object).
+  Test for holes with the ground as a flat emitter over a starfield.
+- A skyline cap at one elevation makes the near ground the skyline (a smooth line, then crenellated equal tops): let
+  the cap rise with distance so the far rubble forms it.
 - Night ground lit by a lit planet: make the planet a light (an emissive twin, `jupiter.lamp`); bounce rays alone
   find a 12° object too rarely. Far bodies (Jupiter, Io, Europa for the shadows) all at one scale k about the camera
   → angles and shadows exact.
