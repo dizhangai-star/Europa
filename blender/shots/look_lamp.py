@@ -7,10 +7,10 @@ The point is the water volume's cost and look. Water: pure-water absorption per 
 red gone in metres, blue reaches ~75 m) + particle scattering (physics.SEA_SCATTER, forward, SEA_G) as one
 homogeneous volume (no textures: Cycles samples its distances analytically, no ray marching), plus marine-snow flecks
 (a point cloud, 1–4 mm) close to the probe. Ice ceiling: the shell's base, undulating ±0.5 m, scalloped (bump),
-sub-surface blue-white, almost no specular (ice in water: relative IOR 0.985). Probe: Ø physics.CRYO_D, 3 m, on a
-tether into the ice; its lamp a spot of physics.CRYO_LAMP_W aimed out and down (`--lampdown` deg).
-Options: --exposure --hang M (probe top below the ceiling) --lampdown --lampaz --cone --scatter --snow N --vbounces
-         --novolume --lens
+sub-surface blue-white, almost no specular (ice in water: relative IOR 0.985). Probe: lib/cryobot (Sprint 2.2) on its
+tether into the ice; its lamp (physics.CRYO_LAMP_W) shines from the port, tilted down by cryobot.PORT_TILT.
+Options: --exposure --hang M (probe top below the ceiling) --lampaz (port azimuth) --cone --open M (swimmers out)
+         --scatter --snow N --vbounces --novolume --lens --cam x,y,z --aim x,y,z
 """
 import math
 import os
@@ -24,15 +24,14 @@ import bpy
 import numpy as np
 from mathutils import Vector
 import physics
-from lib import nodes, rig, shot, europa_world
-for m in (physics, nodes, rig, shot, europa_world):
+from lib import nodes, rig, shot, europa_world, cryobot
+for m in (physics, nodes, rig, shot, europa_world, cryobot):
     importlib.reload(m)
 P, W = physics, europa_world
 
 A = shot.args()
 HANG = float(A.opt('hang', 2.0))
-LEN = 3.0
-RAD = P.CRYO_D / 2
+LEN = P.CRYO_LEN
 
 sc = rig.new_scene('Look_Lamp')
 rig.render_settings(sc, samples=A.samples, res=shot.RES, pct=A.pct)
@@ -90,47 +89,12 @@ ceil = bpy.data.objects.new('Ceiling', me)
 sc.collection.objects.link(ceil)
 me.materials.append(mat('IceBase', ceiling_mat))
 
-# ---------------------------------------------------------------- probe, tether, lamp
-def metal(g):
-    b = g.add('ShaderNodeBsdfPrincipled', Roughness=0.32, Metallic=1.0)
-    g.set(b, 'Base Color', (0.62, 0.62, 0.64))
-    g.output(g.o(b, 'BSDF'))
-
-
-def copper(g):
-    b = g.add('ShaderNodeBsdfPrincipled', Roughness=0.25, Metallic=1.0)
-    g.set(b, 'Base Color', (0.80, 0.45, 0.30))
-    g.output(g.o(b, 'BSDF'))
-
-
+# ---------------------------------------------------------------- probe (lib/cryobot), tether, lamp
 top = -HANG
-bpy.ops.mesh.primitive_cylinder_add(vertices=48, radius=RAD, depth=LEN - RAD, location=(0, 0, top - (LEN - RAD) / 2))
-body = bpy.context.object
-body.data.materials.append(mat('Titanium', metal))
-bpy.ops.object.shade_smooth()
-bpy.ops.mesh.primitive_uv_sphere_add(segments=48, ring_count=24, radius=RAD, location=(0, 0, top - (LEN - RAD)))
-nose = bpy.context.object
-nose.data.materials.append(mat('HotNose', copper))
-bpy.ops.object.shade_smooth()
-bpy.ops.mesh.primitive_cylinder_add(vertices=12, radius=0.008, depth=HANG + 1.0, location=(0, 0, top + (HANG + 1.0) / 2))
-teth = bpy.context.object
-teth.data.materials.append(mat('Tether', lambda g: g.output(g.o(g.add('ShaderNodeBsdfPrincipled', Roughness=0.6), 'BSDF'))))
-
-DOWN = math.radians(float(A.opt('lampdown', 35.0)))
-lz = top - 0.6
-L = bpy.data.lights.new('Lamp', 'SPOT')
-L.energy = P.CRYO_LAMP_W
-L.spot_size = math.radians(float(A.opt('cone', 90.0)))
-L.spot_blend = 0.4
-L.shadow_soft_size = 0.02
-L.color = (1.0, 1.0, 1.0)
-lamp = bpy.data.objects.new('Lamp', L)
-sc.collection.objects.link(lamp)
-AZ = math.radians(float(A.opt('lampaz', 200.0)))                # 180 = −X (across the frame, away from the camera)
-h = Vector((math.cos(AZ), math.sin(AZ), 0.0))
-lamp.location = Vector((0.0, 0.0, lz)) + h * (RAD + 0.01)
-d = Vector((h.x * math.cos(DOWN), h.y * math.cos(DOWN), -math.sin(DOWN)))
-lamp.rotation_euler = d.to_track_quat('-Z', 'Y').to_euler()
+bot = cryobot.build(sc, P, loc=(0.0, 0.0, top - LEN), tether=HANG + 1.0, lamp_cone=float(A.opt('cone', 90.0)),
+                    open=float(A.opt('open', 0.0)))
+bot['root'].rotation_euler = (0.0, 0.0, math.radians(float(A.opt('lampaz', 200.0))))   # 180 = port toward −X
+lz = top - LEN + bot['port_z']
 
 # ---------------------------------------------------------------- water + snow
 if not A.opt('novolume'):
@@ -182,9 +146,9 @@ gn.links.new(sm.outputs['Geometry'], go.inputs[0])
 snow.modifiers.new('Points', 'NODES').node_group = gn
 
 # ---------------------------------------------------------------- camera
-cam_loc = Vector((3.2, -4.2, top - 1.6))
-aim = Vector((0.0, -0.6, top - 0.6))
-cam = rig.camera(sc, cam_loc, aim, lens=float(A.opt('lens', 30.0)), fstop=2.8, focus=Vector((0, 0, top - 0.8)))
+cam_loc = Vector([float(x) for x in A.opt('cam', f'3.2,-4.2,{top - 1.6}').split(',')])
+aim = Vector([float(x) for x in A.opt('aim', f'0,-0.6,{top - 0.6}').split(',')])
+cam = rig.camera(sc, cam_loc, aim, lens=float(A.opt('lens', 30.0)), fstop=2.8, focus=Vector((0, 0, lz)))
 cam.data.clip_end = 300.0
 print(f'NOTE look_lamp: water σa RGB {tuple(round(x, 4) for x in P.water_rgb())}, scatter '
       f'{float(A.opt("scatter", P.SEA_SCATTER))}/m g {P.SEA_G}, lamp {P.CRYO_LAMP_W} W, {len(pts):,} flecks, '

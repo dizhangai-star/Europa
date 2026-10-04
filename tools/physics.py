@@ -343,6 +343,24 @@ RGB_BANDS = ((600, 700), (500, 600), (420, 500))           # nm: the render's R,
 SEA_SCATTER = 0.02          # 1/m, particles (film pick: clearest open ocean ~0.01–0.05; Europa's is unknown)
 SEA_G = 0.85                # their forward-scattering anisotropy (ocean particles, Petzold ~0.9)
 CRYO_LAMP_W = 50.0          # W radiant, the probe's one lamp (film pick: ~15,000 lm LED, an ROV floodlight)
+# The probe's layout, nose (z = 0) up, m. Sources: JPL PRIME (Hand et al. 2022: Ø 0.25 m, radioisotope heat, comm
+# relays left in the ice, the SWIM micro-swimmer package), NASA Compass "Europa Tunnelbot" (2019: heat section,
+# electronics vault, fibre tether paid out from the probe, repeater "pucks" every few km), Stone Aerospace
+# VALKYRIE/PROMETHEUS (hot-water jets from the melt head). Lengths per section, CRYO_LEN, puck size/spacing, jet
+# count and the tether's Ø are film picks inside those designs. The melt head runs at ~0–100 °C: it does not glow.
+CRYO_LEN = 3.0
+CRYO_SECTIONS = (('head', 0.30),            # copper melt head, hot-water jets
+                 ('bay', 0.35),             # instruments: lamp port, camera dome, sample inlets
+                 ('swim', 0.10),            # SWIM package: 10 cm × Ø 25 cm, up to 50 wedges (PRIME/SWIM) ⚠ concept
+                 ('heat', 0.85),            # heat source (RTG / fission core) and its pumped water loop
+                 ('vault', 0.45),           # electronics vault (radiation shield)
+                 ('tail', 0.95))            # tether spool + puck magazine; tether out through the top cap
+CRYO_JETS = 7                # melt-head jets: 6 round the cone + 1 at the tip (film pick), Ø 8 mm
+CRYO_TETHER_D = 0.005        # m: optical fibre in three layers (crush jacket, Kevlar, buffer), film pick
+CRYO_PUCK = (0.20, 0.07)     # m Ø × height, threaded on the tether; film pick (Tunnelbot repeaters)
+CRYO_PUCK_KM = 2.0           # km between pucks (film pick, "every few km") → 9 in a 20 km shell + 1 spare
+SWIM_N, SWIM_TIERS = 50, 2   # wedges in the package: 2 tiers × 25 radial slices (fits PRIME's 10 cm × Ø 25 cm)
+SWIM_LEN = 0.12              # m, one swimmer (SWIM concept ~12 cm)
 
 
 def water_rgb():
@@ -535,6 +553,10 @@ elif __name__ == '__main__':
         rows.append((f'Cryobot {p:g} kW, Ø {CRYO_D} m, {100 * CRYO_ETA:.0f} % into the ice', f'{days:,.0f} days '
                      f'({days / 365.25:.1f} y) to {h:.0f} km; {v0:.2f} m/h at the top, {v1:.2f} m/h at the base; '
                      f'the hole refreezes behind it'))
+    npk = int(h / CRYO_PUCK_KM)
+    rows.append(('Cryobot layout (nose up)', ' · '.join(f'{n} {l:.2f}' for n, l in CRYO_SECTIONS)
+                 + f' m = {sum(l for _, l in CRYO_SECTIONS):.2f} m; {npk} pucks every {CRYO_PUCK_KM:g} km '
+                 f'({npk * CRYO_PUCK[1]:.2f} m of magazine); {SWIM_N} swimmers ⚠ concept'))
     rgb = water_rgb()
     rows.append(('Pure water absorption, render R / G / B', ' / '.join(f'{a:.4f}' for a in rgb) + ' per m (e-fold '
                  + ' / '.join(f'{1 / a:.0f}' for a in rgb) + f' m); particles {SEA_SCATTER}/m, g {SEA_G} (film pick); '
