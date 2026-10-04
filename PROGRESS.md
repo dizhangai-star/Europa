@@ -1,8 +1,8 @@
 # Europa · 木卫二 · 深渊: progress
 
 ## State (2026-10-05)
-**Sprint 2.2 (the cryobot) done 2026-10-05 (branch `sprint-2.2-cryobot`), waiting for the user's look at
-`frames/cryobot/cryobot-sheet.png`. Next: Sprint 2.3, the ice-shell interior.** Sprint 2.1 (the ground) done and
+**Sprint 2.2 (the cryobot) done 2026-10-05, approved and merged (PR #6). Next: Sprint 2.3, the ice-shell
+interior.** Sprint 2.1 (the ground) done and
 merged 2026-10-05 (PR #5). Sprint 2.0 (01 framing test) done 2026-10-05
 (merged, PR #4): 01 = the turn. Sprint 1 (look spike) done 2026-10-05 (merged, PR #3). Sprint 0 (brainstorm → treatment → scaffold → maps) done 2026-10-04. Folder opened; `tools/physics.py` adapted from Io's (Jupiter 12.3°, Io
 transits, Io's shadow, horizon sites Conamara / Pwyll, ice + ocean pressure, lens table). Ideas, three directions and
