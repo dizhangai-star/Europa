@@ -97,7 +97,7 @@ frames × ~18 s ≈ 14 h before the cheaper-way ladder (02 locked camera → pla
 5. Stars (Io's `sky.stars`) look too dense and even at 24 mm night exposures: thin them in Sprint 2.
    (4 and 5: **yes, user 2026-10-05**.)
 
-**Sprint 2.0 (01 framing test) 2026-10-05, branch `sprint-2.0-framing`, waiting for the user's pick.**
+**Sprint 2.0 (01 framing test) done 2026-10-05, branch `sprint-2.0-framing`: user picked A, the turn.**
 `blender/lib/chaos.py` = the spike ground factored out of `look_horizon.py` (same draw order; `extra=` hand-placed
 plates). `blender/shots/test01_framing.py`: one ground over az −70..200°, `--views h:lens:ev[:tilt],…` (one still
 per view) or `--turn h0:l0:ev0,h1:l1:ev1 --frames N --hold0 --hold1` (eased pan + zoom + exposure ride), `--hero 1`
@@ -108,13 +108,13 @@ one flanking at 27°), stars `--star-density` 0.06 (was 0.35). Frames in `frames
 - Walls glow only from heading ≳ 125°; with the disc in frame every block is a silhouette and the plain is black.
 - Silhouettes beside the disc vanish (black on black); a block **biting the disc's limb** reads, and gives scale.
 - The turn passes ~3 s of black between heading 90° and 40° (nothing seen from there faces Jupiter).
-- Options for the user: A turn walls → disc · B reverse, disc → walls · C cut (01a walls, 01b disc, each a slow
-  dolly) · D disc only (silhouettes + biting mesa; lit walls left to 03).
+- Options shown: A turn walls → disc · B reverse · C cut (01a walls, 01b disc) · D disc only. **A picked** (Decisions).
+  For Sprint 3: pan faster through the dark middle (hold ~3 s on the mesa, pan ~5 s, hold ~4 s on the disc), add a slow
+  forward drift; the caption lands on the disc.
 
 ## Next
 Finding 1 (Io + two shadows in 02): verified, in TREATMENT as C2 and in 02's row (user 2026-10-05).
-Sprint 2 opens with 01's framing test (several frames: headings, lenses, a turn; finding 2), then builds, one per
-session: `europa_world` ground (plates/matrix promoted from `look_horizon.py`, ragged horizon, ridges, PIA01403
+01's framing test done (2.0, the turn). Next, Sprint 2 builds, one per session: `europa_world` ground (plates/matrix promoted from `look_horizon.py`, ragged horizon, ridges, PIA01403
 pattern) · the cryobot (code-built) · ice-shell interior · under-ice ocean. Asset hunt by the user in parallel
 (REFERENCES.md "Wanted": W1 Mixamo kneel/stand, W2–W3 ice sounds and hydrophone).
 
@@ -143,6 +143,8 @@ pattern) · the cryobot (code-built) · ice-shell interior · under-ice ocean. A
   surface a **code-built cryobot** (melt probe) goes down, time-lapse with a counter (depth / pressure / days), then its
   one lamp in the black water. No open 20 km crack (not real), no human under the ice. Real physics throughout.
 - 02 carries Io's shadow + Europa's own shadow on the bands (user 2026-10-05, TREATMENT C2).
+- 01 = **the turn** (user 2026-10-05, finding 2): glowing mesa (~150° from Jupiter) → pan left ~145°, 24 → 35 mm,
+  exposure ride −4 EV, slow drift; ends on the disc with a mesa biting its lower limb (scale). TREATMENT 01 row.
 - Clip list (user 2026-10-04): TREATMENT §5, 9 clips ≈ 1:58 (horizon · neighbour · the probe · the fall of the Sun ·
   the lid · descent · breakthrough · abyss · title). 9:16 climax = 02 + 04. Jupiter lightning in 04 yes; plume and
   ice glow no. Cryobot 10 kW (1,044 days to 20 km). Radiation fact on the end card, not in 03.
