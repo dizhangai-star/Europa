@@ -1,9 +1,9 @@
 # Europa · 木卫二 · 深渊: progress
 
 ## State (2026-10-05)
-**Sprint 2.3 (the ice-shell interior) done 2026-10-05, branch `sprint-2.3-shell`, waiting for the user's look
-(findings below), approved 2026-10-05 (puck in 05 yes, porosity 0.2 % kept), PR opened. Next: Sprint 2.4, the
-under-ice ocean.** Sprint 2.2 (the cryobot) done, approved and merged (PR #6).
+**Sprint 2.4 (the under-ice ocean) done 2026-10-05, branch `sprint-2.4-ocean`, waiting for the user's look
+(findings below).** Sprint 2.3 (the ice-shell interior) done, approved and merged (PR #7). Sprint 2.2 (the cryobot)
+done, approved and merged (PR #6).
 Sprint 2.1 (the ground) done and
 merged 2026-10-05 (PR #5). Sprint 2.0 (01 framing test) done 2026-10-05
 (merged, PR #4): 01 = the turn. Sprint 1 (look spike) done 2026-10-05 (merged, PR #3). Sprint 0 (brainstorm → treatment → scaffold → maps) done 2026-10-04. Folder opened; `tools/physics.py` adapted from Io's (Jupiter 12.3°, Io
@@ -206,11 +206,48 @@ beam; row 3: full-res 30 m lid crop + nose).
 3. Porosity is unknown; the film pick (0.2 %) decides milky vs glassy. Lower φ = see the probe through metres of ice
    (less glow, more "glass"); higher = only the glow. **Keep 0.2 % (user 2026-10-05).**
 
+**Sprint 2.4 (the under-ice ocean) done 2026-10-05, branch `sprint-2.4-ocean`.** Water reuse checked first: the
+three.js water upgrade (imagnation `clips/aegean.js`, session "Three.js 水质感对比", 2026-10-04) is a sunlit-surface
+shader (sky reflection, Sun glint, caustics on sand); nothing of it applies under 20 km of ice (no sky, no Sun, no free
+surface). The under-ice water stays Sprint 1's homogeneous volume (`look_lamp`), now in a lib.
+**`blender/lib/ocean.py`** `build(sc, P, kind, half, deep, n)`: world z = 0 = the ice base at the probe's exit hole,
++z into the ice, the current along +x. `oc['ice']` = a closed slab whose underside is the ceiling (random-walk
+subsurface; the hole bored by a live Boolean), `oc['water']` = one box volume from 400 m down up into the slab (fills
+the hole), `ceiling_z(oc, x, y)`, `motes()` / `frazil()` = point clouds that drift by themselves with the scene time
+(GN Scene Time: current OCEAN_U, frazil rising at `rise_speed()`, fluttering). Grid 801² on a sinh axis (≈ 5 cm at
+the hole, 0.5 m at ±60 m). Board **`blender/shots/board_ocean.py`** (`--views emerge,up,level,wide,down --sinks
+10,40,100 --kind melt|freeze --motes 1 --frazil 1 --cloud x,y,z,r --lampaz`), sheets `frames/ocean/melt-sheet.png`
+(emerge · up · level · wide / down 10 · 40 · 100 m) and `freeze-sheet.png`. **Cost**: build 1–3 s; 40 %/64 spp
+≈ 8 s per still (full res ≈ 6× that: the cheapest Cycles environment of the film so far).
+- physics.py new rows (all printed): current `OCEAN_U` 3 cm/s (film pick in model ranges) → **melt scallops 1.35 m**
+  (Curl's Re 22,500); **terraces** risers 0.4–2.5 m at 65°, treads 3–14 m (Icefin under Thwaites, Schmidt et al.
+  2023); **base ice** reduced scattering 3/m (film pick: brine-bearing accreted ice, as sea ice from below) → diffuse
+  albedo R/G/B 0.41 / 0.67 / 0.88, mean free path 0.3 m (`base_ice()`, Jensen diffusion; no tint chosen by eye);
+  ⚠ **frazil** 2 mm discs rising edge-on, `rise_speed()` calibrated on Gosink & Osterkamp's measured 10 mm/s →
+  **3.1 mm/s on Europa** (4 cm in a 14 s shot; the current moves it 42 cm); **lamp seen from d m** (`lamp_seen`):
+  blue −2 EV at 10 m, −8 at 40 m, −12 at 80 m, −17 at 150 m vs 5 m; red gone by 20 m, green by ~60 m.
+- Ceilings: `melt` (terraces with scallops all over them; where the base melts) and ⚠ `freeze` (smooth accreted
+  marine ice with a fringe of loose platelets; where it grows, model: Wolfenbarger et al. 2022, Lawrence et al. 2024).
+
+**Findings for the user (Sprint 2.4):**
+1. The **melt ceiling reads**: the lamp lights a stepped, cupped blue-white base above the probe (emerge, up), the
+   terraces climb away into the dark (wide). With the port facing the camera the frame is one forward-scatter blob
+   (Sprint 1 finding 4 again): 07 keeps the port across or away from the lens.
+2. **08 times itself**: from the ceiling the probe's glow is a blue point by 40 m and gone by ~100 m (down100 is black
+   at +4 EV), as `lamp_seen` says. 08's sink speed (tether pay-out) decides when; ~60–80 m in 14 s would end it on
+   "gone". Open for 08's sprint.
+3. **Particles don't read yet**: motes (0.2–1 mm) are sub-pixel at a 30 mm lens beyond ~1 m and the denoiser eats them;
+   frazil discs are ice in water (relative index 0.983): nearly invisible, as they would be. To show "snow" in 07 the
+   shot needs particles within ~1 m of the lens inside the beam (or a macro insert). Decide in 07's sprint.
+4. **⚠ Frazil / freeze ceiling (model, not seen on Europa)**: real physics says the flakes rise 3 mm/s (weak gravity),
+   so they hang nearly still and drift with the current: "snow that barely rises". The platelet fringe doesn't read
+   either (same index problem). Proposal: keep `melt` for the film; frazil only if 07 wants it, marked ⚠.
+
 ## Next
 Finding 1 (Io + two shadows in 02): verified, in TREATMENT as C2 and in 02's row (user 2026-10-05).
 01's framing test done (2.0, the turn); the ground done (2.1); the cryobot done (2.2); the shell interior done (2.3,
-approved: puck release in 05, porosity 0.2 %). Next, Sprint 2.4: the under-ice ocean (ceiling from look_lamp, the
-breakthrough's open column ~110 m long at the base per `refreeze`, particles). Asset hunt by the user in parallel
+approved: puck release in 05, porosity 0.2 %); the under-ice ocean done (2.4, waiting for the user's look: findings
+3–4 need a yes/no). Sprint 2 builds are complete → Sprint 3, shots one per session (01 first). Asset hunt by the user in parallel
 (REFERENCES.md "Wanted": W1 Mixamo kneel/stand, W2–W3 ice sounds and hydrophone).
 
 ## Sprints (plan, 2026-10-04)

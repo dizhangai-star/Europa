@@ -387,6 +387,31 @@ BANDS_PER_M3 = 0.0003        # flat-lying bands of more porous ice (porosity var
 BAND_T, BAND_GAIN = (0.1, 1.2), 0.5   # refrozen flows; film picks): m thick, σs added = gain × the ice's σs
 CRACKS_PER_M3 = 0.004        # open cracks (0.4–4 m air films) per m³ of brittle lid (film pick)
 
+# Under the ice (Sprint 2.4): the shell's base seen from the water, lit only by the probe's lamp. Nobody has seen it;
+# the shapes are Earth's ice-shelf bases (the closest analog) at the scale physics gives for Europa's water.
+NU_SEA = 1.8e-6              # m²/s, kinematic viscosity of seawater near its freezing point
+OCEAN_U = 0.03               # m/s, current along the ice base (film pick: Europa ocean models give ~mm/s–cm/s,
+                             # Soderlund et al. 2014): drifts the particles and sets the scallop length
+SCALLOP_RE = 22500.0         # Curl (1974): melt/dissolution scallops settle at Re = u·L/ν ≈ 22,500 (limestone caves,
+                             # ice-shelf bases and lab ice scallops alike, Bushuk et al. 2019)
+# Terraces: Icefin under Thwaites (Schmidt et al. 2023, Nature 614: 471) found the base a staircase of flat treads
+# and steep risers, in all orientations and many scales, wherever the base melts. Film picks at Icefin's scale:
+BASE_RISER = (0.4, 2.5)      # m, riser height
+BASE_TREAD = (3.0, 14.0)     # m, tread width
+BASE_RISER_DEG = 65.0        # steep faces (Icefin's crevasse walls and risers melt fastest: they stay steep)
+# The base ice: freshly accreted ice at the interface holds brine (a porous "mushy" layer; Buffo et al. 2020), so it
+# scatters like sea ice seen from below: white-blue, the lamp's spot spreading inside it. Its strength is unknown:
+# film pick, a reduced scattering σs' = 3/m (transport length 0.33 m), with pure-ice absorption (ice_rgb).
+BASE_SIGMA_P = 3.0           # 1/m, reduced scattering σs(1 − g) of the base ice (film pick)
+# ⚠ Frazil (model): where water rises along a sloping base it supercools ("ice pump") and grows free ice discs that
+# float up and settle on the ceiling as marine ice (Earth: under the Ross / Amery shelves; Europa: Wolfenbarger et al.
+# 2022, Lawrence et al. 2024). Discs ~0.2–3.4 mm across (Gosink & Osterkamp 1983, rivers: ~2 mm typical, rising
+# edge-on at ~10 mm/s); the thickness is chosen so rise_speed() gives that measured Earth speed; the count is a film pick.
+FRAZIL_D, FRAZIL_T = 2.0e-3, 0.21e-3       # m, disc diameter and thickness (calibrated, above)
+FRAZIL_PER_M3 = 3000.0                     # discs per m³ near the ceiling (film pick)
+MOTES_PER_M3 = 400.0                       # mineral/salt grains 0.2–1 mm per m³ (film pick; makes SEA_SCATTER's
+                                           # particles visible inside the beam)
+
 
 def _band_avg(f):
     return tuple(sum(f(lo + (hi - lo) * (k + 0.5) / 50) for k in range(50)) / 50 for lo, hi in RGB_BANDS)
@@ -415,6 +440,48 @@ def pore(z_km):
     phi = max(PORE_PHI0 * math.exp(-z_km / PORE_ZC), PORE_FLOOR)
     s = 1.5 * phi / PORE_R
     return phi, s, 1 / ((1 - PORE_G) * s)
+
+
+def scallop_len(u=OCEAN_U):
+    """Melt-scallop length (m) on the ice base under a current u (m/s): Curl's Re_L = 22,500."""
+    return SCALLOP_RE * NU_SEA / u
+
+
+def base_ice():
+    """The base ice seen from below as a diffusing slab: per render channel (R, G, B) the diffuse albedo (Jensen et
+    al. 2001, total diffuse reflectance, matched boundary: ice→water 0.98) and the mean free path (m) for a random-walk
+    subsurface shader. Pure-ice absorption makes the red darker by itself (long paths eat it)."""
+    alb, mfp = [], []
+    for sa in ice_rgb():
+        st = BASE_SIGMA_P + sa
+        a = BASE_SIGMA_P / st
+        s = math.sqrt(3 * (1 - a))
+        alb.append(a / 2 * (1 + math.exp(-4 / 3 * s)) * math.exp(-s))
+        mfp.append(1 / st)
+    return tuple(alb), tuple(mfp)
+
+
+def rise_speed(d=FRAZIL_D, t=FRAZIL_T, g=None, rho=RHO_SEA):
+    """Terminal speed (m/s) of an ice disc rising edge-on (as frazil discs rise, Gosink & Osterkamp 1983) through
+    water of density rho: buoyancy (rho − ρ_ice) g V against the edge-on Stokes disc drag F = (16/3) μ d v with an
+    Oseen factor (1 + Re/2π) (Re ≲ 50). g: default Europa's."""
+    g = g_at() if g is None else g
+    mu = NU_SEA * rho
+    f = (rho - RHO_ICE) * g * math.pi * (d / 2) ** 2 * t
+    v = f / (16 / 3 * mu * d)
+    for _ in range(50):
+        v = f / (16 / 3 * mu * d * (1 + v * d / NU_SEA / (2 * math.pi)))
+    return v
+
+
+def lamp_seen(d):
+    """The lamp seen from d m through the water: per channel the direct beam's transmission e^(−(a + b) d) (pure-water
+    absorption + particle scattering out of the ray) and its brightness vs 5 m in EV (with 1/r²)."""
+    out = []
+    for a in water_rgb():
+        tr = math.exp(-(a + SEA_SCATTER) * d)
+        out.append((tr, math.log2((5 / d) ** 2 * tr / math.exp(-(a + SEA_SCATTER) * 5))))
+    return out
 
 
 def refreeze(z_km, h_ice, a=CRYO_D / 2, wall=0.0):
@@ -662,6 +729,26 @@ elif __name__ == '__main__':
                      f'≈ {hrs * v:.2g} m above it at ~{v:.2f} m/h (10 kW; walls not pre-warmed: lower bound)'))
     rows.append(('Lamp in pure water (e-fold distance)', ', '.join(f'{wl} nm {1 / a:.0f} m' for wl, a in A_WATER.items())
                  + ': red gone within metres, blue reaches ~100 m (before 1/r²)'))
+    rows.append(('Ice base: current, scallops, terraces', f'current {OCEAN_U * 100:g} cm/s (film pick) → melt scallops '
+                 f'{scallop_len():.1f} m long (Curl Re 22,500; {scallop_len(0.01):.1f} m at 1 cm/s, '
+                 f'{scallop_len(0.1):.2f} m at 10 cm/s); terraces: risers {BASE_RISER[0]}–{BASE_RISER[1]} m at '
+                 f'{BASE_RISER_DEG:.0f}°, treads {BASE_TREAD[0]:g}–{BASE_TREAD[1]:g} m (Icefin, Thwaites)'))
+    alb, mfp = base_ice()
+    rows.append(('Ice base seen from the water (σs\' {:g}/m)'.format(BASE_SIGMA_P), 'diffuse albedo R / G / B '
+                 + ' / '.join(f'{x:.2f}' for x in alb) + ', mean free path ' + ' / '.join(f'{x:.2f}' for x in mfp)
+                 + f' m; surface reflectance ice→water {((N_WATER - N_ICE) / (N_WATER + N_ICE)) ** 2:.1e} '
+                 '(head-on: no mirror, the light comes from inside the ice)'))
+    ve, vt = rise_speed(), rise_speed(g=9.81, rho=1000.0)
+    rows.append((f'⚠ Frazil disc Ø {FRAZIL_D * 1e3:g} mm × {FRAZIL_T * 1e3:g} mm rising', f'{ve * 1e3:.1f} mm/s on '
+                 f'Europa (same formula in an Earth river: {vt * 1e3:.1f} mm/s; measured ~10 mm/s at 2 mm, Gosink & '
+                 f'Osterkamp 1983): in a 14 s shot it rises '
+                 f'{ve * 14 * 100:.1f} cm while the current carries it {OCEAN_U * 14 * 100:.0f} cm sideways; '
+                 f'{FRAZIL_PER_M3:,.0f}/m³ (film pick); disc reflectance at grazing only (relative index '
+                 f'{N_ICE / N_WATER:.3f})'))
+    for d in (10, 20, 40, 80, 150, 250):
+        ls = lamp_seen(d)
+        rows.append((f'Lamp seen from {d} m', 'R / G / B transmission ' + ' / '.join(f'{t:.2g}' for t, _ in ls)
+                     + ', vs 5 m ' + ' / '.join(f'{e:+.1f}' for _, e in ls) + ' EV'))
     w = max(len(a) for a, _ in rows)
     for a, b in rows:
         print(f'| {a:<{w}} | {b} |')
