@@ -1,15 +1,19 @@
 """Measure / derive texture data from the shared asset library (system python3 with PIL + numpy + scipy).
-Copied from Io (Sprint 0.3): `jupiter` is shared as is; `io` / `far` are still Io's, to become `europa` in 0.4.
+Copied from Io (Sprint 0.3); `jupiter` shared as is, Io's `io` / `far` replaced by `europa` / `colour` in 0.4.
 
     python3 tools/maps.py jupiter    the Jupiter map's mean linear luminance and Great Red Spot position
                                      (the constants at the top of blender/lib/jupiter.py)
-    python3 tools/maps.py io         our site cut out of the USGS Io colour mosaic, reprojected to the film's local
-                                     frame (X west, Y south, 1 km/px, site at the centre) →
-                                     blender/textures/src/io_site_1km.png, + a palette of the site's colours
-    python3 tools/maps.py far        a stand-in for 05's far ground (user 2026-10-03): the site's own mosaic is smeared
-                                     poleward of ~60°, so a well-imaged northern region (FAR_CENTRE) is reprojected
-                                     the same way, 2048 km across → blender/textures/src/io_far_1km.png, + its mean
-                                     linear colour (the constant in blender/lib/globe.py)
+    python3 tools/maps.py europa     the site (physics.SITE, Conamara) cut out of the USGS 500 m Europa mosaic
+                                     (greyscale) and reprojected to the film's local frame (physics: +X right of
+                                     Jupiter ≈ north, +Y toward Jupiter = image top, site at the centre):
+                                     blender/textures/src/europa_site_500m.png (512 km across) and
+                                     europa_wide_1km.png (2048 km, Pwyll and its rays in frame: the orientation check),
+                                     + the site's albedo numbers
+    python3 tools/maps.py colour     Europa's natural colour, the mosaic having none: clusters of PIA19048 (Galileo,
+                                     reprocessed to approximate the eye) → linear colours of the clean ice, the
+                                     reddish-brown non-ice material and the darkest lineae; the Conamara colour
+                                     close-ups (PIA26446 / 01127 / 01296) are enhanced, so they only say *where*
+                                     the brown sits (on the chaos matrix and ridges; blue-white = Pwyll's ray frost)
 
 Blender never reads the 100–200 MB source files pixel by pixel: it loads the map as a texture and uses these numbers.
 """
@@ -25,9 +29,14 @@ Image.MAX_IMAGE_PIXELS = None
 FILM = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ASSETS = os.path.expanduser('~/dev/workspace/claude/videos/_assets/textures')
 JUP = os.path.join(ASSETS, 'jupiter/jupiter_map_css_plus_juno_bj.png')
-IO = os.path.join(ASSETS, 'io/Io_GalileoSSI-Voyager_Global_Mosaic_ClrMerge_1km.tif')
+EU = os.path.join(ASSETS, 'europa/Europa_Voyager_GalileoSSI_global_mosaic_500m.tif')
+GAL = os.path.join(ASSETS, 'europa/galileo')
+PREV = os.path.expanduser('~/dev/workspace/claude/videos/_assets/previews')
+SRC = os.path.join(FILM, 'blender/textures/src')
 sys.path.insert(0, os.path.join(FILM, 'tools'))
 import physics as P
+
+PWYLL = (-25.2, 271.4)          # lat, W longitude: the young rayed crater ~1,000 km south of Conamara
 
 
 def lin(a):
@@ -49,107 +58,105 @@ def jupiter():
 
 
 def _georef(im):
-    """(lon0, lat0, dlon, dlat) of pixel (0, 0)'s corner and the pixel size in degrees, from the GeoTIFF tags."""
+    """(lon0 east, lat0, dlon, dlat) of pixel (0, 0)'s corner and the pixel size in degrees, from the GeoTIFF tags
+    (simple cylindrical in metres on the tag's sphere, x measured from the projection's centre longitude)."""
     tags = im.tag_v2
-    scale, tie = tags.get(33550), tags.get(33922)
-    W, H = im.size
-    if scale and tie:
-        R = P.R_IO * 1000.0
-        sx, sy = scale[0], scale[1]
-        x0, y0 = tie[3], tie[4]
-        if abs(sx) > 1.0:                                    # metres (equirectangular on the sphere)
-            k = 180.0 / (math.pi * R)
-            return x0 * k, y0 * k, sx * k, -sy * k                # rows run south
-        return x0, y0, sx, -sy
-    return -180.0, 90.0, 360.0 / W, -180.0 / H              # assume a global −180..180 grid
+    sx, sy = tags[33550][:2]
+    x0, y0 = tags[33922][3:5]
+    dbl = tags.get(34736, ())
+    R = dbl[5] if len(dbl) > 5 else P.R_EU * 1000.0                # semi-major axis (m)
+    keys = tags.get(34735, ())
+    lon_c = 0.0
+    for i in range(4, len(keys), 4):                                # ProjCenterLong / ProjNatOriginLong
+        if keys[i] in (3088, 3080) and keys[i + 1] == 34736:
+            lon_c = dbl[keys[i + 3]]
+    k = 180.0 / (math.pi * R)
+    return lon_c + x0 * k, y0 * k, sx * k, -sy * k, R / 1000.0       # rows run south
 
 
-def io(size=1024, km_px=1.0):
-    im = Image.open(IO)
-    print(f'{os.path.basename(IO)}: {im.size} {im.mode}')
-    lon0, lat0, dlon, dlat = _georef(im)
-    print(f'georef: corner lon {lon0:.3f} lat {lat0:.3f}, pixel {dlon:.5f}° × {dlat:.5f}°')
-    a = np.asarray(im.convert('RGB')).astype(np.float32) / 255
-    prev = os.path.expanduser('~/dev/workspace/claude/videos/_assets/previews/io-usgs-colour-mosaic.jpg')
-    if not os.path.exists(prev):
-        Image.fromarray((a[::8, ::8] * 255).astype(np.uint8)).save(prev, quality=85)
-    # the site: SITE_THETA from the sub-Jupiter point (lon 0) toward the north pole
-    lat_s = math.radians(P.SITE_THETA)                        # latitude = SITE_THETA (on the lon-0 meridian)
-    s = np.array([math.cos(lat_s), 0.0, math.sin(lat_s)])     # Io frame: x → lon 0, z → north
-    north = np.array([-math.sin(lat_s), 0.0, math.cos(lat_s)])
-    east = np.array([0.0, 1.0, 0.0])
-    R = P.R_IO
-    half = size * km_px / 2
-    xs = (np.arange(size) + 0.5) * km_px - half                # west (km), left → right
-    ys = half - (np.arange(size) + 0.5) * km_px                # south (km), image top = far south (toward Jupiter)
-    X, Y = np.meshgrid(xs, ys)
-    rho = np.hypot(X, Y) + 1e-9
-    phi = rho / R
-    d = (-X[..., None] * east - Y[..., None] * north) / rho[..., None]
-    p = np.cos(phi)[..., None] * s + np.sin(phi)[..., None] * d
-    lat = np.degrees(np.arcsin(np.clip(p[..., 2], -1, 1)))
-    lon = np.degrees(np.arctan2(p[..., 1], p[..., 0]))            # east longitude
-    col = (lon - lon0) / dlon
-    if dlon > 0:
-        col = np.mod(col, a.shape[1])
-    row = (lat - lat0) / dlat
-    out = np.stack([ndimage.map_coordinates(a[..., c], [row - 0.5, col - 0.5], order=1, mode='nearest')
-                    for c in range(3)], -1)
-    os.makedirs(os.path.join(FILM, 'blender/textures/src'), exist_ok=True)
-    dst = os.path.join(FILM, 'blender/textures/src/io_site_1km.png')
-    Image.fromarray((np.clip(out, 0, 1) * 255).astype(np.uint8)).save(dst)
-    print(f'site map → {os.path.relpath(dst, FILM)} ({size} km across, {km_px} km/px, X west, Y south up)')
-    c = out[size // 2 - 200:size // 2 + 200, size // 2 - 200:size // 2 + 200].reshape(-1, 3)
-    L = lin(c.astype(np.float64))
-    print(f'site ±200 km: mean sRGB {c.mean(0).round(3)}, mean linear {L.mean(0).round(3)}')
-    # palette: 6 clusters (k-means, a few rounds) of the site's colours, linear, by share
-    rng = np.random.default_rng(0)
-    pts = L[rng.choice(len(L), 20000, replace=False)]
-    cen = pts[rng.choice(len(pts), 6, replace=False)]
-    for _ in range(25):
-        k = np.argmin(((pts[:, None] - cen[None]) ** 2).sum(-1), 1)
-        cen = np.array([pts[k == j].mean(0) if (k == j).any() else cen[j] for j in range(6)])
-    share = np.bincount(k, minlength=6) / len(k)
-    for j in np.argsort(-share):
-        print(f'  {share[j] * 100:5.1f} %  linear {tuple(cen[j].round(3))}')
-
-
-FAR_CENTRE = (48.0, 0.25)       # latitude, and position across the mosaic (0..1 from its west edge): brown plains,
-                                 # dark paterae, white SO2 patches, Galileo coverage (picked on the preview)
-
-
-def far(size=2048, km_px=1.0):
-    im = Image.open(IO)
-    lon0, lat0, dlon, dlat = _georef(im)
-    a = np.asarray(im.convert('RGB')).astype(np.float32) / 255
-    lat_c, u = FAR_CENTRE
-    lon_c = lon0 + u * a.shape[1] * dlon
-    la, lo = math.radians(lat_c), math.radians(lon_c)
-    s = np.array([math.cos(la) * math.cos(lo), math.cos(la) * math.sin(lo), math.sin(la)])
-    north = np.array([-math.sin(la) * math.cos(lo), -math.sin(la) * math.sin(lo), math.cos(la)])
-    east = np.array([-math.sin(lo), math.cos(lo), 0.0])
-    R = P.R_IO
+def _local_grid(size, km_px):
+    """Europa-frame unit vectors of a size² grid around the site, image top = +Y (toward Jupiter), right = +X."""
+    right, fwd, up = (np.array(a) for a in P._local_axes())
     half = size * km_px / 2
     xs = (np.arange(size) + 0.5) * km_px - half
     ys = half - (np.arange(size) + 0.5) * km_px
     X, Y = np.meshgrid(xs, ys)
     rho = np.hypot(X, Y) + 1e-9
-    phi = rho / R
-    d = (-X[..., None] * east - Y[..., None] * north) / rho[..., None]
-    p = np.cos(phi)[..., None] * s + np.sin(phi)[..., None] * d
+    phi = rho / P.R_EU
+    d = (X[..., None] * right + Y[..., None] * fwd) / rho[..., None]
+    return np.cos(phi)[..., None] * up + np.sin(phi)[..., None] * d
+
+
+def _sample(a, geo, p):
+    lon0, lat0, dlon, dlat = geo[:4]
     lat = np.degrees(np.arcsin(np.clip(p[..., 2], -1, 1)))
-    lon = np.degrees(np.arctan2(p[..., 1], p[..., 0]))
+    lon = np.degrees(np.arctan2(p[..., 1], p[..., 0]))              # east longitude
     col = np.mod((lon - lon0) / dlon, a.shape[1])
     row = (lat - lat0) / dlat
-    out = np.stack([ndimage.map_coordinates(a[..., c], [row - 0.5, col - 0.5], order=1, mode='nearest')
-                    for c in range(3)], -1)
-    dst = os.path.join(FILM, 'blender/textures/src/io_far_1km.png')
-    os.makedirs(os.path.dirname(dst), exist_ok=True)
-    Image.fromarray((np.clip(out, 0, 1) * 255).astype(np.uint8)).save(dst)
-    L = lin(out.reshape(-1, 3).astype(np.float64))
-    print(f'far stand-in: centre {lat_c:.1f}° N, lon {lon_c:.1f}° → {os.path.relpath(dst, FILM)} ({size} km, {km_px} km/px)')
-    print(f'mean linear {tuple(L.mean(0).round(4))}')
+    return ndimage.map_coordinates(a, [row - 0.5, col - 0.5], order=1, mode='nearest')
+
+
+def _local_km(lat, lon_w):
+    """(x, y) km of a surface point in the site's local frame, along the ground (azimuthal equidistant)."""
+    right, fwd, up = (np.array(a) for a in P._local_axes())
+    la, lo = math.radians(lat), math.radians(360 - lon_w)
+    v = np.array([math.cos(la) * math.cos(lo), math.cos(la) * math.sin(lo), math.sin(la)])
+    phi = math.acos(np.clip(v @ up, -1, 1))
+    t = v - (v @ up) * up
+    t /= np.linalg.norm(t)
+    return P.R_EU * phi * (t @ right), P.R_EU * phi * (t @ fwd)
+
+
+def europa():
+    im = Image.open(EU)
+    geo = _georef(im)
+    off, scl = -0.0029527571, 0.0059055141                          # GDAL metadata: DN → normalised reflectance
+    print(f'{os.path.basename(EU)}: {im.size} {im.mode}; corner lon {geo[0]:.2f}° E lat {geo[1]:.2f}°, '
+          f'{geo[2] * 1000 / 360 * 2 * math.pi * geo[4]:.1f} m/px on R {geo[4]:.2f} km')
+    a = np.asarray(im).astype(np.float32)
+    os.makedirs(PREV, exist_ok=True)
+    prev = os.path.join(PREV, 'europa-usgs-mosaic-500m.jpg')
+    if not os.path.exists(prev):
+        Image.fromarray(a[::8, ::8].astype(np.uint8)).save(prev, quality=85)
+    os.makedirs(SRC, exist_ok=True)
+    for name, size, km_px in (('europa_site_500m.png', 1024, 0.5), ('europa_wide_1km.png', 2048, 1.0)):
+        out = _sample(a, geo, _local_grid(size, km_px))
+        Image.fromarray(np.clip(out, 0, 255).astype(np.uint8)).save(os.path.join(SRC, name))
+        print(f'→ blender/textures/src/{name}: {size} px, {km_px} km/px ({size * km_px:.0f} km), top = toward '
+              f'Jupiter, right = +X')
+        if size == 1024:
+            c = out[512 - 100:512 + 100, 512 - 100:512 + 100]
+            print(f'  site ±50 km: DN mean {c.mean():.1f}, sd {c.std():.1f} → normalised reflectance '
+                  f'{c.mean() * scl + off:.3f} (p5 {np.percentile(c, 5) * scl + off:.3f}, '
+                  f'p95 {np.percentile(c, 95) * scl + off:.3f})')
+            dead = (out == 0).mean()
+            print(f'  no-data (DN 0) {dead * 100:.2f} %')
+    x, y = _local_km(*PWYLL)
+    print(f'Pwyll in the local frame: x {x:+.0f} km, y {y:+.0f} km → europa_wide_1km.png pixel '
+          f'({1024 + x:.0f}, {1024 - y:.0f}); its rays should radiate from there')
+
+
+def colour(k=5):
+    a = np.asarray(Image.open(os.path.join(GAL, 'PIA19048.png')).convert('RGB')).astype(np.float64) / 255
+    L = lin(a).reshape(-1, 3)
+    L = L[L.mean(1) > 0.12]                                          # the lit disc away from the terminator
+    rng = np.random.default_rng(0)
+    pts = L[rng.choice(len(L), 40000, replace=False)]
+    ch = pts / pts.sum(1, keepdims=True)
+    cen = ch[rng.choice(len(ch), k, replace=False)]
+    for _ in range(40):
+        lab = np.argmin(((ch[:, None] - cen[None]) ** 2).sum(-1), 1)
+        cen = np.array([ch[lab == j].mean(0) if (lab == j).any() else cen[j] for j in range(k)])
+    share = np.bincount(lab, minlength=k) / len(lab)
+    ref = pts[lab == np.argmin(np.abs(cen - 1 / 3).sum(1))].mean(0)
+    print(f'PIA19048 (natural colour), lit disc, {len(L)} px; linear colour per chroma cluster, '
+          f'relative to the greyest cluster (= albedo-free tint):')
+    for j in np.argsort(cen[:, 0] - cen[:, 2]):
+        m = pts[lab == j].mean(0)
+        r3 = lambda v, n: tuple(round(float(x), n) for x in v)
+        print(f'  {share[j] * 100:5.1f} %  linear {r3(m, 4)}  tint {r3(m / m.max(), 3)}  '
+              f'brightness vs grey {m.mean() / ref.mean():.2f}')
 
 
 if __name__ == '__main__':
-    {'jupiter': jupiter, 'io': io, 'far': far}[sys.argv[1]]()
+    {'jupiter': jupiter, 'europa': europa, 'colour': colour}[sys.argv[1]]()
