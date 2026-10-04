@@ -1,8 +1,9 @@
 # Europa · 木卫二 · 深渊: progress
 
 ## State (2026-10-05)
-**Sprint 2.1 (the `europa_world` ground) done 2026-10-05 (branch `sprint-2.1-ground`), waiting for the user's look at
-`frames/ground/ground-sheet.png`. Next: Sprint 2.2, the cryobot.** Sprint 2.0 (01 framing test) done 2026-10-05
+**Sprint 2.2 (the cryobot) done 2026-10-05, approved and merged (PR #6). Next: Sprint 2.3, the ice-shell
+interior.** Sprint 2.1 (the ground) done and
+merged 2026-10-05 (PR #5). Sprint 2.0 (01 framing test) done 2026-10-05
 (merged, PR #4): 01 = the turn. Sprint 1 (look spike) done 2026-10-05 (merged, PR #3). Sprint 0 (brainstorm → treatment → scaffold → maps) done 2026-10-04. Folder opened; `tools/physics.py` adapted from Io's (Jupiter 12.3°, Io
 transits, Io's shadow, horizon sites Conamara / Pwyll, ice + ocean pressure, lens table). Ideas, three directions and
 the reuse map in `BRAINSTORM.md`. Git: `github.com/dizhangai-star/Europa` (`main`), `.gitignore` from Io.
@@ -143,10 +144,31 @@ long lens, `--az0/--az1/--nseg-deg/--rmax`, `--hero 1`); sheet `frames/ground/gr
   ≤ 1 M-vertex ring bands (`max_verts`) and MetalRT renders clean. Lesson in the skill's REALISM.md.
 - Open for look-dev in the shots: day exposure (clean cliffs clip at EV 0 with the Sun 6° up), 04's foreground.
 
+**Sprint 2.2 (the cryobot) done 2026-10-05, branch `sprint-2.2-cryobot`.** No ready-made model exists (asset index,
+Blend Swap, NASA 3D, Sketchfab searched; REFERENCES W4 closed): code-built from the real concepts (REFERENCES "Cryobot
+design sources"). **`blender/lib/cryobot.py`** `build(sc, P, loc, tether, pucks_above, open, lamp, lamp_cone)`: origin
+at the nose tip, +Z up the probe, +X = lamp port. All sizes from **physics.py `CRYO_LEN`, `CRYO_SECTIONS`** (head 0.30 ·
+bay 0.35 · swim 0.10 · heat 0.85 · vault 0.45 · tail 0.95 = 3.00 m), `CRYO_JETS`, `CRYO_TETHER_D`, `CRYO_PUCK(_KM)`,
+`SWIM_*`; `physics.py` prints the layout row.
+- One lathed hull (hard seams = duplicated rings): copper melt head 3 mm wider than the body, 6 + 1 jet nozzles, seam
+  grooves with screw rings; brushed titanium (anisotropic round the axis), **heat section bead-blasted** (breaks the long
+  tube); lamp port boss tilted 25° down with a sapphire window (emission = lamp W / port area when on: blinding at
+  +4 EV, as it should be), camera dome, three sample-inlet slots. **No glow on the head** (it runs at ~0–100 °C).
+- **Swimmers** (⚠ concept, user yes 2026-10-05): 2 tiers × 25 radial wedges whose backs are the hull at the package;
+  pale satin paint, dark sensor tip at the inner end; each has `['rest']` (stowed matrix) for the shots to key.
+- **Pucks**: Ø 0.20 × 0.07 m, threaded on the tether (film pick); the top one sits in the open top, dropped ones stay
+  on the tether (they freeze into the hole: 05's payoff). Tether Ø 5 mm, Kevlar yellow.
+- Boards: `blender/shots/board_cryobot.py` (dark studio, `--views full,nose,tail,open[,top]`, `--lampoff`, `--open`);
+  `look_lamp.py` now uses the cryobot (`--lampaz` port azimuth, `--open`, `--cam`, `--aim`; `--lampdown` gone: the port
+  tilt is the model's). Sheet `frames/cryobot/cryobot-sheet.png` (studio ×4 at 40 %/32 spp ≈ 1 s each; water wide and
+  close at 40 %/64 spp ≈ 3 s).
+- For the shots: in water the hull is nearly black except where the beam's scatter falls (07 will want the port
+  turned partly toward the camera or the swimmers in the beam); looking at the port from ≲ 2 m blows out at +4 EV.
+
 ## Next
 Finding 1 (Io + two shadows in 02): verified, in TREATMENT as C2 and in 02's row (user 2026-10-05).
-01's framing test done (2.0, the turn); the ground done (2.1). Next, Sprint 2 builds, one per session: the cryobot
-(code-built) · ice-shell interior · under-ice ocean. Asset hunt by the user in parallel
+01's framing test done (2.0, the turn); the ground done (2.1); the cryobot done (2.2). Next, Sprint 2 builds, one per
+session: ice-shell interior (melt bubble, refreezing hole with pucks in it) · under-ice ocean. Asset hunt by the user in parallel
 (REFERENCES.md "Wanted": W1 Mixamo kneel/stand, W2–W3 ice sounds and hydrophone).
 
 ## Sprints (plan, 2026-10-04)
@@ -173,6 +195,8 @@ Finding 1 (Io + two shadows in 02): verified, in TREATMENT as C2 and in 02's row
 - Descent and people (user 2026-10-04): a small astronaut on the surface (Io's EMU #12622 + Mixamo, reused); below the
   surface a **code-built cryobot** (melt probe) goes down, time-lapse with a counter (depth / pressure / days), then its
   one lamp in the black water. No open 20 km crack (not real), no human under the ice. Real physics throughout.
+- Cryobot (user 2026-10-05): code-built from PRIME (size) + Tunnelbot (layout, pucks) + VALKYRIE (hot-water jets);
+  PRIME's SWIM micro-swimmers in, marked ⚠ (concept).
 - 02 carries Io's shadow + Europa's own shadow on the bands (user 2026-10-05, TREATMENT C2).
 - 01 = **the turn** (user 2026-10-05, finding 2): glowing mesa (~150° from Jupiter) → pan left ~145°, 24 → 35 mm,
   exposure ride −4 EV, slow drift; ends on the disc with a mesa biting its lower limb (scale). TREATMENT 01 row.

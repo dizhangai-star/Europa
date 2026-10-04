@@ -25,6 +25,14 @@ All public domain (NASA / USGS). Index ids `europa-usgs-mosaic-500m`, `europa-ga
 | PIA19048 "Europa's Stunning Surface" | global view in approximately natural colour (2014 reprocessing), north at right | `…/galileo/PIA19048.*` | the palette (`maps.py colour`) |
 | PIA01178 | ridged plains elsewhere (14° S 194° W, 26 m/px) | `…/galileo/PIA01178.*` | double-ridge shapes |
 
+## Cryobot design sources (Sprint 2.2, 2026-10-05; look and layout only, all numbers in `physics.py` CRYO_*)
+| source | what we took |
+|---|---|
+| JPL PRIME, Hand et al. 2022 (ui.adsabs.harvard.edu/abs/2022absc.conf50204H) | Ø 0.25 m, radioisotope heat, relays left in the ice; SWIM package 10 cm × Ø 25 cm, up to 50 wedge swimmers (⚠ concept) |
+| NASA Compass "Europa Tunnelbot" 2019 (ntrs.nasa.gov/search.jsp?R=20190026714) | sections: heat source, electronics vault, tether paid out from the probe, repeater pucks every few km |
+| Stone Aerospace VALKYRIE / PROMETHEUS (astrobiology.nasa.gov/news/warm-nosed-robot-breaks-the-ice) | hot-water jets from the melt head |
+| centauri-dreams.org/2022/07/01/drilling-into-icy-moon-oceans · universetoday.com (signal through the ice) | puck relays, fibre tether in three layers |
+
 ## Wanted (2026-10-04)
 Who fetches: **user** = needs a login (Mixamo, Freesound downloads) or a choice of look; **Claude** = public, no login.
 | # | what | for | where to look | who | priority |
@@ -32,7 +40,7 @@ Who fetches: **user** = needs a login (Mixamo, Freesound downloads) or a choice 
 | W1 | Mixamo clip(s): astronaut crouching/kneeling at the probe, then standing to watch it sink (in place, FBX, without skin, 30 fps; start/end poses that join Breathing Idle) | 03 | mixamo.com ("kneel", "crouch", "stand up") | user | high |
 | W2 | Ice sounds: lake/sea ice cracking and "singing" (deep booms, pew-pew), recorded | 05–06 | Freesound, CC0 first | user | high |
 | W3 | Under-ice hydrophone ambience | 07–08 | Freesound, CC0 first | user | medium |
-| W4 | Cryobot model (optional: the plan is code-built, plain, no logos) | 03, 05–08 | NASA 3D Resources (public domain), Sketchfab CC-BY ("cryobot", "ice melt probe", "Europa lander") | user, optional | low |
+| W4 | Cryobot model | 03, 05–08 | searched 2026-10-05: asset index, Blend Swap ("cryobot", "melt probe", "ice probe", "europa lander"), NASA 3D Resources, Sketchfab: **none exists** | ✅ closed: code-built (`blender/lib/cryobot.py`, Sprint 2.2) | — |
 | W5 | USGS Europa global mosaic (Galileo SSI + Voyager) + Galileo Conamara close-ups (PIA photojournal) | 01–04 ground colour and block shapes | astrogeology.usgs.gov, photojournal.jpl.nasa.gov | ✅ done 0.4 (above) | high |
 | W6 | Close-up frost/ice PBR textures | 01, 03 foreground | Poly Haven, ambientCG (CC0) | Claude | medium |
 | W7 | Look references only (not in the picture): Icefin under-ice footage, Juno/Galileo night-side lightning images, Jupiter eclipse images, cryobot concept art | 04, 05–08 | NASA/JPL, Georgia Tech/Cornell Icefin | Claude | medium |
