@@ -222,6 +222,70 @@ def surface(name='IoSurface', scale=1.0, dark=0.0, red=0.0, frost=0.0, prints=Fa
     return m
 
 
+# ---------------------------------------------------------------- ice (Sprint 1 look spike; Sprint 2 builds on it)
+# Natural tints (linear, albedo-free) from PIA19048 (`python3 tools/maps.py colour`, PROGRESS 0.4) and Conamara's
+# normalised reflectance 0.66 (p5 0.52, p95 0.88) from the 500 m mosaic.
+TINT = dict(clean=(0.872, 0.973, 1.0), blue=(0.577, 0.791, 1.0), cream=(1.0, 0.922, 0.826),
+            brown=(1.0, 0.716, 0.539), dark=(1.0, 0.509, 0.324))
+ALB = dict(mean=0.66, lo=0.52, hi=0.88, dark=0.77)
+
+
+def ice(name='Ice', scale=1.0, cliff_clean=True):
+    """Europa's ice, first pass. Flat ground: cream ↔ brown patches (km and 100 m noise) at albedo lo..mean, darkest
+    brown (×0.77) in streaks; steep faces (cliffs of chaos blocks): clean blue-white ice at the high albedo (fresh
+    exposure, as the bright block edges in PIA01403). Frost glint: a little specular, rough. Bump: 30 m swell,
+    1 m knobs, 3 cm grain."""
+    m = bpy.data.materials.new(name)
+    g = nodes.Graph(m)
+    tc = g.add('ShaderNodeTexCoord')
+    pos = g.o(tc, 'Object')
+
+    def noise(size, detail=4, rough=0.55, dist=0.0):
+        n = g.add('ShaderNodeTexNoise', Scale=1.0 / (size * scale), Detail=detail, Roughness=rough, Distortion=dist)
+        g.set(n, 'Vector', pos)
+        return g.o(n, 'Fac')
+
+    def c(t, a):
+        return tuple(a * x for x in TINT[t])
+    big, mid, small = noise(1500, 3, 0.5, 0.3), noise(120, 5, 0.6), noise(8, 6, 0.6)
+    field = g.math('ADD', g.math('MULTIPLY', big, 0.6), g.math('MULTIPLY', mid, 0.4))
+    col = g.ramp(field, [(0.36, c('brown', ALB['lo'])), (0.48, c('brown', ALB['mean'])),
+                         (0.58, c('cream', ALB['mean'])), (0.70, c('clean', ALB['hi']))])
+    col = g.mix(g.maprange(noise(60, 6, 0.65, 0.6), 0.62, 0.70), col, c('dark', ALB['lo'] * ALB['dark']))
+    geo = g.add('ShaderNodeNewGeometry')
+    _, _, nz = g.xyz(g.o(geo, 'Normal'))
+    steep = g.maprange(nz, 0.85, 0.55)
+    # cliff faces: vertical gullies and fall streaks (noise stretched 8:1 up the face), a few bands of older ice
+    vm = g.add('ShaderNodeMapping')
+    g.set(vm, 'Vector', pos)
+    vm.inputs['Scale'].default_value = (1 / (5.0 * scale), 1 / (5.0 * scale), 1 / (40.0 * scale))
+    vn = g.add('ShaderNodeTexNoise', Scale=1.0, Detail=6, Roughness=0.65, Distortion=0.3)
+    g.set(vn, 'Vector', g.o(vm, 0))
+    streak = g.o(vn, 'Fac')
+    lm = g.add('ShaderNodeMapping')
+    g.set(lm, 'Vector', pos)
+    lm.inputs['Scale'].default_value = (1 / (120.0 * scale), 1 / (120.0 * scale), 1 / (9.0 * scale))
+    ln = g.add('ShaderNodeTexNoise', Scale=1.0, Detail=3, Roughness=0.5, Distortion=0.5)
+    g.set(ln, 'Vector', g.o(lm, 0))
+    if cliff_clean:
+        face = g.ramp(streak, [(0.35, c('blue', ALB['mean'])), (0.5, c('clean', ALB['hi'])),
+                               (0.62, c('cream', ALB['mean'])), (0.75, c('clean', ALB['hi']))])
+        face = g.mix(g.maprange(g.o(ln, 'Fac'), 0.58, 0.66, 0.0, 0.35), face, c('cream', ALB['lo']))
+        col = g.mix(steep, col, face)
+    b = g.add('ShaderNodeBsdfPrincipled', Roughness=0.55)
+    b.inputs['Specular IOR Level'].default_value = 0.5
+    b.inputs['IOR'].default_value = 1.31
+    g.set(b, 'Base Color', col)
+    h = g.math('ADD', g.math('MULTIPLY', noise(30, 3), 3.0), g.math('MULTIPLY', noise(1.0, 6, 0.6), 0.25))
+    h = g.math('ADD', h, g.math('MULTIPLY', noise(0.03, 4, 0.5), 0.006))
+    h = g.math('ADD', h, g.math('MULTIPLY', g.math('MULTIPLY', streak, steep), 2.5))      # gullies on the faces
+    bp = g.add('ShaderNodeBump', Strength=1.0, Distance=1.0)
+    g.set(bp, 'Height', h)
+    g.set(b, 'Normal', g.o(bp, 'Normal'))
+    g.output(g.o(b, 'BSDF'))
+    return m
+
+
 # ---------------------------------------------------------------- proxies (Sprint 2 replaces them)
 def _mat(name, color, rough=0.5, metal=0.0):
     m = bpy.data.materials.new(name)

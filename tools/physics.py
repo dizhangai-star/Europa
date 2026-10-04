@@ -23,6 +23,7 @@ P_YEAR_J = 11.862 * 8766.15                                  # h
 AU_J = 5.203
 S_EARTH = 1361.0          # W/m²
 P_GEOM_J = 0.538
+P_GEOM_IO = 0.63          # Io's geometric albedo (V): its disc in 02
 R_SUN, AU = 696_000, 149_597_870
 EARTH_OCEAN_KM3 = 1.335e9
 
@@ -30,6 +31,10 @@ EARTH_OCEAN_KM3 = 1.335e9
 ICE_H = (10.0, 20.0, 30.0)  # km, ice shell thickness (estimates ~3–30+; 20 = middle of the common range)
 OCEAN_D = 100.0             # km, ocean depth (estimates ~60–150)
 RHO_ICE, RHO_SEA = 920.0, 1030.0                             # kg/m³
+# Conamara Chaos ground (film picks inside the Galileo-era descriptions: ice plates ≲ 10 km across, standing up to
+# ~100–250 m over a hummocky matrix, their tops keeping the older ridged plains; shadow/stereo heights, rough)
+CHAOS = dict(plate_m=(250.0, 2500.0), plate_h=(40.0, 160.0), tilt_deg=(0.0, 4.0), matrix_h=14.0,
+             ridge_h=7.0, ridge_gap=(180.0, 450.0))
 PLUME_H = 200.0             # km, tentative Hubble water plume (2012/2014), unconfirmed
 
 
@@ -122,6 +127,32 @@ def io_shadow(elong):
     _, d = _norm(io)
     phase = (1 + math.cos(math.radians(_ang(s, tuple(-x for x in io))))) / 2
     return _ang(io, (1, 0, 0)), _ang(sh, (1, 0, 0)), s[0] < 0, 2 * deg(math.asin(R_IO / d)), phase
+
+
+def own_shadow(elong):
+    """Europa's own shadow on Jupiter (it falls at the anti-solar point), seen from Europa: (offset from Jupiter's
+    centre deg, umbra and penumbra diameters deg; on the disc?). Sun at Jupiter: R_SUN_DEG."""
+    d = A_EU - R_EU
+    off = abs(180.0 - abs(elong))
+    spread = d * math.tan(math.radians(R_SUN_DEG))          # km the shadow cone shrinks/grows over the distance
+    return off, 2 * deg((R_EU - spread) / d), 2 * deg((R_EU + spread) / d), off < jupiter_r_deg(d)[0]
+
+
+def io_cast_shadow(elong, dlt, fr):
+    """Io's shadow on Jupiter while Io is at `dlt` from conjunction and the Sun at `elong`: the Sun–Io line meets the
+    cloud tops. Returns (Io's direction, the shadow's direction, both from the site; their separation deg), or None if
+    the shadow misses the disc."""
+    io = io_pos(dlt)
+    s = sun_dir(elong)
+    rel = tuple(a - b for a, b in zip(io, (A_EU, 0.0, 0.0)))
+    b, c = _dot(rel, s), _dot(rel, rel) - R_J ** 2               # |rel − t s| = R_J, t > 0 (away from the Sun)
+    disc = b * b - c
+    if disc < 0:
+        return None
+    t = b - math.sqrt(disc)
+    sh = tuple(a - t * k for a, k in zip(io, s))
+    vi, vs = from_site(io, fr), from_site(sh, fr)
+    return vi, vs, _ang(vi, vs)
 
 
 def jupiter_shine(elong):
@@ -297,6 +328,22 @@ DOSE_SV_DAY = 5.4           # Sv/day at Europa's surface (commonly cited Galileo
 LD50_SV = 4.5               # Sv, ~50 % lethal without treatment
 # Pure water absorption, 1/m (Pope & Fry 1997). The ocean's salts/particles are unknown: this is the clearest case.
 A_WATER = {420: 0.00454, 450: 0.00922, 500: 0.0257, 550: 0.0565, 600: 0.2224, 650: 0.340, 700: 0.650}
+RGB_BANDS = ((600, 700), (500, 600), (420, 500))           # nm: the render's R, G, B, box-averaged
+SEA_SCATTER = 0.02          # 1/m, particles (film pick: clearest open ocean ~0.01–0.05; Europa's is unknown)
+SEA_G = 0.85                # their forward-scattering anisotropy (ocean particles, Petzold ~0.9)
+CRYO_LAMP_W = 50.0          # W radiant, the probe's one lamp (film pick: ~15,000 lm LED, an ROV floodlight)
+
+
+def water_rgb():
+    """Pure water's absorption (1/m) per render channel R, G, B: A_WATER interpolated, averaged over RGB_BANDS."""
+    wl = sorted(A_WATER)
+
+    def a(x):
+        for w0, w1 in zip(wl, wl[1:]):
+            if w0 <= x <= w1:
+                return A_WATER[w0] + (A_WATER[w1] - A_WATER[w0]) * (x - w0) / (w1 - w0)
+        return A_WATER[wl[0]] if x < wl[0] else A_WATER[wl[-1]]
+    return tuple(sum(a(lo + (hi - lo) * (k + 0.5) / 50) for k in range(50)) / 50 for lo, hi in RGB_BANDS)
 
 
 def c_ice(T):
@@ -452,6 +499,17 @@ elif __name__ == '__main__':
         rows.append((f'{name}: Ganymede during Io\'s transit, {tag}', f'{el:+.1f}° up (az {az:.0f}°), '
                      f'{2 * deg(math.asin(R_GA / _norm(g)[1])):.2f}° wide, {100 * lit:.0f} % lit at elongation 190°; '
                      f'Laplace 1:2:4 alternates the two cases transit by transit'))
+    off, um, pen, on = own_shadow(176.5)
+    rows.append((f'{name}: Europa\'s own shadow on Jupiter', f'at the anti-solar point: on the disc while the Sun is '
+                 f'within {rj_s:.1f}° of the point opposite Jupiter (≈ {2 * rj_s / 360 * P_SYN:.1f} h, = the eclipse), '
+                 f'most of it in the last hours of the night (Sun down while E > {sr:.1f}°); umbra {um:.2f}° in a '
+                 f'{pen:.2f}° penumbra (135 mm: {px_across(um, 135):.0f} / {px_across(pen, 135):.0f} px)'))
+    for E in (178.0, 180.0):
+        r = io_cast_shadow(E, (ent[1] + end[0]) / 2, fr)
+        if r:
+            el, az = altaz(r[1], fr)
+            rows.append((f'{name}: Io\'s shadow, mid-transit, Sun {E:.0f}°', f'{r[2]:.2f}° from Io '
+                         f'(shadow at {el:.1f}° up): Io and its own black dot on the bands'))
     rows.append(('Radiation at the surface', f'{DOSE_SV_DAY} Sv/day: a ~50 %-lethal dose ({LD50_SV} Sv) in '
                  f'{LD50_SV / DOSE_SV_DAY * 24:.0f} h'))
     # ------------------------------------------------ down
@@ -466,6 +524,10 @@ elif __name__ == '__main__':
         rows.append((f'Cryobot {p:g} kW, Ø {CRYO_D} m, {100 * CRYO_ETA:.0f} % into the ice', f'{days:,.0f} days '
                      f'({days / 365.25:.1f} y) to {h:.0f} km; {v0:.2f} m/h at the top, {v1:.2f} m/h at the base; '
                      f'the hole refreezes behind it'))
+    rgb = water_rgb()
+    rows.append(('Pure water absorption, render R / G / B', ' / '.join(f'{a:.4f}' for a in rgb) + ' per m (e-fold '
+                 + ' / '.join(f'{1 / a:.0f}' for a in rgb) + f' m); particles {SEA_SCATTER}/m, g {SEA_G} (film pick); '
+                 f'lamp {CRYO_LAMP_W:.0f} W'))
     rows.append(('Lamp in pure water (e-fold distance)', ', '.join(f'{wl} nm {1 / a:.0f} m' for wl, a in A_WATER.items())
                  + ': red gone within metres, blue reaches ~100 m (before 1/r²)'))
     w = max(len(a) for a, _ in rows)

@@ -207,3 +207,39 @@ def europa_shadow(sc, sun, jup, ground, sink=30.0):
     sj.light_linking.blocker_collection = coll('EuropaShadow', eu, 'INCLUDE')
     print(f'NOTE jupiter: Europa at scale k {k:.5f}, radius {r / 1000:.2f} km; own Sun for Jupiter (light linking)')
     return sj, eu
+
+
+def lamp(sc, jup, sun_elong):
+    """Jupiter's light on the ground as a light source (Sprint 1): an emissive twin of the disc that only the scene's
+    diffuse/glossy rays see, radiance = the disc's own Lambert radiance (map albedo × E_SUN/π × cos of the Sun's
+    incidence), so Cycles samples it as a light (light tree) instead of finding a 12° object by chance with bounce
+    rays: night ground lit by Jupiter alone was all noise. The original disc keeps the camera (and the shadows of
+    Europa and Io on it) but no longer lights anything. Phase from `sun_elong`; the shadows' 2 % of the disc are
+    missing from the light (negligible). Returns the twin."""
+    tw = bpy.data.objects.new('JupiterLamp', jup.data.copy())
+    sc.collection.objects.link(tw)
+    tw.matrix_world = jup.matrix_world.copy()
+    tw.data.materials.clear()
+    m = jup.active_material.copy()
+    m.name = 'JupiterLamp'
+    g = nodes.Graph.__new__(nodes.Graph)
+    g.nt = m.node_tree
+    g.out = next(n for n in g.nt.nodes if n.type == 'OUTPUT_MATERIAL')
+    dif = next(n for n in g.nt.nodes if n.type == 'BSDF_DIFFUSE')
+    col = dif.inputs['Color'].links[0].from_socket
+    geo = g.add('ShaderNodeNewGeometry')
+    dot = g.add('ShaderNodeVectorMath', operation='DOT_PRODUCT')
+    g.set(dot, 0, g.o(geo, 'Normal'))
+    g.set(dot, 1, tuple(P.sun_local(sun_elong)))
+    em = g.add('ShaderNodeEmission')
+    g.nt.links.new(col, em.inputs['Color'])
+    g.set(em, 'Strength', g.math('MULTIPLY', g.math('MAXIMUM', g.o(dot, 'Value'), 0.0), P.E_SUN / math.pi))
+    g.output(g.o(em, 0))
+    g.nt.nodes.remove(dif)
+    m.cycles.emission_sampling = 'FRONT'
+    tw.data.materials.append(m)
+    for k in ('visible_camera', 'visible_shadow', 'visible_transmission', 'visible_volume_scatter'):
+        setattr(tw, k, False)
+    for k in ('visible_diffuse', 'visible_glossy'):
+        setattr(jup, k, False)
+    return tw

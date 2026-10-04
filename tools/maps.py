@@ -14,6 +14,7 @@ Copied from Io (Sprint 0.3); `jupiter` shared as is, Io's `io` / `far` replaced 
                                      reddish-brown non-ice material and the darkest lineae; the Conamara colour
                                      close-ups (PIA26446 / 01127 / 01296) are enhanced, so they only say *where*
                                      the brown sits (on the chaos matrix and ridges; blue-white = Pwyll's ray frost)
+    python3 tools/maps.py io_globe   Io's colour mosaic as a 2048×1024 globe map for Io's disc (02)
 
 Blender never reads the 100–200 MB source files pixel by pixel: it loads the map as a texture and uses these numbers.
 """
@@ -31,6 +32,7 @@ ASSETS = os.path.expanduser('~/dev/workspace/claude/videos/_assets/textures')
 JUP = os.path.join(ASSETS, 'jupiter/jupiter_map_css_plus_juno_bj.png')
 EU = os.path.join(ASSETS, 'europa/Europa_Voyager_GalileoSSI_global_mosaic_500m.tif')
 GAL = os.path.join(ASSETS, 'europa/galileo')
+IO_MAP = os.path.join(ASSETS, 'io/Io_GalileoSSI-Voyager_Global_Mosaic_ClrMerge_1km.tif')
 PREV = os.path.expanduser('~/dev/workspace/claude/videos/_assets/previews')
 SRC = os.path.join(FILM, 'blender/textures/src')
 sys.path.insert(0, os.path.join(FILM, 'tools'))
@@ -158,5 +160,20 @@ def colour(k=5):
               f'brightness vs grey {m.mean() / ref.mean():.2f}')
 
 
+def io_globe(w=2048):
+    """Io's whole colour mosaic (USGS Galileo SSI + Voyager, 1 km) as a small equirectangular map for Io's disc in
+    02 (≈ 105 px at 135 mm): column 0 = 0° E, east to the right (atan2(y, x) of the body frame, +X toward Jupiter),
+    top = north → blender/textures/src/io_globe_2k.png, + its mean linear luminance (lib/moons.py's albedo gain)."""
+    src = Image.open(IO_MAP)
+    lon0 = _georef(src)[0]
+    im = src.convert('RGB')
+    a = np.asarray(im.resize((w, w // 2), Image.BOX))
+    a = np.roll(a, -int(round((0.0 - lon0) / 360.0 * w)), axis=1)    # left edge lon0 (−180 E) → 0 E
+    dst = os.path.join(SRC, 'io_globe_2k.png')
+    Image.fromarray(a).save(dst)
+    lum = float((lin(a.astype(np.float64) / 255) * [0.2126, 0.7152, 0.0722]).sum(-1).mean())
+    print(f'{os.path.basename(dst)}: {w}×{w // 2}, left edge 0° E; mean linear luminance {lum:.4f}')
+
+
 if __name__ == '__main__':
-    {'jupiter': jupiter, 'europa': europa, 'colour': colour}[sys.argv[1]]()
+    {'jupiter': jupiter, 'europa': europa, 'colour': colour, 'io_globe': io_globe}[sys.argv[1]]()
