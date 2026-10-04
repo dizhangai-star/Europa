@@ -28,7 +28,7 @@ New sky events, none of them in the Io film:
    ocean no light has ever reached. Strongest fear, most new work (ice walls, under-ice darkness).
 2. **邻居 · THE NEIGHBOUR (渺小, again).** Io crosses Jupiter's face as a small bright disc; a whole world we
    just made a film about is a dot. Almost all reuse, but the emotion repeats Io's.
-3. **地平线 · THE HORIZON (永恒 → 停滞).** Conamara: half of Jupiter fixed on the horizon, chaos-terrain ice blocks
+3. **地平线 · THE HORIZON (永恒 → 停滞).** Conamara: ¾ of Jupiter fixed on the horizon, chaos-terrain ice blocks
    in front. Never rises, never sets: the one image only Europa has.
 
 **Recommended: 3 + 1 (+ 2 as a beat).** Open on the horizon (new image), Io crosses as the one thing that moves
@@ -37,7 +37,7 @@ New sky events, none of them in the Io film:
 ## Rough clip idea (~60 s, not locked)
 | # | beat | picture | caption idea |
 |---|---|---|---|
-| 01 | horizon | Conamara ice blocks, low eye; half-Jupiter on the horizon, white-blue ice catching its light | EUROPA · 木卫二 |
+| 01 | horizon | Conamara ice blocks, low eye; ¾ of Jupiter on the horizon, white-blue ice catching its light | EUROPA · 木卫二 |
 | 02 | neighbour | 135 mm: Io's small bright disc creeps across the bands (sped up) | IO. WE STOOD THERE. / 我们曾站在那里 |
 | 03 | the lid | from above (drone rise like Io 05): a double ridge / dark lineae splits the plain; push into the crack | — |
 | 04 | down | descent through blue → black ice, depth counter 0 → 20 km (Io's 03 counter style), sound of ice | — |

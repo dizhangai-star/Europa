@@ -4,7 +4,7 @@ material (europa_world.surface) until Sprint 2.
 
 Frames 1–4 turn the suit 0 / 90 / 180 / 270° (0 faces the camera). Camera 50 mm, 8 m from the suit (arms lowered 65° from the T-pose), eye 1.5 m,
 `--facing away` (default: away from Jupiter, east at Conamara; morning Sun behind the camera) or `jupiter` (west,
-toward the half-disc on the horizon: the suit against it); the Sun at `--elong` (default 160: 16° up in the east),
+toward the disc on the horizon: the suit against it); the Sun at `--elong` (default 160: 16° up in the east),
 Jupiter's lit disc adds its own fill. Not a clip; run directly:
 
     Blender -b --factory-startup -P blender/shots/board_astronaut.py -- --stills 1,2,3,4 --pct 50 --samples 64 \

@@ -359,7 +359,7 @@ elif __name__ == '__main__':
         th = deg(math.acos(math.cos(math.radians(lat)) * math.cos(math.radians(lon_w))))
         e = jupiter_elev(th)
         rows.append((f'{name} ({lat:+.1f}°, {lon_w:.1f}° W)', f'{th:.1f}° from sub-Jupiter point: Jupiter centre {e:.1f}°, '
-                     f'lower limb {e - rj:.1f}° ({"half below the horizon, for ever" if e - rj < 0 < e else "clear"})'))
+                     f'lower limb {e - rj:.1f}° ({"partly below the horizon, for ever" if e - rj < 0 < e else "clear"})'))
     rows.append(('Sun', f'{2 * R_SUN_DEG:.3f}° wide; {E_SUN:.1f} W/m² = 1/{AU_J ** 2:.1f} of Earth'))
     e_js = jupiter_shine(180)
     rows.append(('Full-Jupiter shine (facing it)', f'{e_js:.2f} W/m² = {100 * e_js / E_SUN:.2f} % of sunlight '
@@ -417,7 +417,7 @@ elif __name__ == '__main__':
     f_h, f_w = disc_light(jc, rj_s, fr[0], fr), disc_light(jc, rj_s, west, fr)
     rows.append((f'{name}: full-Jupiter light', f'flat ice {e_js * f_h * 1000:.1f} mW/m² ({100 * f_h:.1f} % of facing), '
                  f'a wall facing Jupiter {e_js * f_w * 1000:.0f} mW/m² ({100 * f_w:.0f} %): the ground is '
-                 f'{f_w / f_h:.0f}× darker than the faces turned to Jupiter (half the disc is below the horizon)'))
+                 f'{f_w / f_h:.0f}× darker than the faces turned to Jupiter (the disc partly below the horizon)'))
     for dec in (-DEC_SUN, 0.0, DEC_SUN):
         ev, _ = sun_track(fr, dec)
         fc, sc = ev.get('first contact'), ev.get('second contact')
