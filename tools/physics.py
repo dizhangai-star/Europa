@@ -128,6 +128,160 @@ def jupiter_shine(elong):
     return P_GEOM_J * E_SUN * (R_J / (A_EU - R_EU)) ** 2 * phi
 
 
+def _dot(a, b):
+    return sum(x * y for x, y in zip(a, b))
+
+
+def _cross(a, b):
+    return (a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0])
+
+
+# ---------------------------------------------------------------- one site's local sky
+# Site frame from (lat, W longitude): up, east, north as Europa-frame unit vectors. The Sun at elongation E (deg from
+# Jupiter, east +) and declination dec: (cos dec cos E, cos dec sin E, sin dec). E falls by 360° per synodic day
+# (Europa turns prograde), so the Sun rises in the east (E = 180° side) and sets toward Jupiter.
+SITE = ('Conamara Chaos', 9.7, 273.7)
+DEC_SUN = 3.13              # deg, Jupiter's axial tilt: the Sun's declination over Europa's equator, ± over 11.9 y
+
+
+def site(lat, lon_w):
+    la, lo = math.radians(lat), math.radians(360 - lon_w)
+    up = (math.cos(la) * math.cos(lo), math.cos(la) * math.sin(lo), math.sin(la))
+    east, _ = _norm(_cross((0, 0, 1), up))
+    return up, east, _cross(up, east)
+
+
+def from_site(p, fr):
+    return tuple(a - R_EU * b for a, b in zip(p, fr[0]))
+
+
+def altaz(v, fr):
+    """(elevation, azimuth from north through east) in deg of direction v seen from site frame fr."""
+    (u, _), (up, east, north) = _norm(v), fr
+    return deg(math.asin(_dot(u, up))), deg(math.atan2(_dot(u, east), _dot(u, north))) % 360
+
+
+def sun_dir(elong, dec=0.0):
+    e, d = math.radians(elong), math.radians(dec)
+    return (math.cos(d) * math.cos(e), math.cos(d) * math.sin(e), math.sin(d))
+
+
+def sky_angle(a, c, fr):
+    """Angle (deg) of direction a projected on the sky at c, from straight up; + toward north."""
+    (c, _), (up, _, north) = _norm(c), fr
+    pa = tuple(x - _dot(a, c) * y for x, y in zip(a, c))
+    pv = tuple(x - _dot(up, c) * y for x, y in zip(up, c))
+    pn = _cross(c, pv)                                       # 90° from up on the sky, sign fixed below
+    s = 1 if _dot(pn, north) > 0 else -1
+    return deg(math.atan2(s * _dot(pa, pn) / math.sqrt(_dot(pn, pn)), _dot(pa, pv) / math.sqrt(_dot(pv, pv))))
+
+
+def disc_light(c, r_deg, normal, fr, n=161):
+    """Fraction of a uniformly bright disc's facing irradiance that a surface with `normal` receives, the disc cut by
+    the horizon (full phase, no limb darkening)."""
+    (c, _), up = _norm(c), fr[0]
+    u, _ = _norm(_cross(c, (0, 0, 1)) if abs(c[2]) < 0.9 else _cross(c, (1, 0, 0)))
+    v = _cross(c, u)
+    r = math.radians(r_deg)
+    tot = got = 0
+    for i in range(n):
+        for j in range(n):
+            x, y = (2 * i / (n - 1) - 1) * r, (2 * j / (n - 1) - 1) * r
+            if x * x + y * y > r * r:
+                continue
+            d, _ = _norm(tuple(a + x * b + y * w for a, b, w in zip(c, u, v)))
+            tot += 1
+            if _dot(d, up) > 0:
+                got += max(0.0, _dot(d, normal))
+    return got / tot
+
+
+def sun_track(fr, dec):
+    """Scan the Sun's day at a site (E falling 182° → −182°, 0.002° steps): elongations of sunrise, first/second/third
+    contact with Jupiter's limb and sunset, with the Sun's elevation at each (None if it doesn't happen above ground)."""
+    c = from_site((A_EU, 0, 0), fr)
+    rj = deg(math.asin(R_J / _norm(c)[1]))
+    ev, prev = {}, None
+    e = 182.0
+    while e > -182.0:
+        s = sun_dir(e, dec)
+        el, sep = altaz(s, fr)[0], _ang(s, c)
+        cur = (el > 0, sep < rj + R_SUN_DEG, sep < rj - R_SUN_DEG)
+        if prev:
+            if cur[0] and not prev[0]:
+                ev.setdefault('sunrise', (e, el))
+            if prev[0] and not cur[0]:
+                ev.setdefault('sunset', (e, el))
+            if cur[1] and not prev[1]:
+                ev.setdefault('first contact', (e, el))
+            if cur[2] and not prev[2]:
+                ev.setdefault('second contact', (e, el))
+            if prev[2] and not cur[2]:
+                ev.setdefault('third contact', (e, el))
+        prev = cur
+        e -= 0.002
+    return ev, rj
+
+
+def io_track(fr):
+    """Io's transit seen from the site: (elevation where its centre enters the disc, entry Δ rad, Δ where it sets or
+    leaves, how it ends, its motion angle on the sky from straight up)."""
+    c = from_site((A_EU, 0, 0), fr)
+    rj = deg(math.asin(R_J / _norm(c)[1]))
+    on, ent, end = False, None, None
+    dl = -0.2
+    while dl < 0.2:
+        p = from_site(io_pos(dl), fr)
+        inside, up = _ang(p, c) < rj, altaz(p, fr)[0] > 0
+        if inside and not on and ent is None:
+            ent = (altaz(p, fr)[0], dl)
+        if ent and end is None and (not up or (on and not inside)):
+            end = (dl, 'sets behind the horizon, still on the disc' if not up else 'leaves the disc')
+        on = inside
+        dl += 1e-5
+    a, b = from_site(io_pos(-1e-3), fr), from_site(io_pos(1e-3), fr)
+    mv = tuple(y / _norm(b)[1] - x / _norm(a)[1] for x, y in zip(a, b))
+    return ent, end, sky_angle(mv, c, fr)
+
+
+# ---------------------------------------------------------------- the ice shell, the cryobot, the water
+T_SURF = 100.0              # K, Conamara surface mean (equatorial ~86–132 K over a day)
+K_ICE = 651.0               # W/m: ice conductivity k = 651/T (Petrenko & Whitworth)
+L_ICE = 334e3               # J/kg
+DTM_DP = -0.0074            # K/bar, ice Ih melting point vs pressure (Clausius–Clapeyron)
+CRYO_D = 0.25               # m, probe diameter (film pick; Europa cryobot concepts 0.15–0.3 m)
+CRYO_P = (1.0, 5.0, 10.0)   # kW thermal (concepts: RTG/fission, ~1–10 kW); film pick in TREATMENT.md
+CRYO_ETA = 0.5              # share of the heat that melts the ice ahead (the rest warms the walls); film pick
+DOSE_SV_DAY = 5.4           # Sv/day at Europa's surface (commonly cited Galileo-era figure)
+LD50_SV = 4.5               # Sv, ~50 % lethal without treatment
+# Pure water absorption, 1/m (Pope & Fry 1997). The ocean's salts/particles are unknown: this is the clearest case.
+A_WATER = {420: 0.00454, 450: 0.00922, 500: 0.0257, 550: 0.0565, 600: 0.2224, 650: 0.340, 700: 0.650}
+
+
+def c_ice(T):
+    return 185.0 + 7.037 * T                                 # J/kg/K (Fukusako 1990)
+
+
+def shell_T(z, h_ice):
+    """Conductive-lid temperature (K) at depth z (km) of an h_ice km shell (k ∝ 1/T → exponential profile)."""
+    tb = 273.15 + DTM_DP * RHO_ICE * g_at() * h_ice * 1000 / 1e5
+    return T_SURF * (tb / T_SURF) ** (z / h_ice), tb
+
+
+def cryobot(p_kw, h_ice, d=CRYO_D, eta=CRYO_ETA):
+    """Days to melt through h_ice km at p_kw thermal; speed (m/h) at the top and at the base."""
+    a = math.pi * (d / 2) ** 2
+
+    def rate(z):                                             # m/s at depth z km
+        t, tb = shell_T(z, h_ice)
+        q = 185.0 * (tb - t) + 7.037 / 2 * (tb ** 2 - t ** 2) + L_ICE
+        return eta * p_kw * 1000 / (RHO_ICE * a * q)
+    n, sec = 2000, 0.0
+    for i in range(n):
+        sec += h_ice * 1000 / n / rate((i + 0.5) * h_ice / n)
+    return sec / 86400, rate(0) * 3600, rate(h_ice * 0.999) * 3600
+
+
 def ocean(h_ice, d=OCEAN_D):
     """Pressure (bar) at the ice base and the sea floor, and the Earth-ocean depth (m) of the same pressure.
     g taken constant at its surface value (a dense core keeps it near-flat through the outer 120 km)."""
@@ -190,6 +344,80 @@ if __name__ == '__main__':
     for lens in (24, 35, 50, 85, 135):
         rows.append((f'{lens} mm (hfov {2 * deg(math.atan(18 / lens)):.1f}°)',
                      f'Jupiter ≈ {px_across(dj, lens):.0f} px, Io (conjunction) ≈ {px_across(io_d, lens):.0f} px of 1920'))
+
+    # ------------------------------------------------ Conamara's local sky
+    name, lat, lon_w = SITE
+    fr = site(lat, lon_w)
+    jc = from_site((A_EU, 0, 0), fr)
+    j_el, j_az = altaz(jc, fr)
+    rows.append((f'{name}: Jupiter', f'azimuth {j_az:.1f}° (west), centre {j_el:.2f}° up; north pole '
+                 f'{sky_angle((0, 0, 1), jc, fr):+.0f}° from straight up (+ = toward north, right when facing west): '
+                 f'axis near horizontal, bands near vertical'))
+    rows.append((f'{name}: Jupiter\'s clouds', f'the near face turns {sky_angle((0, -1, 0), jc, fr):+.0f}° from '
+                 f'straight up (±180 = down): the bands roll down into the horizon, one turn per {P_ROT_J_EU:.2f} h'))
+    ev, rj_s = sun_track(fr, 0.0)
+    t_of = lambda e: (180 - e) / 360 * P_SYN                 # hours after full Jupiter
+    for E in (180, ev['sunrise'][0], 150, 120, 90, 60, 30):
+        s = sun_dir(E)
+        el, az = altaz(s, fr)
+        rows.append((f'{name}: Sun at elongation {E:.1f}°', f't = {t_of(E):5.1f} h after full Jupiter; Sun {el:+.1f}° '
+                     f'(az {az:.0f}°); Jupiter {100 * (1 - math.cos(math.radians(E))) / 2:.0f} % lit'))
+    west = _norm((jc[0] - _dot(jc, fr[0]) * fr[0][0], jc[1] - _dot(jc, fr[0]) * fr[0][1],
+                  jc[2] - _dot(jc, fr[0]) * fr[0][2]))[0]
+    f_h, f_w = disc_light(jc, rj_s, fr[0], fr), disc_light(jc, rj_s, west, fr)
+    rows.append((f'{name}: full-Jupiter light', f'flat ice {e_js * f_h * 1000:.1f} mW/m² ({100 * f_h:.1f} % of facing), '
+                 f'a wall facing Jupiter {e_js * f_w * 1000:.0f} mW/m² ({100 * f_w:.0f} %): the ground is '
+                 f'{f_w / f_h:.0f}× darker than the faces turned to Jupiter (half the disc is below the horizon)'))
+    for dec in (-DEC_SUN, 0.0, DEC_SUN):
+        ev, _ = sun_track(fr, dec)
+        fc, sc = ev.get('first contact'), ev.get('second contact')
+        tc = ev.get('third contact')
+        if fc and sc:
+            ingress = (fc[0] - sc[0]) / 360 * P_SYN * 60
+            rows.append((f'{name}: sunset, Sun dec {dec:+.1f}°', f'the Sun sinks into Jupiter: first contact at '
+                         f'{fc[1]:.2f}° up (t = {t_of(fc[0]):.1f} h), gone at {sc[1]:.2f}° up after {ingress:.0f} min; '
+                         f'would reappear at {tc[1]:+.2f}° → '
+                         f'{"never seen setting: sunset = eclipse" if tc[1] < 0 else "comes back out, then sets"}; '
+                         f'sunrise at t = {t_of(ev["sunrise"][0]):.1f} h'))
+    day_h = (ev['sunrise'][0] - ev['second contact'][0]) / 360 * P_SYN
+    rows.append((f'{name}: day and night', f'Sun up {day_h:.1f} h (full Jupiter → wanes → half at noon, Sun near the '
+                 f'zenith → crescent → eclipse), down {P_SYN - day_h:.1f} h (Jupiter black → waxes → full at dawn)'))
+    ent, end, mv = io_track(fr)
+    rows.append((f'{name}: Io\'s transit', f'enters the disc at {ent[0]:.1f}° up, moves {mv:+.0f}° from straight up '
+                 f'(±180 = down), {end[1]} after {(end[0] - ent[1]) / W_IO_EU:.2f} h'))
+    de = (360 * (1 - P_SYN_IO_EU / P_SYN)) % 360
+    cyc = 360 / de * P_SYN_IO_EU / 24
+    sr = ev['sunrise'][0]
+    for pct in (90, 97):
+        e_lo = deg(math.acos(1 - 2 * pct / 100))             # lit ≥ pct while |E| ≥ e_lo; dark sky while E > sunrise
+        win = (360 - e_lo) - sr
+        rows.append((f'{name}: Io transit, Jupiter ≥ {pct} % lit, Sun down', f'transits drift {de:.2f}° of Sun '
+                     f'elongation per conjunction: {win / de:.0f} transits in a row (≈ {win / de * P_SYN_IO_EU / 24:.0f} d), '
+                     f'once every {cyc:.0f} d'))
+    for sgn, tag in ((1, 'behind Europa (−90°)'), (-1, 'ahead (+90°)')):
+        g = from_site((A_EU, sgn * A_GA, 0), fr)
+        el, az = altaz(g, fr)
+        s = sun_dir(190)
+        lit = (1 + math.cos(math.radians(_ang(s, tuple(-x for x in g))))) / 2
+        rows.append((f'{name}: Ganymede during Io\'s transit, {tag}', f'{el:+.1f}° up (az {az:.0f}°), '
+                     f'{2 * deg(math.asin(R_GA / _norm(g)[1])):.2f}° wide, {100 * lit:.0f} % lit at elongation 190°; '
+                     f'Laplace 1:2:4 alternates the two cases transit by transit'))
+    rows.append(('Radiation at the surface', f'{DOSE_SV_DAY} Sv/day: a ~50 %-lethal dose ({LD50_SV} Sv) in '
+                 f'{LD50_SV / DOSE_SV_DAY * 24:.0f} h'))
+    # ------------------------------------------------ down
+    h = ICE_H[1]
+    for z in (0, 1, 5, 10, 15, 19.9):
+        t, tb = shell_T(z, h)
+        rows.append((f'Ice {h:.0f} km, {z:g} km down', f'{t:.0f} K ({t - 273.15:+.0f} °C), {RHO_ICE * g_at() * z * 1e3 / 1e5:.0f} bar'))
+    rows.append(('Ice base (melting point under the shell)', f'{tb:.2f} K = {tb - 273.15:+.2f} °C pure '
+                 f'(salt lowers it further)'))
+    for p in CRYO_P:
+        days, v0, v1 = cryobot(p, h)
+        rows.append((f'Cryobot {p:g} kW, Ø {CRYO_D} m, {100 * CRYO_ETA:.0f} % into the ice', f'{days:,.0f} days '
+                     f'({days / 365.25:.1f} y) to {h:.0f} km; {v0:.2f} m/h at the top, {v1:.2f} m/h at the base; '
+                     f'the hole refreezes behind it'))
+    rows.append(('Lamp in pure water (e-fold distance)', ', '.join(f'{wl} nm {1 / a:.0f} m' for wl, a in A_WATER.items())
+                 + ': red gone within metres, blue reaches ~100 m (before 1/r²)'))
     w = max(len(a) for a, _ in rows)
     for a, b in rows:
         print(f'| {a:<{w}} | {b} |')

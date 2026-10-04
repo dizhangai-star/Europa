@@ -7,6 +7,12 @@ Reuse Io's code (`../Io/blender/lib`, its tools) by copying, not by importing ac
 **Start every session by reading `PROGRESS.md`.** `BRAINSTORM.md` = ideas and the reuse map (pre-treatment).
 Physics numbers come from `python3 tools/physics.py`; never type a number into a shot that the script doesn't produce.
 
+## Shot rule (user 2026-10-04)
+Inside real physics, make every shot as spectacular as it can be, above all with phenomena that can't be seen from
+Earth (a planet fixed on the horizon, the Sun setting into Jupiter, water boiling and freezing in vacuum, a world
+crossing another world). Real first, then as big as the physics allows; a tentative or lab-predicted phenomenon is
+allowed only when PROGRESS.md marks it as such.
+
 ## Working rules (from Io)
 - Renders start only on the user's yes; previews and animatics are free.
 - Real scale: 1 BU = 1 m near the camera; Jupiter, Sun, Io at true angular size and elevation.

@@ -5,10 +5,14 @@
 transits, Io's shadow, horizon sites Conamara / Pwyll, ice + ocean pressure, lens table). Ideas, three directions and
 the reuse map in `BRAINSTORM.md`. Git: `github.com/dizhangai-star/Europa` (`main`), `.gitignore` from Io.
 Direction, descent, format and title picked by the user 2026-10-04 (Decisions).
+**0.2 done 2026-10-04:** `physics.py` has the Conamara sky (Jupiter due west, bands vertical; the Sun sinks into
+Jupiter 9.5° up: sunset = eclipse; Io sets into the ice in front of Jupiter; Ganymede 60° up on alternate transits;
+wall vs plain light 13×), radiation, shell temperatures, cryobot times, light in water. `TREATMENT.md` draft: the
+spectacle list (§2), a 9-clip list ≈ 1:58 (§5), 9:16 climax proposal (§6), questions (§8).
 
 ## Next
-0.2 Physics rows the treatment needs (below), then `TREATMENT.md` with a draft clip list for ~2 min; the user sets
-the final length from the clip list. 0.3 Copy the scaffold from `../Io`.
+User answers TREATMENT §8 (length, 9:16 climax, ⚠ items, cryobot power) → lock the clip list. Then 0.3 scaffold copy
+from `../Io`, 0.4 Europa maps.
 
 ## Sprints (plan, 2026-10-04)
 0. Treatment, physics, scaffold. 0.1 ✅ brainstorm + repo · 0.2 physics rows + `TREATMENT.md` (clip list, beat sheet
@@ -26,6 +30,8 @@ the final length from the clip list. 0.3 Copy the scaffold from `../Io`.
 5. Batch render (overnight, resume) → 4K compile, srt, poster; then the 9:16 climax cut (own portrait cameras).
 
 ## Decisions (locked)
+- Shot rule (user 2026-10-04): within real physics, as spectacular as possible, above all phenomena Earth can't show;
+  tentative/lab-predicted ones only marked ⚠ and with a yes (also in CLAUDE.md).
 - Fear (user 2026-10-04): **深渊**, with the horizon and Io as the surface half. Horizon (half-Jupiter fixed on the
   Conamara horizon) → Io crosses Jupiter's face (callback to ep. 2) → down through the ice → the dark ocean; end on the
   ocean numbers.
@@ -39,8 +45,8 @@ the final length from the clip list. 0.3 Copy the scaffold from `../Io`.
 
 ## To decide in the treatment (recommendations)
 - Surface light: Io visible on the disc only when Jupiter is nearly full (it is lit like Jupiter; on a crescent it is
-  a dark dot on the dark side). Full Jupiter at Conamara = Sun ~3.5° below the opposite horizon: **ice lit by Jupiter
-  alone** (≈ 113× full moonlight), black sky, stars. Rec.: the whole surface half at that hour.
+  a dark dot on the dark side). Full Jupiter at Conamara = Sun 3.6° below the east horizon: **ice lit by Jupiter
+  alone**, black sky, stars. Drafted: 01–03 at that hour, 04 the following day.
 - Ice thickness for the counter and the cards: 20 km (estimates 15–25 km); ice base 242 bar, sea floor 1,596 bar.
 - Cryobot: plain design, no agency logos; descent shown as time-lapse (real melt rates make 20 km months-long: the
   counter in days is part of the fear). Rate and heat numbers from `physics.py`, not typed.
@@ -49,13 +55,6 @@ the final length from the clip list. 0.3 Copy the scaffold from `../Io`.
 - Which shots form the 9:16 climax (rec.: the lamp switching on in the ocean + the final numbers).
 - No narration; EN (Cinzel) + 简中 captions, as Io. Sound: Io's breath on the surface; below, ice creaks, sub-bass
   pressure, a hydrophone hum; silence in the ocean.
-
-## Physics rows still to add to `tools/physics.py` (0.2)
-- Sun elevation/azimuth at Conamara against elongation (when is Jupiter full, how long the Sun stays down).
-- Io transit timing within the Europa day; its phase on the disc; the shadow's place.
-- Light in ice: sunlight gone within ~metres; what the lamp reaches in ice and in water.
-- Cryobot: melt rate for a given power → days to 20 km; ice temperature profile (≈ 100 K at the top, 273 K at the base).
-- Ocean: pressure and temperature at the ice base, depth to the sea floor.
 
 ## Notes / lessons
 (none yet)
