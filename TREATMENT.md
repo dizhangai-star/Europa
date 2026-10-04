@@ -18,6 +18,7 @@ Surface: Conamara Chaos (9.7° N, 273.7° W), where Jupiter sits on the horizon 
 | A | **Three-quarters of Jupiter fixed on the horizon** (the lowest quarter below the ice), due west; its axis near horizontal, so **the bands stand vertical** and the clouds roll *down* into the ice, one turn per 11.23 h | centre 3.5° up, 12.3° wide; pole +80° from up | real |
 | B | **The Sun never sets: it sinks into Jupiter.** It descends almost vertically onto the top limb and goes out 9.5° above the ice in ~1.5 min; it would come back out below the horizon. Sunset = eclipse, every 85.3 h. Then a black disc with a **red refraction arch standing on the ice**, and the stars flood in | first contact 8.2–9.6° up (by season), ingress 1–2 min | real (ring colour as Io) |
 | C | **Io sets into the ice in front of Jupiter.** It enters the top limb and slides down across the bands for 1.35 h, then the horizon swallows it while it is still on the disc. At full Jupiter it is a bright 0.84° disc (1.6× our Moon) | 135 mm: Jupiter 1,543 px, Io 105 px; but the visible ¾ (top limb 9.6° up) is 1,215 px, taller than the 804 px frame, so Io's entry at the top limb falls outside it; 85 mm fits the whole visible disc (765 px, Io 66 px): **02 lens open, decide in Sprint 3** | real; needs Jupiter ≥ 90 % lit and the Sun down: 14 transits in a row, once every 438 d |
+| C2 | **Two shadows on the bands: Io's, and our own.** During the same night transit Io's black shadow crosses the clouds beside it (the Sun–Io line meets the cloud tops), and Europa's own shadow sits on Jupiter at the anti-solar point: it is on the disc for 2.9 h (= the eclipse), mostly in the last hours of the night | Io's shadow 1.85° from Io (Sun 178°), 0.68° (Sun 180°); Europa's umbra 0.16° in a 0.37° penumbra (135 mm: 21 / 46 px); `physics.io_cast_shadow`, `own_shadow` | real (geometry: shadow transits, Hubble 2015; seen from Europa itself never photographed) — user 2026-10-05 |
 | D | **Three worlds in one sky.** On every other Io transit (Laplace 1:2:4), Ganymede hangs 60° up, 0.24° wide, 84 % lit | — | real |
 | E | **Giant-lamp lighting.** Full-Jupiter light comes from 3.5° up: ice faces turned to Jupiter get 13× the light of the flat plain; chaos blocks glow on one side, the plain is near black, shadows run for kilometres | wall 259 mW/m², plain 20 mW/m² (Sun 50 W/m²) | real |
 | F | Black sky, stars by day, the Sun a 0.10° point at 1/27 of Earth's light | — | real |
@@ -57,7 +58,7 @@ On Europa the Sun can't even set; it falls into Jupiter. And under the ice there
 | # | clip | dur | lens / camera | action | caption |
 |---|---|---:|---|---|---|
 | 01 | horizon | 12 s | 24 → 35 mm, eye 1.6 m, slow dolly between chaos blocks | night, full Jupiter: block faces glow on the Jupiter side, the plain dark (E); ¾ of Jupiter above the ice, bands vertical (A) | EUROPA · 木卫二 |
-| 02 | neighbour | 12 s | 135 mm, locked; the ice horizon cuts the frame's foot | time-lapse 1.35 h: Io enters at the top limb, slides down the bands with the clouds, and sets into the ice in front of Jupiter (C) | IO. WE STOOD THERE. / 我们曾站在那里 |
+| 02 | neighbour | 12 s | 135 mm, locked; the ice horizon cuts the frame's foot | time-lapse 1.35 h: Io enters at the top limb, slides down the bands with the clouds, its black shadow travelling beside it, Europa's own shadow on the disc too (C2), and sets into the ice in front of Jupiter (C) | IO. WE STOOD THERE. / 我们曾站在那里 |
 | 03 | the probe | 12 s | 35 mm, low, then tilt up | the astronaut (small, Jupiter-lit side) beside the cryobot as it starts to melt in: vapour and ice crystals spray and fall at 0.13 g (G); tilt up to Ganymede 60° up (D) | — (the radiation fact moved to the end card) |
 | 04 | the fall of the Sun | 18 s | 50 mm, locked on Jupiter, foreground blocks | time-lapse of the 40 h day eased to real time: sunrise light sweeps in from behind, Jupiter wanes to a crescent, the Sun descends vertically onto the top limb and goes out in real time (B); black disc, red arch on the ice, stars flood, lightning flashes in the black disc (I) | THE SUN NEVER SETS HERE. IT FALLS INTO JUPITER. / 这里的太阳从不落下，它坠入木星 |
 | 05 | the lid | 10 s | inside the ice (cutaway camera), probe below | the borehole above freezes shut (L); the probe's glow in its melt bubble, going down | THERE IS NO WAY BACK / 没有回头路 |
@@ -81,6 +82,7 @@ times (1 / 5 / 10 kW), light in pure water, ocean pressure and volume.
 ## 8. Decisions on this draft (user 2026-10-04)
 1. Length ≈ 1:58 as §5. 2. 9:16 climax = 02 + 04. 3. Lightning (I) in 04: yes; plume (J) and ice glow (K): no.
 4. Cryobot 10 kW: counter 0 → 1,044 days. 5. The radiation fact goes on the end card (09), not in 03.
+6. (2026-10-05, after the Sprint 1 look spike) 02 carries Io's shadow and Europa's own shadow on the bands (C2).
 
 ## 9. Assets (log every download in REFERENCES.md; files in `../../_assets/`)
 - Jupiter 14K map (have, Io). Astronaut EMU #12622 + Mixamo Breathing Idle (have, Io).

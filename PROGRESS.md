@@ -74,7 +74,7 @@ frames × ~18 s ≈ 14 h before the cheaper-way ladder (02 locked camera → pla
 **Findings for the user (Sprint 1):**
 1. ⭐ New real spectacle for 02: at night with full Jupiter, **Io crosses the bands with its own black shadow beside
    it, and Europa's shadow (our own) sits on Jupiter too**: three dots of two worlds' making. 02's time-lapse could
-   carry all three. (Not in TREATMENT yet: needs a yes.) **Checked online 2026-10-05:** the geometry is the
+   carry all three. **Yes (user 2026-10-05): TREATMENT §2 C2, 02's row.** **Checked online 2026-10-05:** the geometry is the
    everyday shadow transit (Io + Europa shadows together every ~3.5 d; Hubble's 2015 triple transit shows moons with
    their shadows strung out beside them); from Earth a moon and its shadow coincide at opposition and part as the
    phase angle grows, as `io_cast_shadow` gives (seen from Europa they also part as Io leaves the disc centre,
@@ -98,7 +98,7 @@ frames × ~18 s ≈ 14 h before the cheaper-way ladder (02 locked camera → pla
    (4 and 5: **yes, user 2026-10-05**.)
 
 ## Next
-Finding 1 (Io + two shadows in 02) verified as real geometry; waiting for the user's yes to put it in TREATMENT.
+Finding 1 (Io + two shadows in 02): verified, in TREATMENT as C2 and in 02's row (user 2026-10-05).
 Sprint 2 opens with 01's framing test (several frames: headings, lenses, a turn; finding 2), then builds, one per
 session: `europa_world` ground (plates/matrix promoted from `look_horizon.py`, ragged horizon, ridges, PIA01403
 pattern) · the cryobot (code-built) · ice-shell interior · under-ice ocean. Asset hunt by the user in parallel
@@ -128,6 +128,7 @@ pattern) · the cryobot (code-built) · ice-shell interior · under-ice ocean. A
 - Descent and people (user 2026-10-04): a small astronaut on the surface (Io's EMU #12622 + Mixamo, reused); below the
   surface a **code-built cryobot** (melt probe) goes down, time-lapse with a counter (depth / pressure / days), then its
   one lamp in the black water. No open 20 km crack (not real), no human under the ice. Real physics throughout.
+- 02 carries Io's shadow + Europa's own shadow on the bands (user 2026-10-05, TREATMENT C2).
 - Clip list (user 2026-10-04): TREATMENT §5, 9 clips ≈ 1:58 (horizon · neighbour · the probe · the fall of the Sun ·
   the lid · descent · breakthrough · abyss · title). 9:16 climax = 02 + 04. Jupiter lightning in 04 yes; plume and
   ice glow no. Cryobot 10 kW (1,044 days to 20 km). Radiation fact on the end card, not in 03.
