@@ -97,6 +97,20 @@ frames × ~18 s ≈ 14 h before the cheaper-way ladder (02 locked camera → pla
 5. Stars (Io's `sky.stars`) look too dense and even at 24 mm night exposures: thin them in Sprint 2.
    (4 and 5: **yes, user 2026-10-05**.)
 
+**Sprint 2.0 (01 framing test) 2026-10-05, branch `sprint-2.0-framing`, waiting for the user's pick.**
+`blender/lib/chaos.py` = the spike ground factored out of `look_horizon.py` (same draw order; `extra=` hand-placed
+plates). `blender/shots/test01_framing.py`: one ground over az −70..200°, `--views h:lens:ev[:tilt],…` (one still
+per view) or `--turn h0:l0:ev0,h1:l1:ev1 --frames N --hold0 --hold1` (eased pan + zoom + exposure ride), `--hero 1`
+(a lit mesa at az 150°/600 m, its face 30° off Jupiter; a mesa at az −7°/2.4 km biting the disc's lower-left limb;
+one flanking at 27°), stars `--star-density` 0.06 (was 0.35). Frames in `frames/test01/` (git-ignored):
+`sweep-sheet.png` (24 mm, headings 170→18), `ends-sheet.png`, `turn.mp4` / `turn-reverse.mp4` / `turn-strip.png`
+(150°/24 mm/+1.5 EV → 6°/35 mm/−2.5 EV, 12 s, 25 %, 16 spp: 2.7 s/frame).
+- Walls glow only from heading ≳ 125°; with the disc in frame every block is a silhouette and the plain is black.
+- Silhouettes beside the disc vanish (black on black); a block **biting the disc's limb** reads, and gives scale.
+- The turn passes ~3 s of black between heading 90° and 40° (nothing seen from there faces Jupiter).
+- Options for the user: A turn walls → disc · B reverse, disc → walls · C cut (01a walls, 01b disc, each a slow
+  dolly) · D disc only (silhouettes + biting mesa; lit walls left to 03).
+
 ## Next
 Finding 1 (Io + two shadows in 02): verified, in TREATMENT as C2 and in 02's row (user 2026-10-05).
 Sprint 2 opens with 01's framing test (several frames: headings, lenses, a turn; finding 2), then builds, one per
