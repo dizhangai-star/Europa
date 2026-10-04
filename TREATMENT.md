@@ -15,9 +15,9 @@ Episode 3 of the planet series (恐惧 / Fear), after *巨物* and *Io · 永恒
 Surface: Conamara Chaos (9.7° N, 273.7° W), where Jupiter sits on the horizon for ever.
 | # | phenomenon | numbers | status |
 |---|---|---|---|
-| A | **Half a Jupiter fixed on the horizon**, due west; its axis near horizontal, so **the bands stand vertical** and the clouds roll *down* into the ice, one turn per 11.23 h | centre 3.5° up, 12.3° wide; pole +80° from up | real |
-| B | **The Sun never sets: it sinks into Jupiter.** It descends almost vertically onto the top limb and goes out 9.5° above the ice in ~1.5 min; it would come back out below the horizon. Sunset = eclipse, every 85.3 h. Then a black half-disc with a **red refraction arch standing on the ice**, and the stars flood in | first contact 8.2–9.6° up (by season), ingress 1–2 min | real (ring colour as Io) |
-| C | **Io sets into the ice in front of Jupiter.** It enters the top limb and slides down across the bands for 1.35 h, then the horizon swallows it while it is still on the disc. At full Jupiter it is a bright 0.84° disc (1.6× our Moon) | 135 mm: Jupiter 1,546 px, Io 105 px; visible half of Jupiter ≈ 773 px = the 804 px frame | real; needs Jupiter ≥ 90 % lit and the Sun down: 14 transits in a row, once every 438 d |
+| A | **Three-quarters of Jupiter fixed on the horizon** (the lowest quarter below the ice), due west; its axis near horizontal, so **the bands stand vertical** and the clouds roll *down* into the ice, one turn per 11.23 h | centre 3.5° up, 12.3° wide; pole +80° from up | real |
+| B | **The Sun never sets: it sinks into Jupiter.** It descends almost vertically onto the top limb and goes out 9.5° above the ice in ~1.5 min; it would come back out below the horizon. Sunset = eclipse, every 85.3 h. Then a black disc with a **red refraction arch standing on the ice**, and the stars flood in | first contact 8.2–9.6° up (by season), ingress 1–2 min | real (ring colour as Io) |
+| C | **Io sets into the ice in front of Jupiter.** It enters the top limb and slides down across the bands for 1.35 h, then the horizon swallows it while it is still on the disc. At full Jupiter it is a bright 0.84° disc (1.6× our Moon) | 135 mm: Jupiter 1,543 px, Io 105 px; but the visible ¾ (top limb 9.6° up) is 1,215 px, taller than the 804 px frame, so Io's entry at the top limb falls outside it; 85 mm fits the whole visible disc (765 px, Io 66 px): **02 lens open, decide in Sprint 3** | real; needs Jupiter ≥ 90 % lit and the Sun down: 14 transits in a row, once every 438 d |
 | D | **Three worlds in one sky.** On every other Io transit (Laplace 1:2:4), Ganymede hangs 60° up, 0.24° wide, 84 % lit | — | real |
 | E | **Giant-lamp lighting.** Full-Jupiter light comes from 3.5° up: ice faces turned to Jupiter get 13× the light of the flat plain; chaos blocks glow on one side, the plain is near black, shadows run for kilometres | wall 259 mW/m², plain 20 mW/m² (Sun 50 W/m²) | real |
 | F | Black sky, stars by day, the Sun a 0.10° point at 1/27 of Earth's light | — | real |
@@ -37,7 +37,7 @@ Below (ice 20 km over a 100 km ocean):
 
 ## 3. Logline and arc
 On Europa the Sun can't even set; it falls into Jupiter. And under the ice there is a sea no light has ever touched.
-- **Act I, the surface (night before dawn → a day → the fall of the Sun):** the fixed half-Jupiter, Io sinking into
+- **Act I, the surface (night before dawn → a day → the fall of the Sun):** the fixed ¾-Jupiter, Io sinking into
   the ice, a tiny astronaut and a probe that starts to melt its way down; one day in time-lapse ending with the Sun
   falling into Jupiter and the red arch.
 - **Act II, the lid:** the probe in its bubble of melt water, 20 km of ice in time-lapse; the hole freezing shut above.
@@ -56,10 +56,10 @@ On Europa the Sun can't even set; it falls into Jupiter. And under the ice there
 ## 5. Clip list (≈ 1:58, locked 2026-10-04; the whole-film animatic may still trim)
 | # | clip | dur | lens / camera | action | caption |
 |---|---|---:|---|---|---|
-| 01 | horizon | 12 s | 24 → 35 mm, eye 1.6 m, slow dolly between chaos blocks | night, full Jupiter: block faces glow on the Jupiter side, the plain dark (E); half-Jupiter on the ice, bands vertical (A) | EUROPA · 木卫二 |
+| 01 | horizon | 12 s | 24 → 35 mm, eye 1.6 m, slow dolly between chaos blocks | night, full Jupiter: block faces glow on the Jupiter side, the plain dark (E); ¾ of Jupiter above the ice, bands vertical (A) | EUROPA · 木卫二 |
 | 02 | neighbour | 12 s | 135 mm, locked; the ice horizon cuts the frame's foot | time-lapse 1.35 h: Io enters at the top limb, slides down the bands with the clouds, and sets into the ice in front of Jupiter (C) | IO. WE STOOD THERE. / 我们曾站在那里 |
 | 03 | the probe | 12 s | 35 mm, low, then tilt up | the astronaut (small, Jupiter-lit side) beside the cryobot as it starts to melt in: vapour and ice crystals spray and fall at 0.13 g (G); tilt up to Ganymede 60° up (D) | — (the radiation fact moved to the end card) |
-| 04 | the fall of the Sun | 18 s | 50 mm, locked on Jupiter, foreground blocks | time-lapse of the 40 h day eased to real time: sunrise light sweeps in from behind, Jupiter wanes to a crescent, the Sun descends vertically onto the top limb and goes out in real time (B); black half-disc, red arch on the ice, stars flood, lightning flashes in the black disc (I) | THE SUN NEVER SETS HERE. IT FALLS INTO JUPITER. / 这里的太阳从不落下，它坠入木星 |
+| 04 | the fall of the Sun | 18 s | 50 mm, locked on Jupiter, foreground blocks | time-lapse of the 40 h day eased to real time: sunrise light sweeps in from behind, Jupiter wanes to a crescent, the Sun descends vertically onto the top limb and goes out in real time (B); black disc, red arch on the ice, stars flood, lightning flashes in the black disc (I) | THE SUN NEVER SETS HERE. IT FALLS INTO JUPITER. / 这里的太阳从不落下，它坠入木星 |
 | 05 | the lid | 10 s | inside the ice (cutaway camera), probe below | the borehole above freezes shut (L); the probe's glow in its melt bubble, going down | THERE IS NO WAY BACK / 没有回头路 |
 | 06 | descent | 20 s | inside the ice, following | 1,044 days in time-lapse, eased; ice layers, cracks and old refrozen bands pass up; counter: days · depth · temperature · pressure (M) | — (counter only) |
 | 07 | breakthrough | 14 s | under the ice ceiling, looking up then level | the last metres melt; the probe drops into the water; the lamp: red dies first, cyan, particles, the ice ceiling above lit, nothing below (N) | NO SUNLIGHT HAS EVER REACHED IT / 从没有阳光到过这里 |
@@ -70,7 +70,7 @@ Trim candidates if the animatic drags: 03 → 8 s, 05 into 06, 08 → 10 s.
 
 ## 6. 9:16 climax (locked 2026-10-04: 02 + 04)
 The film's motion is vertical, so portrait suits it: **02 (Io sinks into the ice) → 04 (the Sun falls into Jupiter)**,
-≈ 30 s, own portrait cameras (vertical fov fits the half-disc + the falling Sun + the ice), rendered after the 2.39:1
+≈ 30 s, own portrait cameras (vertical fov fits the disc + the falling Sun + the ice), rendered after the 2.39:1
 film. Captions re-set for portrait.
 
 ## 7. Physics (`python3 tools/physics.py`, rows used above)
