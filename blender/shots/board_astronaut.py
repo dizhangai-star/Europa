@@ -1,6 +1,6 @@
 """Look board for the astronaut: the EMU suit on Europa ground in the film's real light, four headings.
-Copied from Io's board (Sprint 0.3), doubling as the scaffold's smoke test; the ground is still Io's placeholder
-material (europa_world.surface) until Sprint 2.
+Copied from Io's board (Sprint 0.3), doubling as the scaffold's smoke test; flat ground in europa_world.ice (no
+Ground masks: matrix colours only).
 
 Frames 1–4 turn the suit 0 / 90 / 180 / 270° (0 faces the camera). Camera 50 mm, 8 m from the suit (arms lowered 65° from the T-pose), eye 1.5 m,
 `--facing away` (default: away from Jupiter, east at Conamara; morning Sun behind the camera) or `jupiter` (west,
@@ -45,7 +45,7 @@ sky.exposure(sc, float(A.opt('exposure', -4.8)))
 SGN = -1.0 if AWAY else 1.0                   # +Y is toward Jupiter
 W = europa_world
 ground = W.terrain(sc, 'Ground', W.rings(0.5, 400.0, 0.02), 180.0 if AWAY else 0.0, 60.0, 240,
-                   lambda X, Y: 0.15 * (W.fbm(X / 6, Y / 6, 4, 3) - 0.5), W.surface('Ground'))
+                   lambda X, Y: 0.15 * (W.fbm(X / 6, Y / 6, 4, 3) - 0.5), W.ice('Ground'))
 W.europa_body(sc)
 
 arm = astronaut.load(sc, (0.0, SGN * DIST, 0.0), heading=180.0 if AWAY else 0.0)

@@ -4,8 +4,8 @@ Not a clip; run directly:
     Blender -b --factory-startup -P blender/shots/look_horizon.py -- --stills 1 --pct 50 --samples 64 \
         --stills-dir frames/look --id horizon --view jupiter
 
-Chaos ground (spike geometry; Sprint 2 rebuilds it in europa_world): convex ice plates (physics.CHAOS) with cliffs,
-talus aprons, tilted ridged tops, in a hummocky matrix; a lane toward Jupiter stays open. The Sun is below the
+Chaos ground (europa_world.Ground since Sprint 2.1; Sprint 1 ran the spike): convex ice plates (physics.CHAOS) with
+cliffs, talus aprons, tilted ridged tops, in a hummocky matrix; a lane toward Jupiter stays open. The Sun is below the
 eastern horizon (`--elong`, default 178), so the ground's only light is Jupiter's lit ¾ disc, made a light source by
 jupiter.lamp. `--view jupiter` (heading +18°: the disc left of centre, block walls in silhouette) | `away` (heading
 170°: the walls that face Jupiter, lit, their shadows running away from it) | `side` (125°: raking light on the walls) | `wide` (14 mm, heading 42°: the disc at the left edge, walls
@@ -23,8 +23,8 @@ import importlib
 import bpy
 from mathutils import Vector
 import physics
-from lib import nodes, rig, shot, europa_world, jupiter, sky, chaos
-for m in (physics, nodes, rig, shot, europa_world, jupiter, sky, chaos):
+from lib import nodes, rig, shot, europa_world, jupiter, sky
+for m in (physics, nodes, rig, shot, europa_world, jupiter, sky):
     importlib.reload(m)
 P, W = physics, europa_world
 C = P.CHAOS
@@ -37,8 +37,8 @@ ELONG = float(A.opt('elong', 178.0))
 EV = float(A.opt('exposure', {'jupiter': -2.5, 'away': 1.5, 'side': 0.5, 'wide': -0.5}[VIEW]))
 EYE = float(A.opt('eye', 1.6))
 
-plates = chaos.plates(C, seed=A.opt('seed', 7))
-height = chaos.height_fn(C, plates)
+height = W.Ground(C, seed=A.opt('seed', 7))
+plates = height.plates
 
 
 sc = rig.new_scene('Look_Horizon')
