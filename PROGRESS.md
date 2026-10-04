@@ -10,9 +10,11 @@ Jupiter 9.5° up: sunset = eclipse; Io sets into the ice in front of Jupiter; Ga
 wall vs plain light 13×), radiation, shell temperatures, cryobot times, light in water. `TREATMENT.md` draft: the
 spectacle list (§2), a 9-clip list ≈ 1:58 (§5), 9:16 climax proposal (§6), questions (§8).
 
+Clip list locked by the user the same day (Decisions).
+
 ## Next
-User answers TREATMENT §8 (length, 9:16 climax, ⚠ items, cryobot power) → lock the clip list. Then 0.3 scaffold copy
-from `../Io`, 0.4 Europa maps.
+0.3 scaffold copy from `../Io`; 0.4 Europa maps (USGS mosaic, Galileo Conamara close-ups). Asset hunt by the user in
+parallel (list in REFERENCES.md "Wanted").
 
 ## Sprints (plan, 2026-10-04)
 0. Treatment, physics, scaffold. 0.1 ✅ brainstorm + repo · 0.2 physics rows + `TREATMENT.md` (clip list, beat sheet
@@ -38,23 +40,13 @@ from `../Io`, 0.4 Europa maps.
 - Descent and people (user 2026-10-04): a small astronaut on the surface (Io's EMU #12622 + Mixamo, reused); below the
   surface a **code-built cryobot** (melt probe) goes down, time-lapse with a counter (depth / pressure / days), then its
   one lamp in the black water. No open 20 km crack (not real), no human under the ice. Real physics throughout.
+- Clip list (user 2026-10-04): TREATMENT §5, 9 clips ≈ 1:58 (horizon · neighbour · the probe · the fall of the Sun ·
+  the lid · descent · breakthrough · abyss · title). 9:16 climax = 02 + 04. Jupiter lightning in 04 yes; plume and
+  ice glow no. Cryobot 10 kW (1,044 days to 20 km). Radiation fact on the end card, not in 03.
 - Title (user 2026-10-04): **木卫二 · 深渊 / Europa · Abyss**.
 - Format (user 2026-10-04): landscape 2.39:1 (1920×804 picture, letterboxed, 4K delivery, as Io), **about 2 min**,
   final length set after the clip list. A **9:16 climax cut** as well: 804 px of height can't be cropped to portrait,
   so the climax shots get their own portrait cameras/renders (planned in the treatment, rendered last).
-
-## To decide in the treatment (recommendations)
-- Surface light: Io visible on the disc only when Jupiter is nearly full (it is lit like Jupiter; on a crescent it is
-  a dark dot on the dark side). Full Jupiter at Conamara = Sun 3.6° below the east horizon: **ice lit by Jupiter
-  alone**, black sky, stars. Drafted: 01–03 at that hour, 04 the following day.
-- Ice thickness for the counter and the cards: 20 km (estimates 15–25 km); ice base 242 bar, sea floor 1,596 bar.
-- Cryobot: plain design, no agency logos; descent shown as time-lapse (real melt rates make 20 km months-long: the
-  counter in days is part of the fear). Rate and heat numbers from `physics.py`, not typed.
-- In the ocean: nothing is shown alive (no invented life); the lamp lights only drifting particles and the ice ceiling,
-  then the black below it. The fear is what the lamp doesn't reach.
-- Which shots form the 9:16 climax (rec.: the lamp switching on in the ocean + the final numbers).
-- No narration; EN (Cinzel) + 简中 captions, as Io. Sound: Io's breath on the surface; below, ice creaks, sub-bass
-  pressure, a hydrophone hum; silence in the ocean.
 
 ## Notes / lessons
 (none yet)

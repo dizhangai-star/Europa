@@ -1,7 +1,7 @@
-# Europa · 深渊 (Abyss): Treatment (draft 2026-10-04)
+# Europa · 深渊 (Abyss): Treatment (clip list locked 2026-10-04)
 
-Episode 3 of the planet series (恐惧 / Fear), after *巨物* and *Io · 永恒*. Standalone film. **Draft:** the clip list
-(§5) is the proposal the user cuts to length; nothing below is locked unless PROGRESS.md "Decisions" says so.
+Episode 3 of the planet series (恐惧 / Fear), after *巨物* and *Io · 永恒*. Standalone film. Clip list, 9:16 climax,
+⚠ items and cryobot power locked by the user 2026-10-04 (§8); shot details still change in each shot's animatic.
 
 ## 1. Brief
 - About 2 min (length set from §5), 24 fps, 1920×1080 with a 2.39:1 letterbox (picture 1920×804), delivered 4K, grade
@@ -23,9 +23,9 @@ Surface: Conamara Chaos (9.7° N, 273.7° W), where Jupiter sits on the horizon 
 | F | Black sky, stars by day, the Sun a 0.10° point at 1/27 of Earth's light | — | real |
 | G | **Water boils and freezes at once** where the cryobot first melts into the ice under vacuum: a spray of vapour and ice crystals in Jupiter-light | — | real (behaviour); exact look by reference |
 | H | Radiation: a ~50 %-lethal dose in 20 h at the surface | 5.4 Sv/day | real (caption) |
-| I | ⚠ Lightning flashes on Jupiter's night side while it is black (seen by Voyager, Galileo, Juno) | brightness to check | real phenomenon, visibility to check |
-| J | ⚠ Water plume, 200 km, vented at 683 m/s, 20 min flight, sunlit ice crystals, ballistic umbrella | — | tentative (Hubble 2012/2016) |
-| K | ⚠ Faint glow of the night-side ice under Jupiter's radiation | — | lab prediction (Gudipati et al. 2020) |
+| I | Lightning flashes on Jupiter's night side while it is black (seen by Voyager, Galileo, Juno) | brightness to check | real; **in 04** (user 2026-10-04) |
+| J | ✗ (not used) Water plume, 200 km, vented at 683 m/s, 20 min flight, sunlit ice crystals, ballistic umbrella | — | tentative (Hubble 2012/2016) |
+| K | ✗ (not used) Faint glow of the night-side ice under Jupiter's radiation | — | lab prediction (Gudipati et al. 2020) |
 
 Below (ice 20 km over a 100 km ocean):
 | # | phenomenon | numbers | status |
@@ -53,38 +53,34 @@ On Europa the Sun can't even set; it falls into Jupiter. And under the ice there
   **Learn:** scale by a small human, vacuum light, a single lamp in black water. **Don't take:** designs, logos,
   *Europa Report*'s life or plot. Nothing alive is shown.
 
-## 5. Clip list (proposal ≈ 1:58; the user cuts)
+## 5. Clip list (≈ 1:58, locked 2026-10-04; the whole-film animatic may still trim)
 | # | clip | dur | lens / camera | action | caption |
 |---|---|---:|---|---|---|
 | 01 | horizon | 12 s | 24 → 35 mm, eye 1.6 m, slow dolly between chaos blocks | night, full Jupiter: block faces glow on the Jupiter side, the plain dark (E); half-Jupiter on the ice, bands vertical (A) | EUROPA · 木卫二 |
 | 02 | neighbour | 12 s | 135 mm, locked; the ice horizon cuts the frame's foot | time-lapse 1.35 h: Io enters at the top limb, slides down the bands with the clouds, and sets into the ice in front of Jupiter (C) | IO. WE STOOD THERE. / 我们曾站在那里 |
-| 03 | the probe | 12 s | 35 mm, low, then tilt up | the astronaut (small, Jupiter-lit side) beside the cryobot as it starts to melt in: vapour and ice crystals spray and fall at 0.13 g (G); tilt up to Ganymede 60° up (D) | 20 HOURS HERE IS A LETHAL DOSE / 在这里待二十小时，就是致死剂量 (H) |
-| 04 | the fall of the Sun | 18 s | 50 mm, locked on Jupiter, foreground blocks | time-lapse of the 40 h day eased to real time: sunrise light sweeps in from behind, Jupiter wanes to a crescent, the Sun descends vertically onto the top limb and goes out in real time (B); black half-disc, red arch on the ice, stars flood, (⚠ I) lightning in the black | THE SUN NEVER SETS HERE. IT FALLS INTO JUPITER. / 这里的太阳从不落下，它坠入木星 |
+| 03 | the probe | 12 s | 35 mm, low, then tilt up | the astronaut (small, Jupiter-lit side) beside the cryobot as it starts to melt in: vapour and ice crystals spray and fall at 0.13 g (G); tilt up to Ganymede 60° up (D) | — (the radiation fact moved to the end card) |
+| 04 | the fall of the Sun | 18 s | 50 mm, locked on Jupiter, foreground blocks | time-lapse of the 40 h day eased to real time: sunrise light sweeps in from behind, Jupiter wanes to a crescent, the Sun descends vertically onto the top limb and goes out in real time (B); black half-disc, red arch on the ice, stars flood, lightning flashes in the black disc (I) | THE SUN NEVER SETS HERE. IT FALLS INTO JUPITER. / 这里的太阳从不落下，它坠入木星 |
 | 05 | the lid | 10 s | inside the ice (cutaway camera), probe below | the borehole above freezes shut (L); the probe's glow in its melt bubble, going down | THERE IS NO WAY BACK / 没有回头路 |
 | 06 | descent | 20 s | inside the ice, following | 1,044 days in time-lapse, eased; ice layers, cracks and old refrozen bands pass up; counter: days · depth · temperature · pressure (M) | — (counter only) |
 | 07 | breakthrough | 14 s | under the ice ceiling, looking up then level | the last metres melt; the probe drops into the water; the lamp: red dies first, cyan, particles, the ice ceiling above lit, nothing below (N) | NO SUNLIGHT HAS EVER REACHED IT / 从没有阳光到过这里 |
 | 08 | abyss | 14 s | locked, looking down | the probe sinks away on its tether; its light shrinks to a blue point and goes out; counter 242 → … bar | 100 KM OF WATER BELOW / 下面还有一百公里的海 |
-| 09 | title | 6 s | card (`tools/card.mjs`) | 木卫二 · 深渊 / EUROPA · ABYSS + readout: 2.1× EARTH'S OCEANS · 1,596 BAR | — |
+| 09 | title | 6 s | card (`tools/card.mjs`) | 木卫二 · 深渊 / EUROPA · ABYSS + readout: 2.1× EARTH'S OCEANS · 1,596 BAR · A LETHAL DOSE IN 20 HOURS (H) | — |
 
-Trim candidates if ~1:30 is wanted: 03 → 8 s, 05 into 06, 08 → 10 s. Stretch candidates for 2:15: (⚠ J) a plume at
-sunrise in 04, a longer 06.
+Trim candidates if the animatic drags: 03 → 8 s, 05 into 06, 08 → 10 s.
 
-## 6. 9:16 climax (proposal)
-The film's motion is vertical, so portrait suits it. Rec.: **04 (the Sun falls into Jupiter)** with 02's Io sinking
-into the ice as its opener, ≈ 30 s: own portrait cameras (vertical fov fits the half-disc + the falling Sun + the ice);
-alternative: 07 + 08 (the lamp in the ocean and the light sinking away).
+## 6. 9:16 climax (locked 2026-10-04: 02 + 04)
+The film's motion is vertical, so portrait suits it: **02 (Io sinks into the ice) → 04 (the Sun falls into Jupiter)**,
+≈ 30 s, own portrait cameras (vertical fov fits the half-disc + the falling Sun + the ice), rendered after the 2.39:1
+film. Captions re-set for portrait.
 
 ## 7. Physics (`python3 tools/physics.py`, rows used above)
 Site, Jupiter place and axis, Sun track by season, sunset = eclipse, Io's transit path, transit windows, Ganymede,
 full-Jupiter light on walls vs plain, radiation, the shell's temperature profile, ice-base melting point, cryobot
 times (1 / 5 / 10 kW), light in pure water, ocean pressure and volume.
 
-## 8. To decide (with this draft)
-1. Length: cut list from §5 (≈ 1:58 as drafted).
-2. 9:16 climax: 04 (+ 02) or 07 + 08.
-3. ⚠ items: lightning (I) in 04 yes/no; plume (J) at all; glow (K) no (rec.).
-4. Cryobot power: 10 kW (≈ 2.9 y down, rec.: the counter reads in days → 1,044) or 5 kW (≈ 5.7 y).
-5. 03's caption: the radiation fact, or keep it for the end card.
+## 8. Decisions on this draft (user 2026-10-04)
+1. Length ≈ 1:58 as §5. 2. 9:16 climax = 02 + 04. 3. Lightning (I) in 04: yes; plume (J) and ice glow (K): no.
+4. Cryobot 10 kW: counter 0 → 1,044 days. 5. The radiation fact goes on the end card (09), not in 03.
 
 ## 9. Assets (log every download in REFERENCES.md; files in `../../_assets/`)
 - Jupiter 14K map (have, Io). Astronaut EMU #12622 + Mixamo Breathing Idle (have, Io).
