@@ -74,20 +74,32 @@ frames × ~18 s ≈ 14 h before the cheaper-way ladder (02 locked camera → pla
 **Findings for the user (Sprint 1):**
 1. ⭐ New real spectacle for 02: at night with full Jupiter, **Io crosses the bands with its own black shadow beside
    it, and Europa's shadow (our own) sits on Jupiter too**: three dots of two worlds' making. 02's time-lapse could
-   carry all three. (Not in TREATMENT yet: needs a yes.)
+   carry all three. (Not in TREATMENT yet: needs a yes.) **Checked online 2026-10-05:** the geometry is the
+   everyday shadow transit (Io + Europa shadows together every ~3.5 d; Hubble's 2015 triple transit shows moons with
+   their shadows strung out beside them); from Earth a moon and its shadow coincide at opposition and part as the
+   phase angle grows, as `io_cast_shadow` gives (seen from Europa they also part as Io leaves the disc centre,
+   because Io is 2.7× nearer than Jupiter). ESA's JUICE NavCam simulation (Airbus 2019) shows Europa in front of
+   Jupiter with its shadow as a black disc. Nobody has seen Europa's own shadow *from Europa* (no one there), so it
+   rests on that geometry, not on a photo: status **real (geometry)**, no ⚠ needed.
+   Sources: earthsky.org/astronomy-essentials/transits-of-jupiters-moons-shadow ·
+   science.nasa.gov/asset/hubble/jupiter-moon-transit-january-24-2015-0710-ut-annotated ·
+   sci.esa.int/web/juice/-/61515-simulated-navcam-view-of-jupiter-and-europa
 2. 01: the disc and the walls it lights can't share one frame: a wall faces Jupiter only when the camera looks
    away from it (`--view wide` 14 mm proved it: backs of blocks, a stretched disc). Lit walls need raking light
    (`side`, heading ~125°); facing Jupiter the blocks are silhouettes and the plain is black under a glint path.
-   → 01's move must turn (lit walls → the disc) or cut. Decide in 01's animatic.
+   → 01's move must turn (lit walls → the disc) or cut. **User 2026-10-05: decide in Sprint 2, from several more
+   test frames (headings, lenses, a turn).**
 3. 02 at 135 mm: the 2 km ice horizon is a ruler-straight line (1 px = 0.26 m there): Sprint 2's ground needs
-   knobs/ridges on the horizon silhouette. Visible disc: Io sits ~5° up mid-transit, the frame shows 6.4° of it.
+   knobs/ridges on the horizon silhouette (**yes, user 2026-10-05**). Visible disc: Io sits ~5° up mid-transit, the frame shows 6.4° of it.
 4. Lamp: looking into the beam = one forward-scatter blob (g 0.85); across the beam reads (probe silhouette with a
    rim, cyan cone, ice ceiling lit blue). Red is gone within metres as physics says. Snow flecks only read inside
    the beam (place them there in 07). Exposure ≈ +4 EV vs 0 for the sunlit-ice scale.
 5. Stars (Io's `sky.stars`) look too dense and even at 24 mm night exposures: thin them in Sprint 2.
+   (4 and 5: **yes, user 2026-10-05**.)
 
 ## Next
-User reads the looks (contact sheet) and decides finding 1 (Io + two shadows in 02). Then Sprint 2 builds, one per
+Finding 1 (Io + two shadows in 02) verified as real geometry; waiting for the user's yes to put it in TREATMENT.
+Sprint 2 opens with 01's framing test (several frames: headings, lenses, a turn; finding 2), then builds, one per
 session: `europa_world` ground (plates/matrix promoted from `look_horizon.py`, ragged horizon, ridges, PIA01403
 pattern) · the cryobot (code-built) · ice-shell interior · under-ice ocean. Asset hunt by the user in parallel
 (REFERENCES.md "Wanted": W1 Mixamo kneel/stand, W2–W3 ice sounds and hydrophone).
