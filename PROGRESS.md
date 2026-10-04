@@ -1,8 +1,10 @@
 # Europa · 木卫二 · 深渊: progress
 
 ## State (2026-10-05)
-**Sprint 2.2 (the cryobot) done 2026-10-05, approved and merged (PR #6). Next: Sprint 2.3, the ice-shell
-interior.** Sprint 2.1 (the ground) done and
+**Sprint 2.3 (the ice-shell interior) done 2026-10-05, branch `sprint-2.3-shell`, waiting for the user's look
+(findings below), approved 2026-10-05 (puck in 05 yes, porosity 0.2 % kept), PR opened. Next: Sprint 2.4, the
+under-ice ocean.** Sprint 2.2 (the cryobot) done, approved and merged (PR #6).
+Sprint 2.1 (the ground) done and
 merged 2026-10-05 (PR #5). Sprint 2.0 (01 framing test) done 2026-10-05
 (merged, PR #4): 01 = the turn. Sprint 1 (look spike) done 2026-10-05 (merged, PR #3). Sprint 0 (brainstorm → treatment → scaffold → maps) done 2026-10-04. Folder opened; `tools/physics.py` adapted from Io's (Jupiter 12.3°, Io
 transits, Io's shadow, horizon sites Conamara / Pwyll, ice + ocean pressure, lens table). Ideas, three directions and
@@ -165,10 +167,50 @@ bay 0.35 · swim 0.10 · heat 0.85 · vault 0.45 · tail 0.95 = 3.00 m), `CRYO_J
 - For the shots: in water the hull is nearly black except where the beam's scatter falls (07 will want the port
   turned partly toward the camera or the swimmers in the beam); looking at the port from ≲ 2 m blows out at +4 EV.
 
+**Sprint 2.3 (the ice-shell interior) done 2026-10-05, branch `sprint-2.3-shell`.** **`blender/lib/shell.py`**
+`build(sc, P, depth_m, cut, half, below, above, face, travel, sigma, similar)` + `key_depth(sh, P, frame, depth_m)`:
+the probe's frame is the world (nose at z = 0); the ice hangs on `root` (z = nose depth, so ice-local z = −depth) and
+slides past a following camera when 06 keys it. Board `blender/shots/board_shell.py` (`--depth`, views `probe lid nose
+inside beam`, each with its own EV offset and port azimuth; `--cut --face --sigma --aniso --pucks`); sheet
+`frames/shell/shell-sheet.png` (row 1: 30 m down probe · lid · inside · beam; row 2: 3 km inside · beam, 15 km inside ·
+beam; row 3: full-res 30 m lid crop + nose).
+- physics.py new rows (all printed): **pure-ice absorption** (Warren & Brandt 2008 table, downloaded: R/G/B
+  0.29 / 0.058 / 0.0054 per m, e-fold 3 / 17 / 186 m), `N_ICE`/`N_WATER` (ice→water 1.017), **pores** `pore(z)`
+  (film picks inside model ranges: φ 0.2 % under the regolith, e-fold 0.8 km, floor 2e-6; σs = 1.5 φ/r, g 0.75: σs
+  5.8/m at 20 m, 1.7 at 1 km, 0.14 at 3 km, 0.006 at 10 km), `BRITTLE_KM` 3 (open cracks above), veins/sills of
+  refrozen salty water (`VEIN_*`), porosity bands (`BAND_*`), `CRACKS_PER_M3`; **`refreeze(z)`**: radial enthalpy
+  conduction (k = 651/T) of the melt column → the hole shuts 2.0 h ≈ 1.3 m above the probe near the top, 2.2 h / 1.6 m
+  at 3 km, 6.8 h / 6 m at 15 km, ~98 h / ~110 m at 19.5 km (walls not pre-warmed: lower bounds). `cryo_speed(z)` split
+  out of `cryobot()` (its rows unchanged).
+- Look: all **homogeneous volumes** (a textured volume cost 4×): the ice (σs a keyable value per depth), lens-shaped
+  sheets that add scatter (flat porosity bands → strata on the cut face and layers in the glow; steep veins / flat
+  sills → deep down the only thing the beam finds), the hole bored out of all of them by one world-fixed cylinder (live
+  Boolean), melt water (pocket + open column narrowing as `refreeze` says), clear refrozen column with the tether and a
+  line of gas/brine beads on its axis (shown only above the front), open cracks (air films, TIR) above 3 km. Only
+  light: the probe's lamp. Near-surface shots are a **cutaway**: the box's −y face is a polished ice face `cut` m in
+  front of the axis (in 6/m ice a camera sees centimetres); deep shots put the camera inside (clear ice).
+- **Cost**: 30 m down, full res 64 spp: **66 s/frame** (05's 240 frames ≈ 4.4 h before the cheaper-way ladder);
+  3 km ≈ 4 s, 15 km ≈ 3 s per still at 40 %/32 spp (≈ 6× that at full res). Scene build ≈ 6 s (`refreeze` ≈ 3 s).
+- Cycles warns "Maximum number of closures exceeded: 66 > 64" with the shell (not with the cryobot boards): it sizes
+  closures for overlapping volumes; frames are clean. Watch for it if many sheets overlap.
+
+**Findings for the user (Sprint 2.3):**
+1. Near the surface the ice is **milky**: the probe is a lantern buried in it. White core at the lamp, then a cyan-blue
+   halo metres wide (red is absorbed over the long scattered paths); the probe's body shows as a dark rod against its own
+   glow, the strata of the cut face cross it (sheet row 1). At ~3 km it clears into a beam in dark ice; at 15 km it is
+   black, the beam finding only refrozen veins (row 2). 06's time-lapse could ride exactly that: glow → beam → dark.
+2. **The freezing itself is nearly invisible** (ice and water differ by 1.7 % in index; the front is only 1.3 m behind
+   the probe near the top). What reads in 05: the clear refrozen column above the probe (a dark rod in the glow) with the
+   tether locked in it; a dropped puck frozen into it would make "no way back" concrete (Tunnelbot drops pucks: real).
+   **Proposal for 05: show a puck release and the column closing over it.** **Yes (user 2026-10-05).**
+3. Porosity is unknown; the film pick (0.2 %) decides milky vs glassy. Lower φ = see the probe through metres of ice
+   (less glow, more "glass"); higher = only the glow. **Keep 0.2 % (user 2026-10-05).**
+
 ## Next
 Finding 1 (Io + two shadows in 02): verified, in TREATMENT as C2 and in 02's row (user 2026-10-05).
-01's framing test done (2.0, the turn); the ground done (2.1); the cryobot done (2.2). Next, Sprint 2 builds, one per
-session: ice-shell interior (melt bubble, refreezing hole with pucks in it) · under-ice ocean. Asset hunt by the user in parallel
+01's framing test done (2.0, the turn); the ground done (2.1); the cryobot done (2.2); the shell interior done (2.3,
+approved: puck release in 05, porosity 0.2 %). Next, Sprint 2.4: the under-ice ocean (ceiling from look_lamp, the
+breakthrough's open column ~110 m long at the base per `refreeze`, particles). Asset hunt by the user in parallel
 (REFERENCES.md "Wanted": W1 Mixamo kneel/stand, W2–W3 ice sounds and hydrophone).
 
 ## Sprints (plan, 2026-10-04)
@@ -187,6 +229,9 @@ session: ice-shell interior (melt bubble, refreezing hole with pucks in it) · u
 5. Batch render (overnight, resume) → 4K compile, srt, poster; then the 9:16 climax cut (own portrait cameras).
 
 ## Decisions (locked)
+- 05 (user 2026-10-05, Sprint 2.3 finding 2): the probe releases a relay puck and the clear column freezes over it
+  ("no way back" made visible; the freezing front itself is nearly invisible). Near-surface porosity stays 0.2 %
+  (milky: the probe is a lantern in the ice).
 - Shot rule (user 2026-10-04): within real physics, as spectacular as possible, above all phenomena Earth can't show;
   tentative/lab-predicted ones only marked ⚠ and with a yes (also in CLAUDE.md).
 - Fear (user 2026-10-04): **深渊**, with the horizon and Io as the surface half. Horizon (¾-Jupiter fixed on the
@@ -212,6 +257,12 @@ session: ice-shell interior (melt bubble, refreezing hole with pucks in it) · u
   so the climax shots get their own portrait cameras/renders (planned in the treatment, rendered last).
 
 ## Notes / lessons
+- Light diffusing through scattering ice needs many volume bounces (~(r/transport length)² × 1/(1 − g) events): 8
+  left everything past 0.5 m black; 128 + the similarity relation (σs(1 − g), g = 0) carry it metres. Keep the true g
+  where the medium is thin (single scattering: the beam's side-look depends on it).
+- Textured (heterogeneous) volumes cost ~4× homogeneous ones: build structure from overlapping homogeneous sheets
+  (volumes add) and Boolean holes, and key the one σs value.
+- Sheets with polygon rims read as planks: taper them (lens), make them bigger than the frame, clip to the box.
 - MetalRT (Blender 5.2, M4 Pro) lost triangles in one 7.6 M-vertex terrain: split big meshes (≤ 1 M verts per object).
   Test for holes with the ground as a flat emitter over a starfield.
 - A skyline cap at one elevation makes the near ground the skyline (a smooth line, then crenellated equal tops): let
