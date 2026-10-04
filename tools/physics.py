@@ -362,17 +362,99 @@ CRYO_PUCK_KM = 2.0           # km between pucks (film pick, "every few km") → 
 SWIM_N, SWIM_TIERS = 50, 2   # wedges in the package: 2 tiers × 25 radial slices (fits PRIME's 10 cm × Ø 25 cm)
 SWIM_LEN = 0.12              # m, one swimmer (SWIM concept ~12 cm)
 
+# The shell seen from inside (Sprint 2.3), lit only by the probe's lamp.
+# Pure ice: imaginary refractive index (Warren & Brandt 2008, JGR 113 D14220, table IOP_2008 at −7 °C; colder ice
+# absorbs slightly less in the red, ignored). Absorption α = 4π m_im / λ: blue travels ~400 m, red ~2–8 m.
+M_IM_ICE = {400: 2.365e-11, 420: 3.135e-11, 450: 9.239e-11, 480: 2.861e-10, 500: 5.889e-10, 520: 1.076e-9,
+            550: 2.289e-9, 580: 4.159e-9, 600: 5.730e-9, 620: 8.580e-9, 650: 1.430e-8, 680: 2.090e-8, 700: 2.900e-8}
+N_ICE, N_WATER = 1.311, 1.333   # real index at 550 nm (Warren & Brandt; water ~1.333): ice → water edge almost unseen
+# Pores and bubbles make ice white. Europa's top is porous regolith; how much porosity survives below it is unknown:
+# cold ice creeps pores shut only slowly, so models allow a few % through the top ~km, closing with depth and warmth
+# (Nimmo et al. 2003; Johnson et al. 2017, both model ranges). Film picks inside that: φ(z) = PORE_PHI0·e^(−z/PORE_ZC)
+# down to PORE_FLOOR (bubbles / brine inclusions of deep ice). Scattering, geometric optics: σs = 1.5 φ / r (Q_ext = 2),
+# asymmetry g ≈ 0.75 for air bubbles in ice (Mullen & Warren 1988; Warren's ice-optics work uses ~0.75–0.89).
+PORE_R = 0.5e-3              # m, pore/bubble radius (film pick; glacier-ice bubbles 0.1–1 mm)
+PORE_PHI0, PORE_ZC, PORE_FLOOR = 0.002, 0.8, 2e-6            # porosity under the regolith, e-fold km, deep floor
+PORE_G = 0.75
+# The brittle lid: open cracks only where the ice is cold and stiff (elastic/brittle thickness estimates ~1–6 km;
+# film pick 3 km). Below it cracks heal; old cracks survive as veins of refrozen (salty) water.
+BRITTLE_KM = 3.0
+VEINS_PER_M3 = 0.0015        # old cracks and sills refilled with refrozen water, per m³ (film pick; any depth)
+VEIN_T = (0.03, 0.6)         # m, their thickness at the centre (film pick); 70 % steep (dikes), 30 % flat-lying (sills)
+VEIN_BRINE_S = 0.3           # 1/m: salt/brine inclusions of the refrozen water (film pick, added to the ice's own
+                             # σs): faint sheets in the porous top, deep down the only thing that shows
+BANDS_PER_M3 = 0.0003        # flat-lying bands of more porous ice (porosity varies layer to layer: old surfaces,
+BAND_T, BAND_GAIN = (0.1, 1.2), 0.5   # refrozen flows; film picks): m thick, σs added = gain × the ice's σs
+CRACKS_PER_M3 = 0.004        # open cracks (0.4–4 m air films) per m³ of brittle lid (film pick)
+
+
+def _band_avg(f):
+    return tuple(sum(f(lo + (hi - lo) * (k + 0.5) / 50) for k in range(50)) / 50 for lo, hi in RGB_BANDS)
+
+
+def _interp(tab, x):
+    wl = sorted(tab)
+    for w0, w1 in zip(wl, wl[1:]):
+        if w0 <= x <= w1:
+            return tab[w0] + (tab[w1] - tab[w0]) * (x - w0) / (w1 - w0)
+    return tab[wl[0]] if x < wl[0] else tab[wl[-1]]
+
 
 def water_rgb():
     """Pure water's absorption (1/m) per render channel R, G, B: A_WATER interpolated, averaged over RGB_BANDS."""
-    wl = sorted(A_WATER)
+    return _band_avg(lambda x: _interp(A_WATER, x))
 
-    def a(x):
-        for w0, w1 in zip(wl, wl[1:]):
-            if w0 <= x <= w1:
-                return A_WATER[w0] + (A_WATER[w1] - A_WATER[w0]) * (x - w0) / (w1 - w0)
-        return A_WATER[wl[0]] if x < wl[0] else A_WATER[wl[-1]]
-    return tuple(sum(a(lo + (hi - lo) * (k + 0.5) / 50) for k in range(50)) / 50 for lo, hi in RGB_BANDS)
+
+def ice_rgb():
+    """Pure ice's absorption (1/m) per render channel R, G, B, from M_IM_ICE (α = 4π m_im / λ)."""
+    return _band_avg(lambda x: 4 * math.pi * _interp(M_IM_ICE, x) / (x * 1e-9))
+
+
+def pore(z_km):
+    """Porosity, scattering coefficient σs (1/m) and transport length (m) of the ice at depth z_km."""
+    phi = max(PORE_PHI0 * math.exp(-z_km / PORE_ZC), PORE_FLOOR)
+    s = 1.5 * phi / PORE_R
+    return phi, s, 1 / ((1 - PORE_G) * s)
+
+
+def refreeze(z_km, h_ice, a=CRYO_D / 2, wall=0.0):
+    """The borehole behind the probe freezing shut at depth z_km: radial conduction with ice k(T) = K_ICE/T, c(T),
+    enthalpy method. Water at the melting point fills r < a; the ice beyond starts at the lid's temperature, warmed
+    by `wall` K near the hole (the probe's side heat, 1 − η, is ignored at 0: a lower bound on the time).
+    Returns (hours to close, [(fraction of the time, open radius m), …])."""
+    t_far, tm = shell_T(z_km, h_ice)
+    dT = tm - t_far
+    k_m, c_m = K_ICE / tm, c_ice(tm)
+    t_est = RHO_ICE * L_ICE * a * a / (4 * k_m * max(dT, 0.05)) * 3
+    dr = a / 6
+    n = int((a + 6 * math.sqrt(k_m / (RHO_ICE * c_m) * t_est)) / dr) + 2
+    r = [(i + 0.5) * dr for i in range(n)]
+
+    def h_of(T):                                          # J/kg below the melt (sensible heat of ice)
+        return 185.0 * (T - tm) + 7.037 / 2 * (T * T - tm * tm)
+
+    def t_of(h):
+        if h >= 0:
+            return tm
+        b, cc = 185.0, -7.037 / 2 * tm * tm - 185.0 * tm - h        # 3.5185 T² + 185 T + cc = 0
+        return (-b + math.sqrt(b * b - 4 * 3.5185 * cc)) / (2 * 3.5185)
+    H = [L_ICE if ri < a else h_of(min(t_far + wall * math.exp(-(ri - a) / a), tm)) for ri in r]
+    dt = 0.2 * dr * dr * RHO_ICE * c_ice(t_far) / (K_ICE / t_far)
+    t, hist = 0.0, []
+    while True:
+        T = [t_of(h) for h in H]
+        flux = [0.0] * (n + 1)                           # W/m per unit length across face i (between i−1 and i)
+        for i in range(1, n):
+            k = 2 * K_ICE / (T[i] + T[i - 1])
+            flux[i] = -k * (T[i] - T[i - 1]) / dr * 2 * math.pi * (i * dr)
+        for i in range(n - 1):
+            H[i] -= (flux[i + 1] - flux[i]) * dt / (RHO_ICE * 2 * math.pi * r[i] * dr)
+        t += dt
+        open_r = sum(1 for h in H if h > 0) * dr
+        hist.append((t, open_r))
+        if open_r == 0:
+            break
+    return t / 3600, [(ti / t, ri) for ti, ri in hist[::max(1, len(hist) // 40)]]
 
 
 def c_ice(T):
@@ -385,14 +467,17 @@ def shell_T(z, h_ice):
     return T_SURF * (tb / T_SURF) ** (z / h_ice), tb
 
 
+def cryo_speed(p_kw, h_ice, z, d=CRYO_D, eta=CRYO_ETA):
+    """The probe's descent speed (m/s) at depth z km: the share eta of its heat warms and melts the ice ahead."""
+    t, tb = shell_T(z, h_ice)
+    q = 185.0 * (tb - t) + 7.037 / 2 * (tb ** 2 - t ** 2) + L_ICE
+    return eta * p_kw * 1000 / (RHO_ICE * math.pi * (d / 2) ** 2 * q)
+
+
 def cryobot(p_kw, h_ice, d=CRYO_D, eta=CRYO_ETA):
     """Days to melt through h_ice km at p_kw thermal; speed (m/h) at the top and at the base."""
-    a = math.pi * (d / 2) ** 2
-
     def rate(z):                                             # m/s at depth z km
-        t, tb = shell_T(z, h_ice)
-        q = 185.0 * (tb - t) + 7.037 / 2 * (tb ** 2 - t ** 2) + L_ICE
-        return eta * p_kw * 1000 / (RHO_ICE * a * q)
+        return cryo_speed(p_kw, h_ice, z, d, eta)
     n, sec = 2000, 0.0
     for i in range(n):
         sec += h_ice * 1000 / n / rate((i + 0.5) * h_ice / n)
@@ -561,6 +646,20 @@ elif __name__ == '__main__':
     rows.append(('Pure water absorption, render R / G / B', ' / '.join(f'{a:.4f}' for a in rgb) + ' per m (e-fold '
                  + ' / '.join(f'{1 / a:.0f}' for a in rgb) + f' m); particles {SEA_SCATTER}/m, g {SEA_G} (film pick); '
                  f'lamp {CRYO_LAMP_W:.0f} W'))
+    irgb = ice_rgb()
+    rows.append(('Pure ice absorption, render R / G / B', ' / '.join(f'{a:.4f}' for a in irgb) + ' per m (e-fold '
+                 + ' / '.join(f'{1 / a:.0f}' for a in irgb) + f' m; Warren & Brandt 2008); n ice {N_ICE}, water '
+                 f'{N_WATER}: relative {N_WATER / N_ICE:.3f}'))
+    for z in (0.02, 0.1, 0.5, 1, 3, 10):
+        phi, s, lt = pore(z)
+        rows.append((f'Shell ice {z:g} km down: pores', f'φ {phi:.2g}, σs {s:.3g}/m (g {PORE_G}), transport length '
+                     f'{lt:.3g} m{"; cracked lid" if z < BRITTLE_KM else "; healed: only refrozen veins"}'))
+    for z in (0.02, 1, 5, 10, 15, 19.5):
+        t, tb = shell_T(z, h)
+        v = cryo_speed(CRYO_P[2], h, z) * 3600
+        hrs, _ = refreeze(z, h)
+        rows.append((f'Hole refreezes, {z:g} km down ({t:.0f} K)', f'shut {hrs:.2g} h behind the probe = '
+                     f'≈ {hrs * v:.2g} m above it at ~{v:.2f} m/h (10 kW; walls not pre-warmed: lower bound)'))
     rows.append(('Lamp in pure water (e-fold distance)', ', '.join(f'{wl} nm {1 / a:.0f} m' for wl, a in A_WATER.items())
                  + ': red gone within metres, blue reaches ~100 m (before 1/r²)'))
     w = max(len(a) for a, _ in rows)
