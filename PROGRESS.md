@@ -1,8 +1,8 @@
 # Europa · 木卫二 · 深渊: progress
 
 ## State (2026-10-05)
-**Sprint 1 (look spike) done 2026-10-05 (branch `sprint-1-look`), waiting for the user's read of the looks; next
-Sprint 2 (builds).** Sprint 0 (brainstorm → treatment → scaffold → maps) done 2026-10-04. Folder opened; `tools/physics.py` adapted from Io's (Jupiter 12.3°, Io
+**Sprint 2.0 (01 framing test) done 2026-10-05 (branch `sprint-2.0-framing`): 01 = the turn. Next: Sprint 2 builds,
+starting with the `europa_world` ground.** Sprint 1 (look spike) done 2026-10-05 (merged, PR #3). Sprint 0 (brainstorm → treatment → scaffold → maps) done 2026-10-04. Folder opened; `tools/physics.py` adapted from Io's (Jupiter 12.3°, Io
 transits, Io's shadow, horizon sites Conamara / Pwyll, ice + ocean pressure, lens table). Ideas, three directions and
 the reuse map in `BRAINSTORM.md`. Git: `github.com/dizhangai-star/Europa` (`main`), `.gitignore` from Io.
 Direction, descent, format and title picked by the user 2026-10-04 (Decisions).
