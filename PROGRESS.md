@@ -1,7 +1,7 @@
 # Europa · 木卫二 · 深渊: progress
 
 ## State (2026-10-04)
-**Sprint 0 (brainstorm → treatment → scaffold) in progress.** Folder opened; `tools/physics.py` adapted from Io's (Jupiter 12.3°, Io
+**Sprint 0 (brainstorm → treatment → scaffold → maps) done 2026-10-04; next Sprint 1.** Folder opened; `tools/physics.py` adapted from Io's (Jupiter 12.3°, Io
 transits, Io's shadow, horizon sites Conamara / Pwyll, ice + ocean pressure, lens table). Ideas, three directions and
 the reuse map in `BRAINSTORM.md`. Git: `github.com/dizhangai-star/Europa` (`main`), `.gitignore` from Io.
 Direction, descent, format and title picked by the user 2026-10-04 (Decisions).
@@ -30,9 +30,28 @@ Clip list locked by the user the same day (Decisions).
 - Smoke tests: `blender/shots/board_astronaut.py --facing jupiter --aimz 1.5` (Cycles, 5.5 s at 40 %): Jupiter on the
   western horizon, bands vertical, suit lit by the Sun behind the camera; `node preview.mjs 09-title 3` card OK.
 
+**0.4 done 2026-10-04 (branch `sprint-0.4-maps`):** Europa maps in `../../_assets/textures/europa/` (index ids
+`europa-usgs-mosaic-500m`, `europa-galileo-closeups`; REFERENCES.md "Downloaded for Europa").
+- USGS 500 m global mosaic (greyscale only: no USGS colour product for Europa) + 8 Galileo photojournal images
+  (Conamara: PIA01403 15 m/px mosaic, 01182 9 m/px cliffs, 00591 rafts; enhanced colour 01127 / 01296 / 26446;
+  natural-colour global 19048; ridged plains 01178).
+- `tools/maps.py`: `io`/`far` → **`europa`** (site reprojected to the local frame, top = toward Jupiter, right = +X ≈
+  north: `blender/textures/src/europa_site_500m.png` 512 km, `europa_wide_1km.png` 2048 km) and **`colour`** (natural
+  palette from PIA19048). Georef read from the GeoTIFF keys (centre meridian 180 → 0–360° E, R 1562.09 km).
+  **Orientation checked**: Pwyll's ray centre lands on the predicted pixel (x −951 km = south, left); the site map shows
+  Conamara's chaos patch beside the Asterius/Agave lineae X, as in PIA01296.
+- Numbers for Sprint 2: Conamara ±50 km normalised reflectance 0.66 (p5 0.52, p95 0.88). Natural tints (linear,
+  albedo-free, from PIA19048): clean ice (0.872, 0.973, 1.0) · blue polar/plains ice (0.577, 0.791, 1.0) · cream
+  (1.0, 0.922, 0.826) · non-ice brown (1.0, 0.716, 0.539) · darkest lineae/chaos brown (1.0, 0.509, 0.324) at 0.77×
+  brightness. Conamara itself is mostly the brown units (PIA26446/01127, enhanced, show where).
+- Not yet switched: `europa_world.surface()` still tiles Io's PIA02507 (→ PIA01403 at ~15 m/px in Sprint 2);
+  `globe.py` `FAR_MAP` still points at Io's `io_far_1km.png` (only if a view from altitude is needed; `europa_wide_1km`
+  is the candidate, but its east side is smeared Voyager data).
+
 ## Next
-0.4 Europa maps (USGS mosaic, Galileo Conamara close-ups) + `maps.py europa`. Asset hunt by the user in parallel
-(list in REFERENCES.md "Wanted"). Then Sprint 1 look spike.
+Sprint 1 look spike (3 Cycles stills, previews free): Conamara horizon with ¾-Jupiter (Jupiter-lit ice) · Io on the
+disc at 135 mm · cryobot lamp in black water (time the water volume). Asset hunt by the user in parallel (REFERENCES.md
+"Wanted": W1 Mixamo kneel/stand, W2–W3 ice sounds and hydrophone).
 
 ## Sprints (plan, 2026-10-04)
 0. Treatment, physics, scaffold. 0.1 ✅ brainstorm + repo · 0.2 physics rows + `TREATMENT.md` (clip list, beat sheet
@@ -70,4 +89,7 @@ Clip list locked by the user the same day (Decisions).
   so the climax shots get their own portrait cameras/renders (planned in the treatment, rendered last).
 
 ## Notes / lessons
-(none yet)
+- USGS GeoTIFFs: read the projection centre (GeoKey 3088) — Europa's mosaic is centred on 180°, so its x origin is
+  lon 0 E, not −180 (Io's was −180..180). Verify any reprojection on a landmark (here Pwyll's rays), not by eye.
+- Photojournal catalog pages are JS-heavy; the description text sits after ">Description<" in the raw HTML. TIFFs:
+  `assets.science.nasa.gov/content/dam/science/psd/photojournal/pia/piaNN/piaNNNNN/PIANNNNN.tif` (browser UA).

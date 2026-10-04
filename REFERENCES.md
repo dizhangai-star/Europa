@@ -11,6 +11,20 @@ which shot uses it.
 | Mixamo "Breathing Idle" | Mixamo terms | `mocap/Breathing Idle.fbx` | 03 |
 | Breaths (Freesound 387620, 682884), heartbeat (332819) | CC0 | `audio/breath/` | 01–04 |
 
+## Downloaded for Europa (0.4, 2026-10-04)
+All public domain (NASA / USGS). Index ids `europa-usgs-mosaic-500m`, `europa-galileo-closeups`; previews in
+`../../_assets/previews/europa-*.jpg`. Derived maps (git-ignored, rebuilt by `python3 tools/maps.py europa`) in
+`blender/textures/src/`.
+| asset | what it is | path | used for |
+|---|---|---|---|
+| USGS Europa Voyager–Galileo SSI global mosaic 500 m ([page](https://astrogeology.usgs.gov/search/map/Europa/Voyager-Galileo/Europa_Voyager_GalileoSSI_global_mosaic_500m)) | greyscale, 19631×9816, 0–360° E, R 1562.09 km | `textures/europa/Europa_Voyager_GalileoSSI_global_mosaic_500m.tif` | site albedo map (512 km) + wide check (2048 km, Pwyll) |
+| PIA01403 "A Closer Look at Chaos" | Conamara mosaic 35×50 km, ~15 m/px, 20 m insets, north up, Sun from the east | `textures/europa/galileo/PIA01403.*` | block/raft shapes; candidate detail tile (Sprint 2) |
+| PIA01182 "Icy Cliffs" | Conamara 1.7×4 km, 9 m/px, north top-right: 100 m+ cliffs, house-size debris | `…/galileo/PIA01182.*` | the foreground scale (01, 03) |
+| PIA00591 "Ice Rafts" | Conamara 34×42 km, 54 m/px | `…/galileo/PIA00591.*` | raft layout, 02 / 04 middle distance |
+| PIA01127, PIA01296, PIA26446 | Conamara in **enhanced** colour (70×30, 250×200 km; close-up) | `…/galileo/` | *where* the colour sits only (brown on the chaos matrix and ridges, white = Pwyll ray frost, blue-white = old plains) |
+| PIA19048 "Europa's Stunning Surface" | global view in approximately natural colour (2014 reprocessing), north at right | `…/galileo/PIA19048.*` | the palette (`maps.py colour`) |
+| PIA01178 | ridged plains elsewhere (14° S 194° W, 26 m/px) | `…/galileo/PIA01178.*` | double-ridge shapes |
+
 ## Wanted (2026-10-04)
 Who fetches: **user** = needs a login (Mixamo, Freesound downloads) or a choice of look; **Claude** = public, no login.
 | # | what | for | where to look | who | priority |
@@ -19,6 +33,6 @@ Who fetches: **user** = needs a login (Mixamo, Freesound downloads) or a choice 
 | W2 | Ice sounds: lake/sea ice cracking and "singing" (deep booms, pew-pew), recorded | 05–06 | Freesound, CC0 first | user | high |
 | W3 | Under-ice hydrophone ambience | 07–08 | Freesound, CC0 first | user | medium |
 | W4 | Cryobot model (optional: the plan is code-built, plain, no logos) | 03, 05–08 | NASA 3D Resources (public domain), Sketchfab CC-BY ("cryobot", "ice melt probe", "Europa lander") | user, optional | low |
-| W5 | USGS Europa global mosaic (Galileo SSI + Voyager) + Galileo Conamara close-ups (PIA photojournal) | 01–04 ground colour and block shapes | astrogeology.usgs.gov, photojournal.jpl.nasa.gov | Claude (0.4) | high |
+| W5 | USGS Europa global mosaic (Galileo SSI + Voyager) + Galileo Conamara close-ups (PIA photojournal) | 01–04 ground colour and block shapes | astrogeology.usgs.gov, photojournal.jpl.nasa.gov | ✅ done 0.4 (above) | high |
 | W6 | Close-up frost/ice PBR textures | 01, 03 foreground | Poly Haven, ambientCG (CC0) | Claude | medium |
 | W7 | Look references only (not in the picture): Icefin under-ice footage, Juno/Galileo night-side lightning images, Jupiter eclipse images, cryobot concept art | 04, 05–08 | NASA/JPL, Georgia Tech/Cornell Icefin | Claude | medium |
