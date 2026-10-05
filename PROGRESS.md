@@ -1,8 +1,8 @@
 # Europa · 木卫二 · 深渊: progress
 
 ## State (2026-10-05)
-**Sprint 3.2 (shot 02, Io sets) done 2026-10-05, branch `sprint-3.2-shot02`, waiting for the user's review (lens 75 mm and
-the mutual eclipse are new: see Findings 3.2).** Sprint 3.1 (shot 01, the turn) done, 01 locked (merged, PR #9). Sprint 2.4 (the under-ice ocean) done, approved and merged (PR #8). Sprint 2.3 (the ice-shell interior) done, approved and merged (PR #7). Sprint 2.2 (the cryobot)
+**Sprint 3.2 (shot 02, Io sets) done 2026-10-05, 02 locked by the user (not rendered), PR from `sprint-3.2-shot02`.
+Next: 3.3 = shot 03.** Sprint 3.1 (shot 01, the turn) done, 01 locked (merged, PR #9). Sprint 2.4 (the under-ice ocean) done, approved and merged (PR #8). Sprint 2.3 (the ice-shell interior) done, approved and merged (PR #7). Sprint 2.2 (the cryobot)
 done, approved and merged (PR #6).
 Sprint 2.1 (the ground) done and
 merged 2026-10-05 (PR #5). Sprint 2.0 (01 framing test) done 2026-10-05
@@ -299,10 +299,10 @@ kept: max 221/255, no clip, half a stop from 01's end).
    at 4.8–9.3 s. Status **real (geometry)**: mutual eclipses happen for months either side of each Jupiter equinox
    (twice per 12-y orbit; 2026–27 is one, BAA); it also needs Europa near its orbit's node (0.47° tilt), so not every
    transit. Sources: britastro.org/section_news_item/mutual-events-of-the-galilean-satellites-2026-27 ·
-   arxiv.org/pdf/2310.00807. **Keep it? (and e-end 179 vs 178)**
+   arxiv.org/pdf/2310.00807. **Yes, mid-shot (e-end 179), user 2026-10-05.**
 2. **Lens 75 mm** (TREATMENT said 135 locked, open since 0.2): 135 mm can't hold the visible disc (1,215 px in 804);
    85 mm cuts Io at the top edge when it enters; 75 mm shows Io in the black above the disc for ~1 s, the whole disc,
-   Io ≈ 58 px. The limb mesa is bigger in frame than in 01 (same geometry). **OK?**
+   Io ≈ 58 px. The limb mesa is bigger in frame than in 01 (same geometry). **75 mm locked, user 2026-10-05.**
 3. Stars don't show at −4 EV beside the disc (density 0.06, as 01); they turn in the code, so a brighter star field
    would drift down with Io. Leave dark unless wanted.
 4. Caption `IO. WE STOOD THERE.` 6.5–11.4 s lands as Io comes out of the shadow and sinks: kept.
@@ -311,7 +311,7 @@ kept: max 221/255, no clip, half a stop from 01's end).
 Finding 1 (Io + two shadows in 02): verified, in TREATMENT as C2 and in 02's row (user 2026-10-05).
 01's framing test done (2.0, the turn); the ground done (2.1); the cryobot done (2.2); the shell interior done (2.3,
 approved: puck release in 05, porosity 0.2 %); the under-ice ocean done (2.4, approved: melt ceiling, frazil ⚠ only if
-07 wants it; particles and 08's sink speed open for those shots). Sprint 2 builds are complete → Sprint 3, shots one per session: **01 locked (3.1); 02 done (3.2), waiting for review (findings 1–2); next 03 (3.3)**. Asset hunt by the user in parallel
+07 wants it; particles and 08's sink speed open for those shots). Sprint 2 builds are complete → Sprint 3, shots one per session: **01 locked (3.1); 02 locked (3.2); next 03 (3.3)**. Asset hunt by the user in parallel
 (REFERENCES.md "Wanted": W1 Mixamo kneel/stand, W2–W3 ice sounds and hydrophone).
 
 ## Sprints (plan, 2026-10-04)
@@ -330,6 +330,10 @@ approved: puck release in 05, porosity 0.2 %); the under-ice ocean done (2.4, ap
 5. Batch render (overnight, resume) → 4K compile, srt, poster; then the 9:16 climax cut (own portrait cameras).
 
 ## Decisions (locked)
+- 02 locked (user 2026-10-05, Sprint 3.2): `s02_neighbour.py` as checked: 75 mm locked, horizon 0.3° above the foot,
+  time-lapse ×512 (Io on the top limb 1.0 s, sets 10.5 s), −4.0 EV; **Europa's shadow crosses Io mid-shot** (mutual
+  eclipse, real at Jupiter's equinox season; `--e-end 179`: 2.4–7.3 s, deepest 4.9 s). Renders in the Sprint 5 batch
+  (≈ 31 min at 64 spp).
 - 01 locked (user 2026-10-05, Sprint 3.1): `s01_horizon.py` as checked: pan 150° → 6° over 2.3–8.8 s (peak 42°/s),
   24 → 35 mm, +1.5 → −3.5 EV by heading, push 3.6 m, motion blur 0.5, limb mesa `1.0:2.5:40`, caption 8.2–11.6 s.
   Renders in the Sprint 5 batch (≈ 41 min at 64 spp).

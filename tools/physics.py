@@ -185,7 +185,7 @@ def _cross(a, b):
 # Jupiter, east +) and declination dec: (cos dec cos E, cos dec sin E, sin dec). E falls by 360° per synodic day
 # (Europa turns prograde), so the Sun rises in the east (E = 180° side) and sets toward Jupiter.
 SITE = ('Conamara Chaos', 9.7, 273.7)
-LAPSE_E_END = (180.0, 179.0, 178.0)   # deg, 02's Sun when Io sets (film pick; one is chosen in Sprint 3.2)
+LAPSE_E_END = (180.0, 179.0, 178.0)   # deg, 02's Sun when Io sets (film pick: 179 locked 2026-10-05; the others printed)
 DEC_SUN = 3.13              # deg, Jupiter's axial tilt: the Sun's declination over Europa's equator, ± over 11.9 y
 
 
