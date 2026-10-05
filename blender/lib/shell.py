@@ -11,6 +11,7 @@ in the ice (pores, layers, veins, cracks, the inclusions left on the column's ax
     sh['root']     the ice (key location.z = nose depth, m)
     sh['box']      the ice volume round the probe: x ±half, y −cut…+half, z −below…+above (world)
     sh['water']    melt pocket + open column (lathe), sh['front_z'] = where the column has frozen shut (world z)
+    sh['core']     with_core=True: the refrozen column's milky core above the front (physics.HOLE_CORE), else None
     shell.key_depth(sh, P, frame, depth_m)   06: slide the ice and key its σs with depth
 
 Look, all physical and all homogeneous volumes (a textured volume cost 4×; homogeneous ones are sampled
@@ -354,9 +355,52 @@ def inclusions(sc, P, root, z_lo, z_hi, front_z, seed=13, per_m=260):
     return ob
 
 
+def core(sc, P, front_z, z_top, hole_r, nseg=32):
+    """The refrozen column's milky core (physics.HOLE_CORE, IceCube's 'bubble column'): the gas and salt the melt held,
+    pushed to the axis as the hole froze inward. World-fixed like the front: from a short cone at front_z (the last
+    water to freeze) up to z_top. A homogeneous volume with the bubbles' true g (a few cm thick: not diffusive)."""
+    frac, ls, g_ = P.HOLE_CORE
+    rc = frac * hole_r
+    rings = [(0.0, front_z)] + [(rc * math.sin(k / 4 * math.pi / 2), front_z + 2 * rc * (1 - math.cos(k / 4 * math.pi / 2)))
+                                for k in range(1, 5)] + [(rc, z_top), (0.0, z_top)]
+    verts, faces = [], []
+    for r, z in rings:
+        for j in range(nseg):
+            a = 2 * math.pi * j / nseg
+            verts.append((r * math.cos(a), r * math.sin(a), z))
+    for i in range(len(rings) - 1):
+        for j in range(nseg):
+            j1 = (j + 1) % nseg
+            faces.append((i * nseg + j, i * nseg + j1, (i + 1) * nseg + j1, (i + 1) * nseg + j))
+
+    def build(g):
+        a = P.ice_rgb()
+        amax = max(a)
+        sc_ = g.add('ShaderNodeVolumeScatter')
+        g.set(sc_, 'Color', (1.0, 1.0, 1.0))
+        g.set(sc_, 'Density', 1.0 / ls)
+        g.set(sc_, 'Anisotropy', g_)
+        ab = g.add('ShaderNodeVolumeAbsorption')
+        g.set(ab, 'Color', tuple(1.0 - x / amax for x in a))
+        g.set(ab, 'Density', amax)
+        add = g.add('ShaderNodeAddShader')
+        g.link(sc_, 0, add, 0)
+        g.link(ab, 0, add, 1)
+        g.output(g.o(g.add('ShaderNodeBsdfTransparent'), 0), g.o(add, 0))
+    ob = _mesh(sc, 'HoleCore', verts, faces, mats=[_mat('HoleCore', build)], smooth=True)
+    me = ob.data
+    bm = bmesh.new()
+    bm.from_mesh(me)
+    bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=1e-6)
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    bm.to_mesh(me)
+    bm.free()
+    return ob
+
+
 # ---------------------------------------------------------------- the whole lid round the probe
 def build(sc, P, depth_m, cut=0.30, half=10.0, below=16.0, above=12.0, face='glass', h_ice=None, p_kw=None,
-          travel=0.0, sigma=None, similar=True, seed=11):
+          travel=0.0, sigma=None, similar=True, seed=11, with_core=False):
     """The shell round a probe whose nose is `depth_m` down (world z = 0 at the nose). `travel`: metres of ice that
     will slide past (06 keys root z from depth_m to depth_m + travel): cracks/veins/inclusions are made for all of
     it. sigma: the ice's σs (default physics.pore at depth_m; 06 keys it with key_depth)."""
@@ -397,12 +441,40 @@ def build(sc, P, depth_m, cut=0.30, half=10.0, below=16.0, above=12.0, face='gla
     vn = veins(sc, P, root, zl_lo, zl_hi, half, ymin, cutter, similar, seed=seed + 1)
     bd = bands(sc, P, root, zl_lo, zl_hi, half, ymin, cutter, s0, similar, seed=seed + 3)
     inc = inclusions(sc, P, root, max(zl_lo, -(depth_m + travel) + front_z - 0.2), zl_hi, front_z, seed=seed + 2)
+    hc = core(sc, P, front_z, above, hole_r) if with_core else None
     print(f'NOTE shell: nose {depth_m:g} m down, σs {s0:.3g}/m, hole shuts {hrs:.2f} h = {open_m:.2f} m above the '
           f'probe top ({v_mh:.2f} m/h), cracks {0 if cr is None else len(cr.data.polygons)}, veins '
           f'{0 if vn is None else len(vn.data.polygons)} faces, bands {0 if bd is None else len(bd.data.polygons)} faces')
-    return dict(root=root, box=box, water=water, cracks=cr, veins=vn, bands=bd, inclusions=inc, cutter=cutter,
+    return dict(root=root, box=box, water=water, core=hc, cracks=cr, veins=vn, bands=bd, inclusions=inc, cutter=cutter,
                 front_z=front_z, open_m=open_m, hole_r=hole_r,
                 mats=(m_cut, m_open) + ((bd.data.materials[0],) if bd else ()))
+
+
+def fix_bore(sc, sh, travel):
+    """For a shot whose ice slides up `travel` m along the hole's axis (05): bore the sheets (cracks, veins, bands)
+    once, at root's current z, with a cutter reaching `travel` m further below the nose, and drop their live Booleans.
+    A slide along the axis leaves the hole where it was, so the only change is a spurious hole up to `travel` m below
+    the nose (out of 05's frame). Needed, not an optimisation: re-run per frame, the EXACT solver dropped a whole band
+    sheet at some positions (05's animatic: a band vanished between frames 52 and 53, Bands 922 → 821 faces)."""
+    me = sh['cutter'].data
+    zmin = min(v.co.z for v in me.vertices)
+    long_ = bpy.data.objects.new('HoleCutterLong', me.copy())
+    sc.collection.objects.link(long_)
+    long_.hide_render = True
+    for v in long_.data.vertices:
+        if v.co.z <= zmin + 1e-6:
+            v.co.z -= travel
+    dg = bpy.context.evaluated_depsgraph_get()
+    for k in ('cracks', 'veins', 'bands'):
+        ob = sh.get(k)
+        if ob is None:
+            continue
+        ob.modifiers['Hole'].object = long_
+        dg.update()
+        new = bpy.data.meshes.new_from_object(ob.evaluated_get(dg))
+        ob.modifiers.remove(ob.modifiers['Hole'])
+        ob.data = new
+    bpy.data.objects.remove(long_, do_unlink=True)
 
 
 def key_depth(sh, P, frame, depth_m):
