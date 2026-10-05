@@ -87,6 +87,12 @@ def engine(sc, A):
     if e != 'workbench':
         return
     sc.view_settings.exposure = 0.0           # studio light: the Cycles exposure (set for true irradiance) would blacken it
+    ad = sc.animation_data                    # a keyed exposure ride (01) would re-apply it per frame
+    if ad and ad.action:
+        from bpy_extras import anim_utils
+        for fc in anim_utils.action_get_channelbag_for_slot(ad.action, ad.action_slot).fcurves:
+            if fc.data_path == 'view_settings.exposure':
+                fc.mute = True
     sh = sc.display.shading
     sh.light, sh.color_type = 'STUDIO', 'TEXTURE'     # image-textured parts show their image, the rest diffuse_color
     sh.show_cavity, sh.cavity_type = True, 'BOTH'
