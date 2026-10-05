@@ -132,6 +132,57 @@ def sun_disc(sc, elong, dist=1.5e6):
     return ob
 
 
+def corona(sc, elong, dist=1.6e6, r_max=20.0):
+    """The solar corona for the camera only (04: it shows once Jupiter hides the Sun's disc, as at a total eclipse
+    on Earth; its surface brightness doesn't depend on distance, so from Europa it is as bright as from Earth but
+    5.2× smaller). Baumbach (1937) K+F profile, physics.CORONA / corona(r), r in solar radii (1 … `r_max`), relative
+    to the disc centre's radiance (the mean disc radiance / physics.LIMB_DARK). A flat camera-facing disc beyond Jupiter (Jupiter hides it) and the Sun's disc
+    (`sun_disc`, 1.5e6 m); white (scattered sunlight). Returns the object; shots move it with `place_sun`-style keys
+    (`ob['dist']`) and keep it facing the camera with its Track To constraint (`track`)."""
+    import bmesh
+    rs = dist * math.tan(math.radians(P.R_SUN_DEG))
+    me = bpy.data.meshes.new('Corona')
+    bm = bmesh.new()
+    bmesh.ops.create_circle(bm, cap_ends=True, segments=96, radius=rs * r_max)
+    bm.to_mesh(me)
+    bm.free()
+    ob = bpy.data.objects.new('Corona', me)
+    sc.collection.objects.link(ob)
+    for k in ('visible_diffuse', 'visible_glossy', 'visible_shadow', 'visible_transmission', 'visible_volume_scatter'):
+        setattr(ob, k, False)
+    m = bpy.data.materials.new('Corona')
+    m.surface_render_method = 'BLENDED'
+    g = nodes.Graph(m)
+    tc = g.add('ShaderNodeTexCoord')
+    ln = g.add('ShaderNodeVectorMath', operation='LENGTH')
+    g.set(ln, 0, g.o(tc, 'Object'))
+    r = g.math('MAXIMUM', g.math('DIVIDE', g.o(ln, 'Value'), rs), 1.0)
+    prof = None
+    for a, n in P.CORONA:
+        t = g.math('MULTIPLY', g.math('POWER', r, -n), a)
+        prof = t if prof is None else g.math('ADD', prof, t)
+    b0 = P.E_SUN / (math.pi * math.sin(math.radians(P.R_SUN_DEG)) ** 2) / P.LIMB_DARK
+    em = g.add('ShaderNodeEmission')
+    g.set(em, 'Color', (1.0, 1.0, 1.0))
+    g.set(em, 'Strength', g.math('MULTIPLY', prof, 1e-6 * b0))
+    tr = g.add('ShaderNodeBsdfTransparent')
+    add = g.add('ShaderNodeAddShader')
+    g.link(tr, 0, add, 0)
+    g.link(em, 0, add, 1)
+    g.output(g.o(add, 0))
+    me.materials.append(m)
+    ob['dist'] = dist
+    place_sun(None, ob, elong)
+    return ob
+
+
+def track(ob, cam):
+    """Keep a flat camera-only disc (the corona) facing the camera."""
+    c = ob.constraints.new('TRACK_TO')
+    c.target, c.track_axis, c.up_axis = cam, 'TRACK_Z', 'UP_Y'
+    return c
+
+
 def place_sun(lamp, disc, elong, origin=(0.0, 0.0, 0.0)):
     """Point the Sun lamp and move its disc to elongation `elong` (either may be None)."""
     u = Vector(P.sun_local(elong))

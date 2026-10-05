@@ -243,3 +243,72 @@ def lamp(sc, jup, sun_elong):
     for k in ('visible_diffuse', 'visible_glossy'):
         setattr(jup, k, False)
     return tw
+
+
+def sky_point(jup, cam_loc, dx, dy):
+    """World point on Jupiter's cloud tops seen at (dx, dy) disc radii right/up of the disc centre from cam_loc, or
+    None off the disc."""
+    u, _, r_eq, _, _ = P.jupiter_local()
+    u = Vector(u)
+    right = (Vector((1.0, 0.0, 0.0)) - u * u.x).normalized()
+    up = right.cross(u)
+    r = math.radians(r_eq)
+    d = (u + right * math.tan(dx * r) + up * math.tan(dy * r)).normalized()
+    Mi = jup.matrix_world.inverted()
+    o, v = Mi @ Vector(cam_loc), (Mi.to_3x3() @ d)
+    a, b, c = v.dot(v), 2 * o.dot(v), o.dot(o) - 1.0
+    disc = b * b - 4 * a * c
+    if disc < 0:
+        return None
+    t = (-b - math.sqrt(disc)) / (2 * a)
+    return jup.matrix_world @ (o + v * t)
+
+
+def lightning(sc, jup, cam_loc, storms, flashes, shutter_s, fps=24):
+    """Lightning on the night side (04, off by default since the user's review): one camera-only emitter per storm at
+    its cloud-top point (`storms`: list of (dx, dy) in disc radii, sky_point), a sphere of the flash spot's HWHM at
+    Jupiter's scale (sub-pixel: a point). `flashes`: list of (storm index, frame, optical energy J landing in that
+    frame's shutter). Strength keyed per frame (constant) so the irradiance at the camera is physics.flash_seen's over
+    the shutter, × cos of the view angle (Lambertian cloud tops). Returns the emitters."""
+    k = DIST / (P.jupiter_local()[1] * 1000.0)
+    hwhm = 0.5 * sum(P.FLASH_HWHM) * 1000.0 * k
+    obs = []
+    for i, (dx, dy) in enumerate(storms):
+        p = sky_point(jup, cam_loc, dx, dy)
+        n = (p - jup.matrix_world.translation).normalized()
+        view = (Vector(cam_loc) - p).normalized()
+        cosv = max(view.dot(n), 0.05)
+        D = (p - Vector(cam_loc)).length
+        bpy.ops.mesh.primitive_uv_sphere_add(segments=12, ring_count=6, radius=hwhm, location=p + view * 2 * hwhm)
+        ob = bpy.context.object
+        ob.name = f'Lightning{i}'
+        for kk in ('visible_diffuse', 'visible_glossy', 'visible_shadow', 'visible_transmission',
+                   'visible_volume_scatter'):
+            setattr(ob, kk, False)
+        m = bpy.data.materials.new(f'Lightning{i}')
+        g = nodes.Graph(m)
+        em = g.add('ShaderNodeEmission')
+        g.set(em, 'Color', (0.9, 0.95, 1.0))
+        amp = g.add('ShaderNodeValue')
+        amp.name = 'Flash'
+        amp.outputs[0].default_value = 0.0
+        g.link(amp, 0, em, 'Strength')
+        g.output(g.o(em, 0))
+        ob.data.materials.append(m)
+        s_ = amp.outputs[0]
+        unit = cosv / (math.pi * (hwhm / D) ** 2)            # radiance per W/m² at the camera
+        keys = {}
+        for si, f, e in flashes:
+            if si == i:
+                keys[f] = keys.get(f, 0.0) + P.flash_seen(e, shutter_s)[1] * unit
+        for f in sorted(set(keys) | {f + 1 for f in keys} | {f - 1 for f in keys} | {1}):
+            s_.default_value = keys.get(f, 0.0)
+            s_.keyframe_insert('default_value', frame=f)
+        fc = m.node_tree.animation_data.action
+        from bpy_extras import anim_utils
+        cb = anim_utils.action_get_channelbag_for_slot(fc, m.node_tree.animation_data.action_slot)
+        for c in cb.fcurves:
+            for kp in c.keyframe_points:
+                kp.interpolation = 'CONSTANT'
+        obs.append(ob)
+    return obs

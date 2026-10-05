@@ -1,8 +1,9 @@
 # Europa · 木卫二 · 深渊: progress
 
 ## State (2026-10-05)
-**Sprint 3.3 (shot 03, the probe) done 2026-10-05, 03 locked by the user (not rendered; dawn, lobe off, 9 s), PR from
-`sprint-3.3-shot03`. Next: 3.4 = shot 04.** Sprint 3.2 (shot 02, Io sets) done, 02
+**Sprint 3.4 (shot 04, the fall of the Sun) done 2026-10-05, 04 locked by the user (not rendered; no corona, no
+lightning, eased ingress, backlit grey-white ice), branch `sprint-3.4-shot04`. Next: 3.5 = shot 05.** Sprint 3.3 (shot 03, the probe) done, 03 locked (merged,
+PR #11). Sprint 3.2 (shot 02, Io sets) done, 02
 locked (merged, PR #10). Sprint 3.1 (shot 01, the turn) done, 01 locked (merged, PR #9). Sprint 2.4 (the under-ice ocean) done, approved and merged (PR #8). Sprint 2.3 (the ice-shell interior) done, approved and merged (PR #7). Sprint 2.2 (the cryobot)
 done, approved and merged (PR #6).
 Sprint 2.1 (the ground) done and
@@ -350,11 +351,65 @@ first 12 s timing). Cycles check `frames/03-check.png` (50 %/64 spp:
    hold on Ganymede.**
 4. Astronaut idles (no kneel clip yet, W1); the lean back sells "watching it go up".
 
+**Sprint 3.4 (shot 04, the fall of the Sun) done 2026-10-05, branch `sprint-3.4-shot04`; 04 locked (answers below).**
+**`blender/shots/s04_sunfall.py`**: 01/02's knoll and ground (same HERO plates: the limb mesa at az −7° bites the disc's
+lower left), eye 1.6 m, **50 mm locked**, Jupiter's top limb 3° under the frame top (frame −4.5° … 12.6°: the near ice
+and blocks fill the lower third). Animatic `out/04-sunfall-animatic.mp4` (Cycles 25 %/16 spp), check
+`frames/04-check.png` (50 %/64 spp: 0.5 dawn · 4 noon · 6.5 crescent · 9 Sun on the limb · 11.5 bead · 17 night).
+- **Clock** (physics `SHOT04`, `fit04`, `lapse04*`): 0 s = 03's dawn (Sun 174°, 2.2° up behind, Jupiter 99.7 %), real
+  time; log-rate eases up to **×25,373** by 1.5 s (the Sun 30°/s, Jupiter a turn every 1.6 s: its bands stream down
+  into the ice; shadows swing from long-toward-Jupiter through noon, 80° up, to long-toward-us), eases down from 6 s;
+  the Sun enters the frame top at 7.2 s and slows onto the limb; **first contact 10.0 s at ×31** (9.60° up), the rate
+  held so the bead shrinks evenly (100/68/25/0 % at 10/11/12/13 s), real time from second contact 13.5 s (the
+  ingress is 87 s real: "goes out in real time" can't fit 18 s; eased instead). Night 13.5–18 s in real time.
+- **Ground light**: the Sun lamp keyed by `sun_visible`; Jupiter keeps its own Sun (europa_shadow, data copied so it
+  is never dimmed). Jupiter's Lambert crescent 0.28 % at contact (sub-pixel under the ring).
+- **Night** (exposure −4.5 → **+5 EV** over 13.0–15.5 s): stars at true brightness (brightest V −1.5, `--star-mag`;
+  density 0.6), the black disc a starless hole; ring (Io's `_ring`, keyed by the Sun's limb distance; haze from first
+  contact, arc from 1.5° out, dimmed ×16 / ×12 against Io's so it stays orange-red at +5 EV): **a red arch standing on
+  the ice**; **the solar corona** (new `sky.corona`, Baumbach K+F profile, `physics.CORONA`/`corona(r)`, true surface
+  brightness) as a pearly crown on the top limb: the Sun is only 0.05–0.06° behind it; **lightning** (new
+  `jupiter.lightning`: 4 storm points, 9 flashes 14.6–17.8 s, 1e9–1.6e10 J, `physics.flash_seen`: V −0.2 … −3.2,
+  0.4–0.6 px spots: points blinking inside the black disc).
+- physics.py new rows ("04: …"): the day (39.8 h, highest 80.3°, Jupiter 99.7 → 0.28 %, 3.5 turns), ingress 87 s,
+  clock, lightning by energy (Galileo SSI: up to 1.6e10 J, 45–80 km HWHM, Little et al. 1999; Juno SRU 1e5–1e8 J,
+  pulses ms apart, Becker et al. 2020, Kolmašová et al. 2023), corona radiance at 1.05–5 R☉ (≈ 0.1 at 3 R☉ vs sunlit
+  ice 10; 1 R☉ = 2.4 px at 50 mm).
+- **Bug found and fixed**: at +5 EV Jupiter's night face showed its bands (≈ 5e-5 of the lit disc). Elimination: only
+  `SunJupiter`, and only with bounces (direct-only black): its own lit far side leaking through the smooth-shaded
+  sphere. Jupiter is now invisible to diffuse/glossy rays in 04 (`--jup-bounce 1` restores); it loses only its light
+  on the ground by day (0.6 % of the Sun's).
+- `render.mjs`: **persistent data for animatics too** (a Cycles animatic re-synced the 8 M-vertex ground every frame:
+  ~40 s/frame → **0.5 s/frame**). Debug options in 04: `--hide A,B`, `--bounces N`, `--sj-angle DEG`.
+- **Cost**: full res 64 spp ≈ **7 s/frame** (day stills, motion blur on; night frames cheaper) → ≈ **45–50 min**. Ladder: the night tail 13.5–18 s is static
+  but for lightning and exposure → freeze tail (shot.freeze) + flashes pasted per frame (border renders), or render
+  the tail at 32 spp; persistent data on.
+
+**Findings for the user (Sprint 3.4):**
+1. ⭐ **The solar corona on Jupiter's limb (real, new).** After second contact the Sun sits only 0.05° behind the top
+   limb, so its corona (same surface brightness as at a total eclipse on Earth, 5.2× smaller) stands above the limb as
+   a pearly crown next to the red arch. Status **real** (Baumbach profile). Keep?
+2. **"Goes out in real time" → eased.** The real ingress is 87 s; it plays in 3.5 s at ×31 (the bead shrinks
+   evenly), real time after. Alternative: a longer clip (the 87 s can't fit anyway).
+3. **The ground turns grey-white once the Sun is ahead** (≈ 6–13 s): the frost's forward glint swamps the brown
+   (`ice()` specular), a strong change from the sunlit brown at noon. Keep (it is the backlit look) or tone it down?
+4. **Night exposure +5 EV, stars at true brightness**: ~hundreds of stars, the disc a starless hole, ring orange (not
+   white). Lightning: 9 flashes, energies from Galileo; the rate (≈ 2/s from 4 storms) is a film pick (no published
+ rate for flashes this big). At full res each flash is a 1-px white point for 1–2 frames (true size and
+   brightness): subtle; a longer pulse train (3–5 frames, like Earth's in-cloud flashes) would read more.
+5. Frame: the top limb 3° under the frame top (the Sun is in frame from 7.2 s); `--top` moves it.
+
+**User's answers (2026-10-05):** 1. corona **off** (`--corona 0` default; the code and physics row stay). 2. eased
+ingress as built. 3. keep the backlit grey-white ice. 4. lightning first "bigger, a bit exaggerated" (tried: a
+1,500–3,000 km glow, ×6 energy, 3–5-frame trains: it read as a hard white dot, a moon, not lightning), then **dropped**:
+flashes inside the eclipse looked odd (`--flashes 0` default; `jupiter.lightning` and `physics.flash_seen` stay for
+true 1-px flashes). 5. framing OK. The animatic `out/04-sunfall-animatic.mp4` is re-rendered without them.
+
 ## Next
 Finding 1 (Io + two shadows in 02): verified, in TREATMENT as C2 and in 02's row (user 2026-10-05).
 01's framing test done (2.0, the turn); the ground done (2.1); the cryobot done (2.2); the shell interior done (2.3,
 approved: puck release in 05, porosity 0.2 %); the under-ice ocean done (2.4, approved: melt ceiling, frazil ⚠ only if
-07 wants it; particles and 08's sink speed open for those shots). Sprint 2 builds are complete → Sprint 3, shots one per session: **01 locked (3.1); 02 locked (3.2); 03 locked (3.3); next 04 (3.4)**. Asset hunt by the user in parallel
+07 wants it; particles and 08's sink speed open for those shots). Sprint 2 builds are complete → Sprint 3, shots one per session: **01 locked (3.1); 02 locked (3.2); 03 locked (3.3); 04 locked (3.4); next 05 (3.5)**. Asset hunt by the user in parallel
 (REFERENCES.md "Wanted": W1 Mixamo kneel/stand, W2–W3 ice sounds and hydrophone).
 
 ## Sprints (plan, 2026-10-04)
@@ -373,6 +428,10 @@ approved: puck release in 05, porosity 0.2 %); the under-ice ocean done (2.4, ap
 5. Batch render (overnight, resume) → 4K compile, srt, poster; then the 9:16 climax cut (own portrait cameras).
 
 ## Decisions (locked)
+- 04 locked (user 2026-10-05, Sprint 3.4): `s04_sunfall.py` as checked: 50 mm, top limb 3° under the frame top,
+  03's dawn → ×25,373 day → first contact 10 s, covered at ×31 by 13.5 s (87 s real; "real time" eased), real time
+  after; exposure −4.5 → +5 EV (13.0–15.5 s), stars at true brightness, red arch on the ice; **no corona, no
+  lightning**; backlit grey-white ice kept. Renders in the Sprint 5 batch (≈ 45–50 min at 64 spp).
 - 03 locked (user 2026-10-05, Sprint 3.3): `s03_probe.py` as checked: **dawn** (1.18 h after Io set, Sun 2.3° up
   behind the camera, −4.5 EV), 35 mm, eye 0.4 m, camera 3 m right of 01/02's spot, probe on its tripod at 8 m, frost
   burst at 1.0 s (G = blown frost; the vapour lobe off: invisible), tilt 5° → 55° over 3.0–8.0 s to Ganymede, **9 s**
@@ -413,6 +472,9 @@ approved: puck release in 05, porosity 0.2 %); the under-ice ocean done (2.4, ap
   so the climax shots get their own portrait cameras/renders (planned in the treatment, rendered last).
 
 ## Notes / lessons
+- Cycles animatics need persistent data: without it every frame re-syncs the whole ground (04: 40 s → 0.5 s/frame).
+- A planet lit from behind (eclipse) at night exposure showed its own far side bounced onto the night face through a
+  smooth-shaded sphere (~5e-5): make far bodies invisible to diffuse/glossy rays when nothing real lights them.
 - Light diffusing through scattering ice needs many volume bounces (~(r/transport length)² × 1/(1 − g) events): 8
   left everything past 0.5 m black; 128 + the similarity relation (σs(1 − g), g = 0) carry it metres. Keep the true g
   where the medium is thin (single scattering: the beam's side-look depends on it).
