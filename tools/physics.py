@@ -598,6 +598,101 @@ def cryobot(p_kw, h_ice, d=CRYO_D, eta=CRYO_ETA):
     return sec / 86400, rate(0) * 3600, rate(h_ice * 0.999) * 3600
 
 
+# ---------------------------------------------------------------- 03: the probe starts in vacuum (Sprint 3.3)
+# Below water's triple point the head can't melt the surface ice: it sublimates it. The vapour leaves the gap round
+# the probe, choked at about the triple point (the contact self-regulates there), and expands into vacuum; part of it
+# condenses into µm grains (as at Enceladus's vents). Lab tests in cryo-vacuum: after a short sublimation phase the
+# channel closes round the probe (vapour freezes onto the cold walls) and a pressurised pocket of liquid forms
+# (Experimental validation of cryobot thermal models, PSJ 2023; sublimation slows the start ×7.7, Kömle et al.).
+# Liquid that does meet vacuum boils and freezes at once: the boiling takes the latent heat of the rest.
+L_SUB = 2.834e6               # J/kg, ice → vapour near 273 K
+L_VAP = 2.501e6               # J/kg, water → vapour at 0 °C
+C_WATER = 4186.0              # J/kg/K
+T_TRIPLE, P_TRIPLE = 273.16, 611.657                         # K, Pa
+R_H2O, GAMMA_H2O = 461.5, 1.33                               # J/kg/K, cp/cv of water vapour
+JET_CONDENSE = 0.1            # share of the vapour that condenses into grains in the free expansion (estimate: a few
+                              # to ~20 % for saturated vapour expanding into vacuum)
+JET_GRAIN_R = 1.0e-6          # m, grain radius (Enceladus plume grains ~1 µm)
+JET_G = 0.85                  # Henyey–Greenstein asymmetry of µm ice grains (diffraction peak ~15° wide; estimate)
+A_PLAIN = 0.5                 # Conamara's dark plain, albedo (Europa's Bond albedo ~0.68; the brown matrix lower)
+# The vapour leaves a point source on the ice (the nose's contact) into a half-space: a cos² lobe about the vertical,
+# density ∝ cos²θ / r² (free expansion; the probe's body stands in the middle of it).
+# Loose surface frost blown out by that vapour (Europa's regolith: fine frost and flakes of crust; the amount and the
+# speeds are film picks: the gas leaves at ~400 m/s, the flakes take a few m/s at most):
+FROST_N = 5000                # flakes
+FROST_RING = (0.14, 0.7)      # m from the nose: where they lie (the head's footprint outward)
+FROST_SIZE = (0.002, 0.015)   # m across
+FROST_V = (0.3, 6.5)          # m/s, most slow (v = lo + (hi − lo)·u^FROST_V_POW)
+FROST_V_POW = 1.2
+FROST_EL = (15.0, 80.0)       # deg up, steeper for the ones near the nose
+FROST_TAU = 0.6               # s, e-fold of the burst: the vapour clears the loose frost from the ring
+# The deployment tripod (film pick: a borehole tripod with a sheave, the tether to a reel on the ice)
+TRIPOD_H = 4.2                # m, sheave above the ice (the 3 m probe hangs with its nose on the ice)
+TRIPOD_FOOT_R = 1.7           # m
+TRIPOD_LEG_D = 0.05           # m
+TRIPOD_SHEAVE = 0.12          # m, sheave radius
+REEL = (0.55, 0.40, 0.35, 2.2)  # m: the tether reel box (l, w, h) and its distance from the probe
+
+
+def vacuum_start(p_kw, eta=CRYO_ETA, d=CRYO_D):
+    """The probe's first contact in vacuum: (vapour kg/s, head descent m/h while sublimating, choked exit speed m/s,
+    terminal expansion speed m/s)."""
+    q = 185.0 * (T_TRIPLE - T_SURF) + 7.037 / 2 * (T_TRIPLE ** 2 - T_SURF ** 2) + L_SUB
+    m = eta * p_kw * 1000 / q
+    v_head = m / (RHO_ICE * math.pi * (d / 2) ** 2) * 3600
+    a = math.sqrt(GAMMA_H2O * R_H2O * T_TRIPLE)
+    v_max = math.sqrt(2 * GAMMA_H2O / (GAMMA_H2O - 1) * R_H2O * T_TRIPLE)
+    return m, v_head, a, v_max
+
+
+def jet_s0(p_kw):
+    """The grain lobe's scattering coefficient σs = S0 · cos²θ / r² (1/m, r in m from the vent): returns S0."""
+    m, _, _, v = vacuum_start(p_kw)
+    return JET_CONDENSE * m / v * 3 / (2 * math.pi) * 3 / (4 * JET_GRAIN_R * RHO_ICE)
+
+
+def hg(theta_deg, g=JET_G):
+    """Henyey–Greenstein phase function, 4π-normalised (1 = isotropic)."""
+    return (1 - g * g) / (1 + g * g - 2 * g * math.cos(math.radians(theta_deg))) ** 1.5
+
+
+def jet_seen(p_kw, h, f_plain, theta_deg):
+    """Optical depth across the grain lobe h m above the vent (a line through its axis: ∫ S0 h²/r⁴ dx = S0 π / 2h),
+    and its brightness in Jupiter-light against the lit plain's (f_plain: the plain's share of the facing
+    irradiance), seen theta_deg from forward scatter."""
+    tau = jet_s0(p_kw) * math.pi / (2 * h)
+    return tau, tau * hg(theta_deg) / 4 / (A_PLAIN * f_plain)
+
+
+def flash(t_c=0.0):
+    """Liquid water at t_c °C meeting vacuum: the share that boils away to freeze the rest (to ice at 0 °C)."""
+    return (C_WATER * t_c + L_ICE) / (L_VAP + L_ICE)
+
+
+def ballistic(v, el_deg):
+    """A grain thrown at v m/s, el_deg up, in Europa's gravity: (apex m, time to apex s, flight s, range m)."""
+    g = g_at()
+    vz, vh = v * math.sin(math.radians(el_deg)), v * math.cos(math.radians(el_deg))
+    return vz * vz / (2 * g), vz / g, 2 * vz / g, vh * 2 * vz / g
+
+
+def ganymede_pos(dlt):
+    """Ganymede (km, Europa frame) when Io is dlt rad from conjunction. Laplace 1:2:4 (λIo − 3λEu + 2λGa = 180°)
+    ties it to Io: Ganymede's angle from Europa (ahead +) is −90° − dlt/2, on the transits that put it in the sky
+    (the other branch, +90° − dlt/2, alternates with it: Ganymede below the horizon)."""
+    g = -math.pi / 2 - dlt / 2
+    return (A_EU - A_GA * math.cos(g), -A_GA * math.sin(g), 0.0)
+
+
+def ganymede_seen(dlt, elong, fr):
+    """(local unit vector, diameter deg, lit fraction) of Ganymede from the site."""
+    p = ganymede_pos(dlt)
+    v, d = _norm(from_site(p, fr))
+    s = sun_dir(elong)
+    lit = (1 + sum(a * -b for a, b in zip(s, _norm(p)[0]))) / 2
+    return to_local(v, fr), 2 * deg(math.asin(R_GA / d)), lit
+
+
 def ocean(h_ice, d=OCEAN_D):
     """Pressure (bar) at the ice base and the sea floor, and the Earth-ocean depth (m) of the same pressure.
     g taken constant at its surface value (a dense core keeps it near-flat through the outer 120 km)."""
@@ -759,6 +854,47 @@ elif __name__ == '__main__':
                          f'{b["dur"]:.2f} h), deepest at {sp[1]:+.2f} h, {rho:.0f} km off centre: umbra r {um:.0f} km, '
                          f'penumbra {pen:.0f} km on Io\'s {R_IO:.0f} (umbra covers {100 * (um / R_IO) ** 2:.0f} % of '
                          f'the disc we see; Sun dec 0 = Jupiter\'s equinox season, Europa near its node)'))
+    # 03: the probe starts (Sprint 3.3), on the night of 02's transit (Sun 179° at Io's setting)
+    m, vh, a, vm = vacuum_start(CRYO_P[2])
+    rows.append((f'03: cryobot {CRYO_P[2]:g} kW starts in vacuum', f'sublimates {m * 1000:.1f} g/s of ice (head '
+                 f'{vh:.2f} m/h, {cryo_speed(CRYO_P[2], ICE_H[1], 0) * 3600 / vh:.1f}× slower than melting); vapour '
+                 f'choked at ~{P_TRIPLE:.0f} Pa leaves at {a:.0f} m/s, expands to ≤ {vm:.0f} m/s'))
+    for hh, th in ((0.1, 20.0), (0.3, 20.0), (1.0, 20.0), (0.3, 60.0)):
+        tau, rel = jet_seen(CRYO_P[2], hh, f_h, th)
+        rows.append((f'03: the grain lobe {hh:g} m above the vent, {th:g}° from forward', f'τ {tau:.1e} across; in '
+                     f'Jupiter-light {rel:.3f}× the lit plain ({math.log2(max(rel, 1e-9)):+.1f} stops; '
+                     f'{100 * JET_CONDENSE:.0f} % condensed, {JET_GRAIN_R * 1e6:g} µm, HG g {JET_G}; '
+                     f'S0 {jet_s0(CRYO_P[2]):.2e})'))
+    ap, tu, tf, rg = ballistic(a, 90.0)
+    rows.append(('03: grains at the exit speed, straight up', f'apex {ap / 1000:.0f} km after {tu / 60:.1f} min '
+                 f'(they leave the frame in milliseconds: the lobe is steady)'))
+    rows.append(('03: loose frost blown out (film picks)', f'{FROST_N} flakes {FROST_SIZE[0] * 1e3:g}–'
+                 f'{FROST_SIZE[1] * 1e3:g} mm from {FROST_RING[0]}–{FROST_RING[1]} m round the nose, '
+                 f'{FROST_V[0]}–{FROST_V[1]} m/s at {FROST_EL[0]:g}–{FROST_EL[1]:g}° up, burst e-fold {FROST_TAU} s; '
+                 f'fastest: apex {ballistic(FROST_V[1], FROST_EL[1])[0]:.1f} m, '
+                 f'{ballistic(FROST_V[1], FROST_EL[1])[2]:.1f} s in flight'))
+    # momentum check: the flakes (frost ~300 kg/m³, ellipsoids 1 × 0.7 × 0.3 of their size) vs the vapour's thrust
+    k = (0.7 * 0.3 * math.pi / 6) * 300.0
+    s3 = (FROST_SIZE[1] ** 3 - FROST_SIZE[0] ** 3) / (3 * math.log(FROST_SIZE[1] / FROST_SIZE[0]))   # <size³>, log-uniform
+    vbar = FROST_V[0] + (FROST_V[1] - FROST_V[0]) / (FROST_V_POW + 1)
+    mf = FROST_N * k * s3
+    rows.append(('03: frost momentum vs vapour thrust', f'flakes {mf * 1000:.0f} g, ≈ {mf * vbar:.2f} N·s at a mean '
+                 f'{vbar:.1f} m/s; the vapour carries {m * a:.2f} N ({m * a * 4 * FROST_TAU:.2f} N·s over the burst): '
+                 f'{100 * mf * vbar / (m * a * 4 * FROST_TAU):.0f} % of it'))
+    for v, el in ((1.0, 60.0), (3.0, 60.0), (5.0, 75.0)):
+        ap, tu, tf, rg = ballistic(v, el)
+        rows.append((f'03: an ice chip thrown {v:g} m/s, {el:g}° up', f'apex {ap:.2f} m after {tu:.1f} s, lands '
+                     f'{rg:.1f} m away after {tf:.1f} s (Earth: {v * v * math.sin(math.radians(el)) ** 2 / 19.62:.2f} m, '
+                     f'{2 * v * math.sin(math.radians(el)) / 9.81:.2f} s)'))
+    rows.append(('03: liquid water meeting vacuum', f'boils and freezes at once: {100 * flash(0):.1f} % boils away '
+                 f'at 0 °C ({100 * flash(20):.1f} % at 20 °C), the rest freezes'))
+    ent, end, _ = io_track(fr)
+    for tag, dl, E in (('Io sets (02 end)', end[0], LAPSE_E_END[1]),
+                       ('1 h later', end[0] + W_IO_EU, LAPSE_E_END[1] - 360 / P_SYN)):
+        u, dd, lit = ganymede_seen(dl, E, fr)
+        el, az = alt_az(u)
+        rows.append((f'03: Ganymede, {tag}', f'{el:.1f}° up, {az:+.1f}° from Jupiter (local), {dd:.3f}° wide, '
+                     f'{100 * lit:.0f} % lit; {px_across(dd, 35):.1f} px at 35 mm, {px_across(dd, 135):.0f} px at 135'))
     rows.append(('Radiation at the surface', f'{DOSE_SV_DAY} Sv/day: a ~50 %-lethal dose ({LD50_SV} Sv) in '
                  f'{LD50_SV / DOSE_SV_DAY * 24:.0f} h'))
     # ------------------------------------------------ down

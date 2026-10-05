@@ -421,3 +421,61 @@ def build(sc, P, loc=(0.0, 0.0, 0.0), tether=0.0, pucks_above=(), open=0.0, lamp
     root.location = loc
     return dict(root=root, parts=parts, swimmers=swimmers, pucks=pucks, tether=teth, lamp=L, sections=S,
                 top=top, port_z=S['bay'][0] + PORT_Z_FRAC * (S['bay'][1] - S['bay'][0]))
+
+
+# ---------------------------------------------------------------- 03: the deployment tripod (Sprint 3.3)
+def tripod(sc, P, nose, ground, reel_az=0.0, feet_az=90.0, top=None):
+    """Borehole tripod over the probe hanging nose-down on the ice at `nose` (world xyz of the nose tip): three legs to
+    a head P.TRIPOD_H above the ice, a sheave, the tether from the probe's top over it to a reel box P.REEL[3] m away
+    at `reel_az` (deg, world: 0 = +Y, + toward +X). ground(x, y) → z arrays. Returns the objects."""
+    top = top if top is not None else _layout(P)['tail'][1]
+    nx, ny, nz = nose
+    H = Vector((nx, ny, nz + P.TRIPOD_H))
+    m_al = _mat('TripodAlu', plain((0.56, 0.57, 0.59), 0.35, metal=1.0))
+    m_blk = _mat('CryoBlack', plain((0.008, 0.008, 0.009), 0.5))
+    m_box = _mat('ReelPaint', plain((0.62, 0.62, 0.60), 0.55))
+    m_teth = _mat('CryoTether', plain((0.78, 0.52, 0.10), 0.65))
+    parts = []
+    for k in range(3):
+        a = math.radians(feet_az + 120.0 * k)
+        fx, fy = nx + P.TRIPOD_FOOT_R * math.sin(a), ny + P.TRIPOD_FOOT_R * math.cos(a)
+        foot = Vector((fx, fy, float(ground(np.array([fx]), np.array([fy]))[0])))
+        leg = H - foot
+        v, f = _cyl(P.TRIPOD_LEG_D / 2, 0.0, leg.length - 0.06, n=16)
+        parts.append((v, f, 0, _frame(foot, leg)))
+        v, f = _cyl(0.11, -0.01, 0.025, n=20)
+        parts.append((v, f, 1, Matrix.Translation(foot)))
+    v, f = _cyl(0.09, -0.06, 0.06, n=24)
+    parts.append((v, f, 1, Matrix.Translation(H)))
+    # sheave hangs just below the head, its rim over the probe's axis on one side and toward the reel on the other
+    ra = math.radians(reel_az)
+    d = Vector((math.sin(ra), math.cos(ra), 0.0))
+    rs = P.TRIPOD_SHEAVE
+    C = Vector((nx, ny, H.z - 0.08 - rs)) + d * rs
+    v, f = _cyl(rs, -0.015, 0.015, n=32)
+    parts.append((v, f, 1, _frame(C, d.cross(Vector((0, 0, 1))))))
+    V, F, M = _merge(parts)
+    rig = bpy.data.objects.new('Tripod', _mesh('Tripod', V, F, [m_al, m_blk], M))
+    sc.collection.objects.link(rig)
+    # reel box on the ice, the tether over the sheave to its drum
+    R = Vector((nx, ny, 0.0)) + d * P.REEL[3]
+    R.z = float(ground(np.array([R.x]), np.array([R.y]))[0])
+    l, w, h = P.REEL[:3]
+    bv = [(sx * l / 2, sy * w / 2, sz * h) for sz in (0, 1) for sy in (-1, 1) for sx in (-1, 1)]
+    bf = [(0, 1, 3, 2), (4, 6, 7, 5), (0, 4, 5, 1), (2, 3, 7, 6), (0, 2, 6, 4), (1, 5, 7, 3)]
+    box = bpy.data.objects.new('Reel', _mesh('Reel', bv, bf, [m_box], smooth=False))
+    sc.collection.objects.link(box)
+    box.matrix_world = Matrix.Translation(R) @ Matrix.Rotation(-ra, 4, 'Z')
+    pts = [Vector((nx, ny, nz + top - 0.03)), Vector((nx, ny, C.z))]
+    for i in range(1, 12):                                       # over the top of the sheave
+        t = math.pi * i / 12
+        pts.append(C - d * rs * math.cos(t) + Vector((0, 0, rs * math.sin(t))))
+    pts += [C + d * rs, R + Vector((0, 0, h + 0.04))]
+    tp = []
+    for p0, p1 in zip(pts[:-1], pts[1:]):
+        v, f = _cyl(P.CRYO_TETHER_D / 2, 0.0, (p1 - p0).length, n=10, cap=False)
+        tp.append((v, f, 0, _frame(p0, p1 - p0)))
+    V, F, M = _merge(tp)
+    teth = bpy.data.objects.new('TripodTether', _mesh('TripodTether', V, F, [m_teth], M))
+    sc.collection.objects.link(teth)
+    return [rig, box, teth]
