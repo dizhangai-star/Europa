@@ -63,7 +63,7 @@ EV2 = float(A.opt('ev2', 2.0))
 EVT = tuple(float(x) for x in A.opt('evt', '12.0,16.0').split(','))
 WIN = float(A.opt('win', 160.0))
 WRAPSTEP = float(A.opt('wrapstep', 4.0))
-SHUTTER = float(A.opt('shutter', 0.5))
+SHUTTER = float(A.opt('shutter', 1.0))     # 1.0 (user 2026-10-06): softens the bands' flicker at 5–7 s (0.5 in the draft)
 assert abs(A.frames / FPS - C6['dur']) < 1e-6 or A.opt('stills'), f'clip is {A.frames / FPS} s, SHOT06 says {C6["dur"]}'
 
 
