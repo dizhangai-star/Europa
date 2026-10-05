@@ -1,10 +1,10 @@
 # Europa · 木卫二 · 深渊: progress
 
-## State (2026-10-05)
-**Sprint 3.6 (shot 06, descent) DRAFTED 2026-10-05 in a cloud session (phone) without Blender: physics clock +
-counter, overlay, `s06_descent.py` written, nothing run or rendered; merged (PR #14) so the Mac can pull it. Next, on
-the Mac: run 06 (one preview still, then the animatic), fix what breaks, answer the 3.6 questions, lock 06; then 3.7 =
-shot 07 (breakthrough).** Sprint 3.5 (shot 05, the lid) done 2026-10-05, 05 locked by the user (not rendered; core as
+## State (2026-10-06)
+**Sprint 3.6 (shot 06, descent): run on the Mac 2026-10-06 (branch `sprint-3.6-shot06`). The phone draft built and
+rendered as written; added an end exposure ride (+5 → +2 EV, 12–16 s) and right-aligned counter columns. Animatic
+`out/06-descent-animatic.mp4` + `-ov.mp4` (counter) waiting for the user's answers (3.6 questions below), then lock 06;
+then 3.7 = shot 07 (breakthrough).** Sprint 3.5 (shot 05, the lid) done 2026-10-05, 05 locked by the user (not rendered; core as
 built, EV ride +3 → +5.5, clock as built; merged, PR #13). Sprint 3.4 (shot 04, the fall of the Sun) done, 04 locked (merged,
 PR #12). Sprint 3.3 (shot 03, the probe) done, 03 locked (merged,
 PR #11). Sprint 3.2 (shot 02, Io sets) done, 02
@@ -505,6 +505,23 @@ what can be done, open a PR, merge it, update the docs" (2026-10-05).
 2. `node preview.mjs 06-descent 1 6 8.5 11.6 19.5 --pct 50`, then the animatic `node render.mjs 06-descent --animatic
    --engine cycles --pct 25 --samples 16` and `node tools/overlay.mjs 06-descent --stills 1,10,19.5`.
 
+**Mac run (2026-10-06).** Build + one still 26 s (scene build dominates); the log's clock / treadmill / wraps match the
+draft (106 wraps, cracks end 9.38 s, magazine empty 12.92 s). Every untried API worked (shape key, keyed sockets,
+quarter-frame keys, keyed `hide_render`). Only warning: "closures 66 > 64" (known since 2.3, frames clean).
+- Check `frames/06-descent-strip.png` (50 %/16 spp: 1 · 6 · 8.5 · 11.6 · 19.5 s): milky glow → veins streaking → black
+  ice with the lamp's beam → the head. Glow → beam → dark ice reads as planned.
+- **Motion blur through volumes works** (frame 120 with shutter 0 vs 0.5: the bands smear). The flicker at 5–7 s
+  (frame-to-frame luma jumps up to ~30/255) is bands passing between the glow and the camera, several per frame:
+  real time-lapse flicker, not the treadmill (no jump at the wrap boundaries 4.54 / 15.04 s beyond the rest).
+- **Fix: the end blew out.** The port (−40°, as 05) faces the camera (−77°) once the camera reaches the head; at +5 EV
+  the window was a white blob. New `--ev2 2 --evt 12,16`: EV +5 → +2 by time as the camera arrives. Tested at 19.5 s:
+  port −40° / 0° × +5 / +2 EV; +2 keeps the window a readable source with its beam. Port 0° (beam side-on, more of a
+  "beam") would break continuity with 05 and set 07's lamp direction: kept −40°.
+- At ~18 s a porosity band drifts slowly up through the beam and lights as a sheet (the slow landing makes it visible).
+- Counter: fields right-aligned per column (`overlay.mjs` field option `align`; 05 unchanged). The pressure reads
+  `0 bar` for the first ~2 s (0.4 bar rounds down).
+- Animatic: Cycles 25 %/16 spp, 480 frames ≈ 13 min (~1.6 s/frame); `out/06-descent-animatic-ov.mp4` = with counter.
+
 **Questions for the user (Sprint 3.6, answer after the animatic):**
 1. **The landing**: the last ~5 s are within 100 m of the base and slowing to ×2,890 (only the counter's last digits
    and the ice warming −3 → −2 °C move). Keep (a held breath before 07), or shorten it (`dn0`/`dn1` later, e.g.
@@ -521,7 +538,12 @@ what can be done, open a PR, merge it, update the docs" (2026-10-05).
    water tube. Out of 06's frame; 07 could look up it (lit by the lamp) as the probe breaks through. Use it?
 5. Puck drops (every 2 km) happen inside the blur, unseen; the seated puck is gone after 18 km. OK?
 6. Cost unknown until run: 05 was 60 s/frame at 30 m (milky); the 2.3 board's deep stills were ~6× cheaper. Guess
-   2–5 h for 480 frames at 64 spp.
+   2–5 h for 480 frames at 64 spp. **Timed 2026-10-06** (full res, 64 spp, one still each): milky 6 s = **82 s/frame**
+   (heavier than 05's 60), clear 19.5 s = **15 s/frame** → ≈ 216 milky frames (to ~9 s) + 264 clear ≈ **5.5–6 h**
+   before the ladder (32 spp / fewer volume bounces A/B in Sprint 5: the milky half is the target).
+7. (Mac run) The flicker at 5–7 s (bands crossing the glow): keep (reads as speed), or soften with a longer shutter
+   (1.0: the blur doubles)?
+8. (Mac run) End exposure +5 → +2 EV over 12–16 s, lamp port −40° kept (as 05). OK, or port 0° for a side-on beam?
 
 ## Next
 Finding 1 (Io + two shadows in 02): verified, in TREATMENT as C2 and in 02's row (user 2026-10-05).
