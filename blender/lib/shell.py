@@ -12,7 +12,8 @@ in the ice (pores, layers, veins, cracks, the inclusions left on the column's ax
     sh['box']      the ice volume round the probe: x ±half, y −cut…+half, z −below…+above (world)
     sh['water']    melt pocket + open column (lathe), sh['front_z'] = where the column has frozen shut (world z)
     sh['core']     with_core=True: the refrozen column's milky core above the front (physics.HOLE_CORE), else None
-    shell.key_depth(sh, P, frame, depth_m)   06: slide the ice and key its σs with depth
+    shell.key_depth(sh, P, frame, depth_m)   slide the ice and key its σs with depth
+    shell.key_sigma(sh, P, frame, depth_m)   06: key σs (and g) only; 06 keys root itself (a treadmill window)
 
 Look, all physical and all homogeneous volumes (a textured volume cost 4×; homogeneous ones are sampled
 analytically): the ice = pure-ice absorption (physics.ice_rgb: red dies in metres, blue travels hundreds) + pore
@@ -84,7 +85,11 @@ def _volume(g, P, sigma, similar, name=None):
     if name:
         v.name = v.label = name
     s = g.math('MULTIPLY', g.o(v, 0), 1.0 - P.PORE_G) if similar else g.o(v, 0)
+    if similar and name:                                            # 06 switches to the true g when the ice clears
+        s.node.name = s.node.label = name + 'Similar'
     sc_ = g.add('ShaderNodeVolumeScatter')
+    if name:
+        sc_.name = sc_.label = name + 'Scatter'
     g.set(sc_, 'Color', (1.0, 1.0, 1.0))
     g.set(sc_, 'Density', s)
     g.set(sc_, 'Anisotropy', 0.0 if similar else P.PORE_G)
@@ -314,6 +319,7 @@ def _inclusion_mat(P, front_z):
         geo = g.add('ShaderNodeNewGeometry')
         _, _, wz = g.xyz(g.o(geo, 'Position'))
         frozen = g.math('GREATER_THAN', wz, front_z)              # only where the column has frozen shut
+        frozen.node.name = frozen.node.label = 'Front'            # (06 keys it: the column stays open longer deep down)
         b = g.add('ShaderNodeBsdfGlass', IOR=1.0 / P.N_ICE, Roughness=0.05)
         t = g.add('ShaderNodeBsdfTransparent')
         mx = g.add('ShaderNodeMixShader')
@@ -478,13 +484,29 @@ def fix_bore(sc, sh, travel):
 
 
 def key_depth(sh, P, frame, depth_m):
-    """06: slide the ice so the nose is depth_m down on `frame`, its σs following physics.pore."""
+    """Slide the ice so the nose is depth_m down on `frame`, its σs following physics.pore."""
     sh['root'].location.z = depth_m
     sh['root'].keyframe_insert('location', index=2, frame=frame)
+    key_sigma(sh, P, frame, depth_m)
+
+
+def key_sigma(sh, P, frame, depth_m):
+    """Key the ice's σs (and the bands') for depth_m on `frame`. A material built in similarity mode (σs(1 − g),
+    g = 0: diffusive ice) switches to the true σs and g where σs < SIMILAR_MIN: the light is mostly single-scattered
+    there and the beam's side-look depends on g (06 goes from 5.7/m to 0.006/m). Returns σs."""
     s = P.pore(depth_m / 1000.0)[1]
+    sim = s >= SIMILAR_MIN
     for m in set(sh['mats']):
+        nt = m.node_tree.nodes
         for name, val in (('Sigma', s), ('SigmaBand', P.BAND_GAIN * s)):
-            node = m.node_tree.nodes.get(name)
+            node = nt.get(name)
             if node:
                 node.outputs[0].default_value = val
                 node.outputs[0].keyframe_insert('default_value', frame=frame)
+            mul, sct = nt.get(name + 'Similar'), nt.get(name + 'Scatter')
+            if mul and sct:
+                mul.inputs[1].default_value = 1.0 - P.PORE_G if sim else 1.0
+                mul.inputs[1].keyframe_insert('default_value', frame=frame)
+                sct.inputs['Anisotropy'].default_value = 0.0 if sim else P.PORE_G
+                sct.inputs['Anisotropy'].keyframe_insert('default_value', frame=frame)
+    return s
