@@ -1,8 +1,8 @@
 # Europa · 木卫二 · 深渊: progress
 
 ## State (2026-10-05)
-**Sprint 3.5 (shot 05, the lid) in review 2026-10-05, branch `sprint-3.5-shot05`: animatic + Cycles check done,
-waiting for the user's answers (findings below).** Sprint 3.4 (shot 04, the fall of the Sun) done, 04 locked (merged,
+**Sprint 3.5 (shot 05, the lid) done 2026-10-05, 05 locked by the user (not rendered; core as built, EV ride
++3 → +5.5, clock as built), branch `sprint-3.5-shot05`. Next: 3.6 = shot 06 (descent).** Sprint 3.4 (shot 04, the fall of the Sun) done, 04 locked (merged,
 PR #12). Sprint 3.3 (shot 03, the probe) done, 03 locked (merged,
 PR #11). Sprint 3.2 (shot 02, Io sets) done, 02
 locked (merged, PR #10). Sprint 3.1 (shot 01, the turn) done, 01 locked (merged, PR #9). Sprint 2.4 (the under-ice ocean) done, approved and merged (PR #8). Sprint 2.3 (the ice-shell interior) done, approved and merged (PR #7). Sprint 2.2 (the cryobot)
@@ -406,7 +406,7 @@ ingress as built. 3. keep the backlit grey-white ice. 4. lightning first "bigger
 flashes inside the eclipse looked odd (`--flashes 0` default; `jupiter.lightning` and `physics.flash_seen` stay for
 true 1-px flashes). 5. framing OK. The animatic `out/04-sunfall-animatic.mp4` is re-rendered without them.
 
-**Sprint 3.5 (shot 05, the lid) 2026-10-05, branch `sprint-3.5-shot05`.** User picks at the start (2026-10-05):
+**Sprint 3.5 (shot 05, the lid) done 2026-10-05, branch `sprint-3.5-shot05`; 05 locked (answers below).** User picks at the start (2026-10-05):
 **30 m, puck 1** (film pick `physics.CRYO_PUCK_FIRST`: dropped just under the regolith, then every 2 km), **camera
 stays in the ice with the puck** (the probe sinks away), **a small clock**.
 **`blender/shots/s05_lid.py`**: `shell.build` at 30 m (cutaway, as the 2.3 lid board) + the cryobot (port −40°); the
@@ -452,11 +452,15 @@ Exposure +3 → +5.5 EV over 4–9.5 s (the eye follows the fading light: the la
 4. Clock label `投放中继器后 · SINCE THE RELAY WAS LEFT`, hours with one decimal + nose depth (30.0 → 34.1 m). Wording OK?
 5. Cost ≈ 4 h at 64 spp (60 s/frame): the most expensive clip so far; 32 spp / fewer volume bounces to A/B in Sprint 5.
 
+**User's answers (2026-10-05):** 1. the closing as built (the core stays, 5 cm). 2. exposure ride +3 → +5.5 EV
+kept. 3. the puck hidden in the top for the first seconds: fine. 4. clock wording OK. 5. ≈ 4 h render accepted.
+Before that the user spotted a "hard cut" at ~2 s: the band bug above, fixed (`shell.fix_bore`) with the softer ramp.
+
 ## Next
 Finding 1 (Io + two shadows in 02): verified, in TREATMENT as C2 and in 02's row (user 2026-10-05).
 01's framing test done (2.0, the turn); the ground done (2.1); the cryobot done (2.2); the shell interior done (2.3,
 approved: puck release in 05, porosity 0.2 %); the under-ice ocean done (2.4, approved: melt ceiling, frazil ⚠ only if
-07 wants it; particles and 08's sink speed open for those shots). Sprint 2 builds are complete → Sprint 3, shots one per session: **01 locked (3.1); 02 locked (3.2); 03 locked (3.3); 04 locked (3.4); 05 in review (3.5); next 06 (3.6)**. Asset hunt by the user in parallel
+07 wants it; particles and 08's sink speed open for those shots). Sprint 2 builds are complete → Sprint 3, shots one per session: **01 locked (3.1); 02 locked (3.2); 03 locked (3.3); 04 locked (3.4); 05 locked (3.5); next 06 (3.6)**. Asset hunt by the user in parallel
 (REFERENCES.md "Wanted": W1 Mixamo kneel/stand, W2–W3 ice sounds and hydrophone).
 
 ## Sprints (plan, 2026-10-04)
@@ -475,6 +479,11 @@ approved: puck release in 05, porosity 0.2 %); the under-ice ocean done (2.4, ap
 5. Batch render (overnight, resume) → 4K compile, srt, poster; then the 9:16 climax cut (own portrait cameras).
 
 ## Decisions (locked)
+- 05 locked (user 2026-10-05, Sprint 3.5): `s05_lid.py` as checked: 30 m, puck 1 (film pick `CRYO_PUCK_FIRST`),
+  cutaway 35 mm, camera stays in the ice with the puck, push-in 4.0 → 2.6 m, looking down 12° → 4°; real time → ×2,890
+  over 0.5–3.0 s, the front reaches the puck at 5.0 s (caption), 4.07 m sunk by 10 s; refrozen core (IceCube's bubble
+  column, `HOLE_CORE`, subtle) kept; EV +3 → +5.5 (4–9.5 s); clock `投放中继器后 · SINCE THE RELAY WAS LEFT` + depth;
+  sheets bored once (`shell.fix_bore`). Renders in the Sprint 5 batch (≈ 4 h at 64 spp before the ladder).
 - 04 locked (user 2026-10-05, Sprint 3.4): `s04_sunfall.py` as checked: 50 mm, top limb 3° under the frame top,
   03's dawn → ×25,373 day → first contact 10 s, covered at ×31 by 13.5 s (87 s real; "real time" eased), real time
   after; exposure −4.5 → +5 EV (13.0–15.5 s), stars at true brightness, red arch on the ice; **no corona, no
