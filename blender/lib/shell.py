@@ -450,6 +450,33 @@ def build(sc, P, depth_m, cut=0.30, half=10.0, below=16.0, above=12.0, face='gla
                 mats=(m_cut, m_open) + ((bd.data.materials[0],) if bd else ()))
 
 
+def fix_bore(sc, sh, travel):
+    """For a shot whose ice slides up `travel` m along the hole's axis (05): bore the sheets (cracks, veins, bands)
+    once, at root's current z, with a cutter reaching `travel` m further below the nose, and drop their live Booleans.
+    A slide along the axis leaves the hole where it was, so the only change is a spurious hole up to `travel` m below
+    the nose (out of 05's frame). Needed, not an optimisation: re-run per frame, the EXACT solver dropped a whole band
+    sheet at some positions (05's animatic: a band vanished between frames 52 and 53, Bands 922 → 821 faces)."""
+    me = sh['cutter'].data
+    zmin = min(v.co.z for v in me.vertices)
+    long_ = bpy.data.objects.new('HoleCutterLong', me.copy())
+    sc.collection.objects.link(long_)
+    long_.hide_render = True
+    for v in long_.data.vertices:
+        if v.co.z <= zmin + 1e-6:
+            v.co.z -= travel
+    dg = bpy.context.evaluated_depsgraph_get()
+    for k in ('cracks', 'veins', 'bands'):
+        ob = sh.get(k)
+        if ob is None:
+            continue
+        ob.modifiers['Hole'].object = long_
+        dg.update()
+        new = bpy.data.meshes.new_from_object(ob.evaluated_get(dg))
+        ob.modifiers.remove(ob.modifiers['Hole'])
+        ob.data = new
+    bpy.data.objects.remove(long_, do_unlink=True)
+
+
 def key_depth(sh, P, frame, depth_m):
     """06: slide the ice so the nose is depth_m down on `frame`, its σs following physics.pore."""
     sh['root'].location.z = depth_m

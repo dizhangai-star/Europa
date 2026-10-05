@@ -815,7 +815,7 @@ def lapse04_elong(s):
 # end (06's time-lapse takes over); fit05 solves r so that the freezing front (it trails the probe by refreeze's
 # open column) comes down onto the puck's top at `shut` s.
 CRYO_PUCK_FIRST = 0.03        # km, puck 1 (film pick: below the cracked regolith, where the tether is still short)
-SHOT05 = dict(dur=10.0, up0=0.6, up1=2.4, shut=5.0)
+SHOT05 = dict(dur=10.0, up0=0.5, up1=3.0, shut=5.0)
 _FIT05 = {}
 
 

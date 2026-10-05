@@ -412,9 +412,9 @@ stays in the ice with the puck** (the probe sinks away), **a small clock**.
 **`blender/shots/s05_lid.py`**: `shell.build` at 30 m (cutaway, as the 2.3 lid board) + the cryobot (port −40°); the
 world is the probe's frame, so the ice (shell root), the dropped puck and the camera all move up by the descent d(t).
 Clock (physics `SHOT05`, `fit05`, `lapse05`): real time at 0 s (the puck has just left the open top), log-rate eased
-0.6 → 2.4 s up to **×2,438**, held; the freezing front (1.34 m above the probe's top, `refreeze`: 1.99 h at 0.68 m/h)
+0.5 → 3.0 s up to **×2,890**, held; the freezing front (1.34 m above the probe's top, `refreeze`: 1.99 h at 0.68 m/h)
 comes down after the probe and **reaches the puck's top at 5.0 s** (2.01 h, probe sunk 1.36 m), the caption's start;
-5.39 h / 3.65 m by 10 s (33.6 m down). Camera 35 mm, f/4, 13° right of the cut's normal, push-in 4.0 → 2.6 m, aim the
+6.02 h / 4.07 m by 10 s (34.1 m down). Camera 35 mm, f/4, 13° right of the cut's normal, push-in 4.0 → 2.6 m, aim the
 puck (drop-frame 3.05 → 3.1 m), looking down 12° → 4° (sees into the open top), eased 0.5–9.6 s; focus on the puck.
 Exposure +3 → +5.5 EV over 4–9.5 s (the eye follows the fading light: the lamp sinks away, red dies first).
 - physics.py new rows ("05: …"): the drop (front, shut time, the 25 mm water ring round the puck shuts in ~5 min:
@@ -426,12 +426,17 @@ Exposure +3 → +5.5 EV over 4–9.5 s (the eye follows the fading light: the la
   + **`tools/overlay.mjs` counters generalised**: clip `counter: '<physics fn>'` → (hours, depth) per frame, READOUT
   holds label/format (Io's dead `lapse03` path removed); 05: `投放中继器后 SINCE THE RELAY WAS LEFT` `+2.7 h  31.8 m`.
 - Tried and dropped: a wide pull-back to 11.6 m (puck + probe + glow in one frame): the puck was 24 px and the
-  porosity bands owned the frame. Freezing the sheets' Booleans (the slide is along the hole's axis): 91 dB identical
-  and no faster (2.4 s/frame at 25 %/16 spp either way), removed.
+  porosity bands owned the frame.
+- **Bug (user spotted "a hard cut" at ~2 s)**: the sheets' live EXACT Booleans, re-run as the ice slides, dropped a whole
+  band at 2.17 s (frames 52 → 53, Bands 922 → 821 faces; Veins changed too). Fix **`shell.fix_bore`**: the slide is
+  along the hole's axis, so the sheets are bored once (cutter extended `travel` m below the nose, out of frame) and
+  keep no live Boolean; face counts constant over the clip. (Same speed: 2.4 s/frame at 25 %/16 spp.) 06 will need
+  its own answer (its ice slides 20 km). The ramp widened at the same time: 0.5 → 3.0 s (was 0.6 → 2.4: still to full
+  speed in 0.8 s, just as the puck comes out).
 - **Cost**: full res 64 spp ≈ **60 s/frame** (3 stills 188 s incl. build) → 240 frames ≈ **4 h**. The camera moves
   all clip long (no plate); ladder for the batch sprint: 32 spp A/B, fewer volume bounces A/B (128 now), persistent data.
 
-- Animatic `out/05-lid-animatic.mp4` (Cycles 25 %/16 spp, 2.5 s/frame, 10 min) and `out/05-lid-animatic-ov.mp4` (with
+- Animatic `out/05-lid-animatic.mp4` (Cycles 25 %/16 spp, 2.5 s/frame, 10 min; re-rendered after the band fix: no jump left, the largest frame-to-frame change is sampling noise in the dark tail) and `out/05-lid-animatic-ov.mp4` (with
   the clock and caption laid over); check `frames/05-check.png` (50 %/64 spp: 0.5 probe top · 2.5 the puck out of the
   top, the probe below · 6.5 the puck alone, fading blue).
 
@@ -444,7 +449,7 @@ Exposure +3 → +5.5 EV over 4–9.5 s (the eye follows the fading light: the la
 2. **Exposure ride +3 → +5.5 EV (4–9.5 s)**: the puck stays readable at the end; the fade still shows. Less ride = darker
    end (the light truly leaving), more = flatter.
 3. The puck is hidden in the open top for the first ~1.5 s (12° down isn't enough to see inside the rim at 4 m).
-4. Clock label `投放中继器后 · SINCE THE RELAY WAS LEFT`, hours with one decimal + nose depth (30.0 → 33.6 m). Wording OK?
+4. Clock label `投放中继器后 · SINCE THE RELAY WAS LEFT`, hours with one decimal + nose depth (30.0 → 34.1 m). Wording OK?
 5. Cost ≈ 4 h at 64 spp (60 s/frame): the most expensive clip so far; 32 spp / fewer volume bounces to A/B in Sprint 5.
 
 ## Next

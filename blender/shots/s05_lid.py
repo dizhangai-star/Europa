@@ -4,8 +4,8 @@ User picks (2026-10-05): puck 1 dropped 30 m down (physics.CRYO_PUCK_FIRST, film
 the camera fixed in the ice with the puck, a small clock (tools/overlay.mjs, clip `counter`).
 
 The clock (physics.fit05, SHOT05): 0 s = the puck has just left the probe's open top (it stays where it is: it is
-threaded on the tether, now held by the ice), real time; the rate eases up to ×2,400 by 2.4 s and holds. The probe
-sinks 0.68 m/h (1.36 m by 5 s, 3.65 m by 10 s); the melt water above it stays open 2 h (1.34 m, shell.refreeze) and
+threaded on the tether, now held by the ice), real time; the rate eases up to ×2,900 over 0.5–3 s and holds. The probe
+sinks 0.68 m/h (1.36 m by 5 s, 4.07 m by 10 s); the melt water above it stays open 2 h (1.34 m, shell.refreeze) and
 freezes from the top down, so in the ice's frame the freezing front comes down after the probe, and at 5.0 s it
 reaches the puck's top: the column has closed over it. The front itself is all but invisible (ice and water differ
 by 1.7 % in index); what shows it is the line of gas/brine beads left on the refrozen column's axis (shell.inclusions,
@@ -20,7 +20,7 @@ in the upper third, the probe's top near the bottom, its glow from below.
 
     node render.mjs 05-lid --animatic --engine cycles --pct 25 --samples 16
     node preview.mjs 05-lid 0.5 5 9.5 --pct 50
-Options: --lens MM  --ev EV --ev1 EV --adapt T0,T1 (exposure ride)  --el0 --el1 DEG (looking down)  --nocore 1  --move T0,T1  --d0 M --d1 M (camera distance)  --aim0 Z --aim1 Z  --side DEG
+Options: --lens MM  --ev EV --ev1 EV --adapt T0,T1 (exposure ride)  --el0 --el1 DEG (looking down)  --nocore 1  --live-bore 1 (per-frame Booleans: drops a band at 2.17 s)  --move T0,T1  --d0 M --d1 M (camera distance)  --aim0 Z --aim1 Z  --side DEG
          --lampaz DEG (port azimuth, −40: partly toward the camera)  --fstop F  --vbounces N  --hide A,B
 """
 import math
@@ -78,6 +78,8 @@ sc.world = w
 
 D_END = descent(C5['dur'])
 sh = shell.build(sc, P, DEPTH, cut=0.30, travel=D_END + 0.5, with_core=not A.opt('nocore'))
+if not A.opt('live-bore'):                                # the slide is along the hole: bore the sheets once
+    shell.fix_bore(sc, sh, D_END + 0.5)                    # (live, the EXACT Boolean dropped a band at 2.17 s)
 top = P.CRYO_LEN
 bot = cryobot.build(sc, P, tether=sh['front_z'] - top + 14.0)
 bot['root'].rotation_euler = (0.0, 0.0, math.radians(float(A.opt('lampaz', -40.0))))
