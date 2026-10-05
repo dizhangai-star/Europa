@@ -1,8 +1,8 @@
 # Europa · 木卫二 · 深渊: progress
 
 ## State (2026-10-05)
-**Sprint 2.4 (the under-ice ocean) done 2026-10-05, approved (melt ceiling; frazil only if 07 wants it, ⚠) and
-merged. Next: Sprint 3, shots one per session (01 first).** Sprint 2.3 (the ice-shell interior) done, approved and merged (PR #7). Sprint 2.2 (the cryobot)
+**Sprint 3.1 (shot 01, the turn) done 2026-10-05, branch `sprint-3.1-shot01`: animatic + Cycles check, waiting for the
+user's yes to lock. Next: 3.2 = shot 02.** Sprint 2.4 (the under-ice ocean) done, approved and merged (PR #8). Sprint 2.3 (the ice-shell interior) done, approved and merged (PR #7). Sprint 2.2 (the cryobot)
 done, approved and merged (PR #6).
 Sprint 2.1 (the ground) done and
 merged 2026-10-05 (PR #5). Sprint 2.0 (01 framing test) done 2026-10-05
@@ -243,6 +243,29 @@ the hole, 0.5 m at ±60 m). Board **`blender/shots/board_ocean.py`** (`--views e
    so they hang nearly still and drift with the current: "snow that barely rises". The platelet fringe doesn't read
    either (same index problem). Proposal: keep `melt` for the film; frazil only if 07 wants it, marked ⚠.
    **Yes (user 2026-10-05): melt ceiling; frazil only if 07 asks for it, ⚠.**
+
+**Sprint 3.1 (shot 01, the turn) done 2026-10-05, branch `sprint-3.1-shot01`.** **`blender/shots/s01_horizon.py`**
+(from `test01_framing.py`, the 2.1 ground + 2.0's three hero plates; 12 s = 288 frames). Animatics:
+`out/01-horizon-animatic.mp4` (Cycles 25 %/16 spp, 2.5 s/frame, 12 min; the motion check here, since the shot is
+about light) and `out/01-horizon-animatic-wb.mp4` (Workbench, 0.5 s/frame, first timing). Cycles check
+`frames/01-check.png` (50 %/64 spp: 1.0 s mesa · 4.2 s leaving it · 7.0 s disc entering · 11.5 s end).
+- Heading 150° → 6° over 2.3–8.8 s; time per degree ∝ w(h) (`--dark` 0.75 between 40° and 95°) under Io's
+  ramp-cruise-ramp ease (a 0.3, b 0.45): **peak 42°/s** (39 px/frame at 24 mm), dark stretch 5.0–6.3 s, disc limb
+  enters at 6.5 s, within 1° of the end by 8.1 s, ~4 s on the disc. First try (dark 0.4, pan 2.8–8.0) was a 75°/s
+  whip with 0.7 s of dark: rejected.
+- Lens 24 → 35 mm on the plain eased time; exposure keyed by heading, +1.5 → **−3.5 EV** (smoothstep 60° → 20°; at the
+  end −2.5 left the bands pale, −4.5 lost the faint plain under the disc). Push 0.3 m/s toward the end heading (3.6 m,
+  over the knoll's top). Motion blur 0.5 shutter (the pan's stars streak).
+- Limb mesa (az −7°, 2.4 km): full ridged plains on its top, tilt 2.5°, plate turned 40° (`--limb 1.0:2.5:40`); the
+  2.0 version (plains 0.3) cut a flat rectangle out of the disc, plains 1.0 at rot 10° an 8-m sawtooth (ridges
+  end-on). The animatic mp4 still shows the rectangle (motion unchanged).
+- Europa's own shadow sits on the disc at the end (Sun 178°), as in 02: consistent.
+- Caption EUROPA · 木卫二 moved to 8.2–11.6 s (on the settled disc).
+- **Cost**: full res 64 spp ≈ **8–9 s/frame** (mesa 9.2, pan 8.3, disc 7.7) → ≈ **41 min**. Cheaper-way ladder: the
+  camera moves every frame (no plate, no freeze); persistent data on in real renders; try 32 spp in the batch sprint
+  (night, motion blur) with a PSNR A/B.
+- Film-local fixes on the way: `shot.engine` mutes a keyed exposure in Workbench (else the ride darkened the draft);
+  `render.mjs` prints `NOTE` lines too.
 
 ## Next
 Finding 1 (Io + two shadows in 02): verified, in TREATMENT as C2 and in 02's row (user 2026-10-05).

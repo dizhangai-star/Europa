@@ -47,7 +47,7 @@ const log = execFileSync(BLENDER, ['-b', '--factory-startup', '-P', rel(`blender
 { encoding: 'utf8', maxBuffer: 1 << 28 });
 const err = log.split('\n').filter((l) => /Traceback|Error:/.test(l) && !/Not freed memory/.test(l));   // Blender's exit leak report is harmless
 if (err.length) { console.error(err.join('\n')); process.exit(1); }
-console.log(log.split('\n').filter((l) => l.startsWith('SHOT')).join('\n'));
+console.log(log.split('\n').filter((l) => /^(SHOT|NOTE)/.test(l)).join('\n'));
 
 fs.mkdirSync(rel('out'), { recursive: true });
 execFileSync('ffmpeg', ['-y', '-v', 'error', '-framerate', String(config.fps), '-i', `${dir}/%04d.png`,
