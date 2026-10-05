@@ -1,8 +1,8 @@
 # Europa · 木卫二 · 深渊: progress
 
 ## State (2026-10-05)
-**Sprint 3.1 (shot 01, the turn) done 2026-10-05, 01 locked by the user (not rendered), PR from `sprint-3.1-shot01`.
-Next: 3.2 = shot 02.** Sprint 2.4 (the under-ice ocean) done, approved and merged (PR #8). Sprint 2.3 (the ice-shell interior) done, approved and merged (PR #7). Sprint 2.2 (the cryobot)
+**Sprint 3.2 (shot 02, Io sets) done 2026-10-05, branch `sprint-3.2-shot02`, waiting for the user's review (lens 75 mm and
+the mutual eclipse are new: see Findings 3.2).** Sprint 3.1 (shot 01, the turn) done, 01 locked (merged, PR #9). Sprint 2.4 (the under-ice ocean) done, approved and merged (PR #8). Sprint 2.3 (the ice-shell interior) done, approved and merged (PR #7). Sprint 2.2 (the cryobot)
 done, approved and merged (PR #6).
 Sprint 2.1 (the ground) done and
 merged 2026-10-05 (PR #5). Sprint 2.0 (01 framing test) done 2026-10-05
@@ -267,11 +267,51 @@ about light) and `out/01-horizon-animatic-wb.mp4` (Workbench, 0.5 s/frame, first
 - Film-local fixes on the way: `shot.engine` mutes a keyed exposure in Workbench (else the ride darkened the draft);
   `render.mjs` prints `NOTE` lines too.
 
+**Sprint 3.2 (shot 02, the neighbour) done 2026-10-05, branch `sprint-3.2-shot02`.** **`blender/shots/s02_neighbour.py`**:
+01's knoll and ground (the 2.1 ground + 01's three hero plates: the limb-biting mesa is the same one), camera locked at
+**75 mm** (hfov 27.0°, vfov 11.5°), aimed 5.44° up so the ice horizon sits 0.3° above the frame's foot (`--foot`).
+One Io transit as a constant-rate time-lapse: **×512**, Io's centre on the top limb at 1.0 s, on the horizon at 10.5 s
+(`--t-in --t-set`). Animatic `out/02-neighbour-animatic.mp4` (Cycles 50 %/16 spp, 2.7 s/frame, 13 min; Workbench can't
+show shadows or the eclipse, so no Workbench pass). Cycles check `frames/02-check.png` (50 %/64 spp: 0.3 s Io above the
+disc · 4.9 s Io eclipsed · 10.2 s Io setting); `02-check-ev45.png` = the same at −4.5 EV (disc mean 8 % darker; −4.0
+kept: max 221/255, no clip, half a stop from 01's end).
+- physics.py new rows (printed for `LAPSE_E_END` 180 / 179 / 178): **`lapse(fr, e_end, h)`** (Io's Δ, the Sun's
+  elongation falling 4.22°/h, Jupiter's spin 360°/11.23 h → **43.3°** over the transit, the stars' turn 360°/85.2 h →
+  **5.71°**), **`europa_on_io`** (Europa's shadow on Io: distance from the axis, umbra/penumbra radii) and
+  **`eclipse_span`**. `io_track` cached in `lapse` (it scans 40,000 steps).
+- Per frame (linear keys): Sun + Jupiter's Sun (quaternions), Jupiter's spin about its axis (clouds slide down with Io),
+  Io (`moons.key_io`: place + locked face), stars (`StarTurn`, `StarSmear` over the 0.5 shutter, 3 taps). GRS at −40°
+  at Io's entry: it slides down the left side behind the limb mesa.
+- **Bug fixed (`lib/moons.py`)**: Io was lit by the main Sun, so the real-size Europa body shadowed the k-scaled Io
+  (Io black for no reason in the first preview). Io is now lit by Jupiter's own Sun only (receiver collections), whose
+  blockers are the scaled Europa + Io: Europa's shadow on Io falls true. `look_io.py` gets the fix too.
+- Checked against physics per second: Io, Io's shadow and Europa's shadow (el/az) land where `io_cast_shadow` / the
+  anti-solar point say; at the end Io's shadow (0.5° up) is behind the far rubble, Europa's (1.7° up) stays on the disc.
+- **Cost**: full res 64 spp ≈ **6.4 s/frame** → ≈ **31 min**. Ladder: locked camera, but the whole disc changes every
+  frame (spin, shadows): no plate; persistent data on; 32 spp A/B in the batch sprint (Io's eclipse rim is the test).
+
+**Findings for the user (Sprint 3.2):**
+1. ⭐ **Europa's shadow crosses Io (a mutual eclipse), real.** The film's Sun has declination 0 (Jupiter's equinox
+   season, as 01); then Sun, Europa and Io line up during the transit and our shadow passes over Io's centre: Io goes
+   black inside a thin lit ring (umbra r 1,337 km on Io's 1,822: 54 % of the face we see), then lights again with its
+   own shadow and ours hanging above it on the bands like beads. Penumbra on Io for 34 min of the 1.35 h transit;
+   with `--e-end 179` (the Sun 1° short of anti-Jupiter when Io sets) that is 2.4–7.3 s, deepest at 4.9 s; 178 puts it
+   at 4.8–9.3 s. Status **real (geometry)**: mutual eclipses happen for months either side of each Jupiter equinox
+   (twice per 12-y orbit; 2026–27 is one, BAA); it also needs Europa near its orbit's node (0.47° tilt), so not every
+   transit. Sources: britastro.org/section_news_item/mutual-events-of-the-galilean-satellites-2026-27 ·
+   arxiv.org/pdf/2310.00807. **Keep it? (and e-end 179 vs 178)**
+2. **Lens 75 mm** (TREATMENT said 135 locked, open since 0.2): 135 mm can't hold the visible disc (1,215 px in 804);
+   85 mm cuts Io at the top edge when it enters; 75 mm shows Io in the black above the disc for ~1 s, the whole disc,
+   Io ≈ 58 px. The limb mesa is bigger in frame than in 01 (same geometry). **OK?**
+3. Stars don't show at −4 EV beside the disc (density 0.06, as 01); they turn in the code, so a brighter star field
+   would drift down with Io. Leave dark unless wanted.
+4. Caption `IO. WE STOOD THERE.` 6.5–11.4 s lands as Io comes out of the shadow and sinks: kept.
+
 ## Next
 Finding 1 (Io + two shadows in 02): verified, in TREATMENT as C2 and in 02's row (user 2026-10-05).
 01's framing test done (2.0, the turn); the ground done (2.1); the cryobot done (2.2); the shell interior done (2.3,
 approved: puck release in 05, porosity 0.2 %); the under-ice ocean done (2.4, approved: melt ceiling, frazil ⚠ only if
-07 wants it; particles and 08's sink speed open for those shots). Sprint 2 builds are complete → Sprint 3, shots one per session: **01 locked (3.1); next 02 (3.2)**. Asset hunt by the user in parallel
+07 wants it; particles and 08's sink speed open for those shots). Sprint 2 builds are complete → Sprint 3, shots one per session: **01 locked (3.1); 02 done (3.2), waiting for review (findings 1–2); next 03 (3.3)**. Asset hunt by the user in parallel
 (REFERENCES.md "Wanted": W1 Mixamo kneel/stand, W2–W3 ice sounds and hydrophone).
 
 ## Sprints (plan, 2026-10-04)

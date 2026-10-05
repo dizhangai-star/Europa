@@ -8,7 +8,8 @@ joins Jupiter's own Sun's blocker collection (jupiter.europa_shadow), next to th
 
 Io's body frame: +X toward Jupiter (Io is locked: longitude 0 faces it), +Z = orbit north (Jupiter's axis),
 east longitude = atan2(y, x), so the map (tools/maps.py io_globe: column 0 = 0° E) wraps without a flip. During a
-transit Europa sees Io's anti-Jupiter face (180°). Albedo: map × gain so the disc's mean Lambert albedo is
+transit Europa sees Io's anti-Jupiter face (180°). With Jupiter's own Sun given, Io is lit by it alone (scaled Europa
+as its blocker: a mutual eclipse, Europa's shadow on Io, falls true). Albedo: map × gain so the disc's mean Lambert albedo is
 1.5 × physics.P_GEOM_IO,
 clamped at 1 (the mosaic's frost is stretched).
 """
@@ -28,9 +29,9 @@ def k_scale():
     return jupiter.DIST / (P.jupiter_local()[1] * 1000.0)
 
 
-def io(sc, dlt, cam_loc, sun_jupiter=None):
-    """Io at `dlt` rad from conjunction with Europa (physics.io_pos), seen from the site. `sun_jupiter`: Jupiter's own
-    Sun (jupiter.europa_shadow) → Io shadows Jupiter. Returns the object."""
+def io_matrix(dlt, cam_loc):
+    """Io's world matrix at `dlt` rad from conjunction (scaled place, locked face toward Jupiter, radius in the scale);
+    also returns its scaled offset from the camera (m) and radius."""
     fr = P.site(*P.SITE[1:])
     k = k_scale()
     p = Vector(P.to_local(P.from_site(P.io_pos(dlt), fr), fr)) * 1000.0 * k          # m, scaled
@@ -41,10 +42,30 @@ def io(sc, dlt, cam_loc, sun_jupiter=None):
     z = (axis - axis.dot(x) * x).normalized()
     y = z.cross(x)
     rot = Matrix((x, y, z)).transposed().to_4x4()
+    return Matrix.Translation(Vector(cam_loc) + p) @ rot @ Matrix.Diagonal((r, r, r, 1.0)), p, r
+
+
+def key_io(ob, dlt, cam_loc, frame):
+    """Move Io to `dlt` and key it on `frame` (02's time-lapse). Quaternion rotation, kept on one hemisphere."""
+    m, _, _ = io_matrix(dlt, cam_loc)
+    loc, q, s = m.decompose()
+    ob.rotation_mode = 'QUATERNION'
+    if ob.rotation_quaternion.dot(q) < 0:
+        q.negate()
+    ob.location, ob.rotation_quaternion, ob.scale = loc, q, s
+    for k in ('location', 'rotation_quaternion', 'scale'):
+        ob.keyframe_insert(k, frame=frame)
+
+
+def io(sc, dlt, cam_loc, sun_jupiter=None):
+    """Io at `dlt` rad from conjunction with Europa (physics.io_pos), seen from the site. `sun_jupiter`: Jupiter's own
+    Sun (jupiter.europa_shadow) → Io shadows Jupiter. Returns the object."""
+    mw, p, r = io_matrix(dlt, cam_loc)
+    k = k_scale()
     bpy.ops.mesh.primitive_uv_sphere_add(segments=128, ring_count=64, radius=1.0)
     ob = bpy.context.object
     ob.name = 'Io'
-    ob.matrix_world = Matrix.Translation(Vector(cam_loc) + p) @ rot @ Matrix.Diagonal((r, r, r, 1.0))
+    ob.matrix_world = mw
     bpy.ops.object.shade_smooth()
 
     m = bpy.data.materials.new('Io')
@@ -71,6 +92,15 @@ def io(sc, dlt, cam_loc, sun_jupiter=None):
         c.objects.link(ob)
         for co in c.collection_objects:
             co.light_linking.link_state = 'INCLUDE'
+        # lit by Jupiter's Sun too, not by the main one: at scale k the only Europa that may shadow Io is the scaled
+        # one (Sprint 3.2: the real-size body eclipsed the scaled Io); Europa's true shadow on Io then falls exactly
+        for name, state in (('OnlyJupiter', 'INCLUDE'), ('NotJupiter', 'EXCLUDE')):
+            for col in bpy.data.collections:
+                if col.name.startswith(name):
+                    col.objects.link(ob)
+                    for o_, co in zip(col.objects, col.collection_objects):     # same order (no .object)
+                        if o_ == ob:
+                            co.light_linking.link_state = state
     el, az = P.alt_az(tuple(p.normalized()))
     print(f'NOTE io: Δ {dlt:+.4f} rad, el {el:.2f}° az {az:+.2f}°, {2 * math.degrees(math.asin(r / p.length)):.2f}° '
           f'wide at {p.length / 1000:.0f} km (k {k:.5f}), albedo gain {gain:.2f}')

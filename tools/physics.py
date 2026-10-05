@@ -185,6 +185,7 @@ def _cross(a, b):
 # Jupiter, east +) and declination dec: (cos dec cos E, cos dec sin E, sin dec). E falls by 360° per synodic day
 # (Europa turns prograde), so the Sun rises in the east (E = 180° side) and sets toward Jupiter.
 SITE = ('Conamara Chaos', 9.7, 273.7)
+LAPSE_E_END = (180.0, 179.0, 178.0)   # deg, 02's Sun when Io sets (film pick; one is chosen in Sprint 3.2)
 DEC_SUN = 3.13              # deg, Jupiter's axial tilt: the Sun's declination over Europa's equator, ± over 11.9 y
 
 
@@ -286,6 +287,52 @@ def io_track(fr):
     a, b = from_site(io_pos(-1e-3), fr), from_site(io_pos(1e-3), fr)
     mv = tuple(y / _norm(b)[1] - x / _norm(a)[1] for x, y in zip(a, b))
     return ent, end, sky_angle(mv, c, fr)
+
+
+def europa_on_io(elong, dlt, dec=0.0):
+    """Europa's shadow on Io (a mutual eclipse, "2E1" in the PHEMU campaigns): Io at `dlt`, Sun at `elong`, `dec`.
+    Returns (distance of Io's centre from the shadow's axis, umbra and penumbra radii there; all km). Needs the Sun
+    near Jupiter's equator (equinox seasons) and Europa near its orbit's node: its 0.47° inclination (ignored here)
+    puts it up to 5,500 km off the plane, and the shadow misses Io beyond R_IO + penumbra (≈ 3,600 km)."""
+    s = sun_dir(elong, dec)
+    io = io_pos(dlt)
+    t = -_dot(io, s)                                         # along the shadow, away from the Sun
+    rho = math.sqrt(max(_dot(io, io) - t * t, 0.0))
+    k = t * math.tan(math.radians(R_SUN_DEG))
+    return rho, R_EU - k, R_EU + k
+
+
+def eclipse_span(fr, e_end, n=4000):
+    """02: (first touch, deepest, last touch) hours after Io's entry when Europa's penumbra is on Io, or None."""
+    d = lapse(fr, e_end, 0.0)['dur']
+    hs, on, best = [], [], None
+    for i in range(n + 1):
+        h = d * (-0.3 + 1.6 * i / n)
+        s = lapse(fr, e_end, h)
+        rho, um, pen = europa_on_io(s['elong'], s['dlt'])
+        if rho < R_IO + pen:
+            on.append(h)
+        if best is None or rho < best[0]:
+            best = (rho, h)
+    return (on[0], best[1], on[-1]) if on else None
+
+
+_TRACK = {}
+
+
+def lapse(fr, e_end, h):
+    """02's time-lapse (Sprint 3.2): the sky `h` hours after Io's centre enters the disc, on a transit that ends (Io
+    sets) with the Sun at elongation `e_end`. Returns dict: dlt (Io, rad from conjunction), elong (Sun, wrapped
+    ±180; it falls 360/P_SYN °/h), spin (Jupiter's rotation seen from Europa so far, deg: its clouds move the way Io
+    does), turn (the stars' turn about Europa's pole so far, deg: one sidereal day P_ORB_EU), dur (the transit, h)."""
+    key = repr(fr)
+    if key not in _TRACK:
+        _TRACK[key] = io_track(fr)
+    ent, end, _ = _TRACK[key]
+    dur = (end[0] - ent[1]) / W_IO_EU
+    e = e_end + 360.0 / P_SYN * (dur - h)
+    return dict(dlt=ent[1] + W_IO_EU * h, elong=(e + 180.0) % 360.0 - 180.0, spin=360.0 * h / P_ROT_J_EU,
+                turn=360.0 * h / P_ORB_EU, dur=dur)
 
 
 # ---------------------------------------------------------------- Blender local frame (the libs copied from Io)
@@ -691,6 +738,27 @@ elif __name__ == '__main__':
             el, az = altaz(r[1], fr)
             rows.append((f'{name}: Io\'s shadow, mid-transit, Sun {E:.0f}°', f'{r[2]:.2f}° from Io '
                          f'(shadow at {el:.1f}° up): Io and its own black dot on the bands'))
+    for e_end in LAPSE_E_END:
+        a = lapse(fr, e_end, 0.0)
+        b = lapse(fr, e_end, a['dur'])
+        sh = []
+        for s in (a, b):
+            r = io_cast_shadow(s['elong'], s['dlt'], fr)
+            sh.append(f'{r[2]:.2f}°' if r else 'off the disc')
+        rows.append((f'{name}: 02 time-lapse, Io sets with the Sun at {e_end:.0f}°',
+                     f'{b["dur"]:.2f} h: Sun {a["elong"]:+.1f}° → {b["elong"]:+.1f}° ('
+                     f'{altaz(sun_dir(a["elong"]), fr)[0]:+.1f}° → {altaz(sun_dir(b["elong"]), fr)[0]:+.1f}° up), '
+                     f'Jupiter spins {b["spin"]:.1f}°, stars turn {b["turn"]:.2f}°; Io\'s shadow {sh[0]} → {sh[1]} '
+                     f'from Io; Europa\'s shadow {own_shadow(a["elong"])[0]:.1f}° → {own_shadow(b["elong"])[0]:.1f}° '
+                     f'from the centre'))
+        sp = eclipse_span(fr, e_end)
+        if sp:
+            rho, um, pen = europa_on_io(lapse(fr, e_end, sp[1])['elong'], lapse(fr, e_end, sp[1])['dlt'])
+            rows.append((f'{name}: 02, Europa\'s shadow on Io (Sun {e_end:.0f}° at setting)',
+                         f'penumbra on Io from {sp[0]:+.2f} h to {sp[2]:+.2f} h ({(sp[2] - sp[0]) * 60:.0f} min; transit '
+                         f'{b["dur"]:.2f} h), deepest at {sp[1]:+.2f} h, {rho:.0f} km off centre: umbra r {um:.0f} km, '
+                         f'penumbra {pen:.0f} km on Io\'s {R_IO:.0f} (umbra covers {100 * (um / R_IO) ** 2:.0f} % of '
+                         f'the disc we see; Sun dec 0 = Jupiter\'s equinox season, Europa near its node)'))
     rows.append(('Radiation at the surface', f'{DOSE_SV_DAY} Sv/day: a ~50 %-lethal dose ({LD50_SV} Sv) in '
                  f'{LD50_SV / DOSE_SV_DAY * 24:.0f} h'))
     # ------------------------------------------------ down
