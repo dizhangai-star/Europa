@@ -693,6 +693,128 @@ def ganymede_seen(dlt, elong, fr):
     return to_local(v, fr), 2 * deg(math.asin(R_GA / d)), lit
 
 
+# ---------------------------------------------------------------- 04 · the fall of the Sun (Sprint 3.4)
+SUN_RATE = 360.0 / P_SYN      # deg/h: the Sun's elongation falls (east → Jupiter)
+STAR_RATE = 360.0 / P_ORB_EU  # deg/h: the stars about Europa's pole
+DAWN_03 = 1.18                # h after Io set: 03's sky (s03_probe --after); 04 opens on it
+# 04 (film picks, the clip's timing): real time at 0 s (cut from 03); the log-rate eases up over `up` s to r0, holds,
+# eases (smoothstep, from `t0` s) down to a steady ingress rate ri at first contact (`contact` s), holds it so the
+# Sun's bead shrinks evenly, and eases to real time over the last `tail` s before second contact (`gone` s). fit04
+# solves ri (the ingress fits contact → gone) and r0 (03's dawn → first contact fits 0 → contact).
+SHOT04 = dict(dur=18.0, up=1.5, t0=6.0, contact=10.0, gone=13.5, tail=1.0)
+# Lightning on Jupiter's night side. Galileo SSI: optical energy per flash up to 1.6e10 J (several terrestrial
+# superbolts), spots 45–80 km HWHM (light diffused through the clouds; Little et al. 1999, Icarus 142). Juno SRU:
+# 1e5–1e8 J, pulses 5.4 ms apart by tens of ms, like in-cloud lightning on Earth (Becker et al. 2020, Nature 584;
+# Kolmašová et al. 2023, Nat. Comm. 14). From Europa only the large ones show: the shot uses Galileo's range.
+FLASH_E = (1.0e9, 1.6e10)     # J, optical
+FLASH_HWHM = (45.0, 80.0)     # km
+M_SUN_1AU = -26.74            # V
+# The solar corona (K+F), Baumbach (1937): radiance / the disc centre's = 1e-6 Σ a·r^-n, r in solar radii. Its surface
+# brightness doesn't depend on distance: from Europa it is as bright as at an eclipse on Earth, 5.2× smaller.
+CORONA = ((0.0532, 2.5), (1.425, 7.0), (2.565, 17.0))
+LIMB_DARK = 0.8               # the Sun's mean disc radiance / its centre's (V)
+
+
+def sun_limb_sep(elong, dec=0.0):
+    """Angular distance (deg) of the Sun's centre outside Jupiter's limb (< 0: behind it), along the line from
+    Jupiter's centre, using the oblate disc's radius at the Sun's position angle."""
+    u, _, r_eq, r_pol, ax = jupiter_local()
+    s = sun_local(elong, dec)
+    z = tuple(a - _dot(ax, u) * b for a, b in zip(ax, u))              # north on the disc
+    y = _cross(u, z)
+    phi = math.atan2(_dot(s, z), _dot(s, y))
+    r = r_eq * r_pol / math.hypot(r_pol * math.cos(phi), r_eq * math.sin(phi))
+    return deg(math.acos(max(-1.0, min(1.0, _dot(s, u))))) - r
+
+
+def sun_visible(elong):
+    """Fraction of the Sun's disc not hidden by Jupiter (the limb is straight across a 0.1° Sun)."""
+    x = max(-1.0, min(1.0, sun_limb_sep(elong) / R_SUN_DEG))
+    return 1 - (math.acos(x) - x * math.sqrt(1 - x * x)) / math.pi
+
+
+def _elong_at_sep(sep):
+    lo, hi = 0.0, 40.0
+    for _ in range(60):
+        m = (lo + hi) / 2
+        lo, hi = (m, hi) if sun_limb_sep(m) < sep else (lo, m)
+    return lo
+
+
+def _ss(e0, e1, x):
+    t = min(max((x - e0) / (e1 - e0), 0.0), 1.0)
+    return t * t * (3 - 2 * t)
+
+
+def _rate04(s, L, Li):
+    """04: time rate (real s per clip s) at clip second s for log peak rate L and log ingress rate Li."""
+    c = SHOT04
+    d1, d2 = _ss(c['t0'], c['contact'], s), _ss(c['gone'] - c['tail'], c['gone'], s)
+    return math.exp(L * _ss(0.0, c['up'], s) * (1.0 - d1) + Li * d1 * (1.0 - d2))
+
+
+def _int04(a, b, L, Li, n=600):
+    h = (b - a) / n
+    return h / 3 * sum((1 if i in (0, n) else 4 if i % 2 else 2) * _rate04(a + i * h, L, Li) for i in range(n + 1))
+
+
+_FIT04 = {}
+
+
+def _bisect(f, target, lo=0.0, hi=20.0):
+    for _ in range(50):
+        m = (lo + hi) / 2
+        lo, hi = (m, hi) if f(m) < target else (lo, m)
+    return (lo + hi) / 2
+
+
+def fit04():
+    """04: solve the log ingress rate Li (first → second contact in contact → gone s) and the log peak rate L (03's
+    dawn → first contact in 0 → contact s); cached. Returns dict L, Li, r0, ri, e0 (03's dawn), e1, e2 (first,
+    second contact), pre and cover (real s)."""
+    if not _FIT04:
+        c, fr = SHOT04, site(*SITE[1:])
+        d = lapse(fr, LAPSE_E_END[1], 0.0)['dur']
+        e0 = lapse(fr, LAPSE_E_END[1], d + DAWN_03)['elong']
+        e1, e2 = _elong_at_sep(R_SUN_DEG), _elong_at_sep(-R_SUN_DEG)
+        pre, cover = (e0 - e1) / SUN_RATE * 3600, (e1 - e2) / SUN_RATE * 3600
+        Li = _bisect(lambda x: _int04(c['contact'], c['gone'], 0.0, x), cover)
+        L = _bisect(lambda x: _int04(0.0, c['contact'], x, Li), pre)
+        _FIT04.update(L=L, Li=Li, r0=math.exp(L), ri=math.exp(Li), e0=e0, e1=e1, e2=e2, pre=pre, cover=cover)
+    return _FIT04
+
+
+def lapse04(s):
+    """04: clip second → real seconds since first contact (< 0 before it)."""
+    f, c = fit04(), SHOT04
+    return _int04(c['contact'], s, f['L'], f['Li'], n=max(40, 2 * int(abs(s - c['contact']) * 60)))
+
+
+def rate04(s):
+    f = fit04()
+    return _rate04(s, f['L'], f['Li'])
+
+
+def lapse04_elong(s):
+    """04: the Sun's elongation (deg) at clip second s."""
+    return fit04()['e1'] - lapse04(s) / 3600 * SUN_RATE
+
+
+def corona(r):
+    """Corona radiance relative to the Sun's mean disc radiance at r solar radii (Baumbach)."""
+    return 1e-6 * sum(a * r ** -n for a, n in CORONA) / LIMB_DARK
+
+
+def flash_seen(e_j, shutter_s=0.5 / 24, d_km=None):
+    """A lightning flash of optical energy e_j (J) near the disc centre, Lambertian from the cloud tops, all inside
+    one frame's shutter: (fluence J/m², mean irradiance over the shutter W/m², V magnitude, × the Sun's irradiance)."""
+    d = (d_km or jupiter_local()[1]) * 1000.0
+    flu = e_j / (math.pi * d * d)
+    irr = flu / shutter_s
+    m_sun = M_SUN_1AU + 5 * math.log10(AU_J)
+    return flu, irr, m_sun - 2.5 * math.log10(irr / E_SUN), irr / E_SUN
+
+
 def ocean(h_ice, d=OCEAN_D):
     """Pressure (bar) at the ice base and the sea floor, and the Earth-ocean depth (m) of the same pressure.
     g taken constant at its surface value (a dense core keeps it near-flat through the outer 120 km)."""
@@ -895,6 +1017,32 @@ elif __name__ == '__main__':
         el, az = alt_az(u)
         rows.append((f'03: Ganymede, {tag}', f'{el:.1f}° up, {az:+.1f}° from Jupiter (local), {dd:.3f}° wide, '
                      f'{100 * lit:.0f} % lit; {px_across(dd, 35):.1f} px at 35 mm, {px_across(dd, 135):.0f} px at 135'))
+    f4, c4 = fit04(), SHOT04
+    el = lambda e: alt_az(sun_local(e))
+    noon = max((el(e)[0], e) for e in [f4['e0'] - 0.5 * i for i in range(int(f4['e0'] / 0.5))])
+    rows.append(('04: the day, 03\'s dawn → first contact', f'{f4["pre"] / 3600:.1f} h: Sun {f4["e0"]:.1f}° → '
+                 f'{f4["e1"]:.2f}° elongation ({el(f4["e0"])[0]:+.1f}° up, az {el(f4["e0"])[1]:+.0f}° → '
+                 f'{el(f4["e1"])[0]:.2f}° up, az {el(f4["e1"])[1]:+.1f}°); highest {noon[0]:.1f}° at {noon[1]:.0f}°; '
+                 f'Jupiter {100 * lit_fraction(f4["e0"]):.1f} % → {100 * lit_fraction(f4["e1"]):.2f} % lit; '
+                 f'Jupiter spins {f4["pre"] / 3600 / P_ROT_J_EU:.1f} turns'))
+    rows.append(('04: ingress (first → second contact)', f'{f4["cover"]:.0f} s real; gone {el(f4["e2"])[0]:.2f}° up'))
+    rows.append(('04: clock (fit04)', f'real time at 0 s → ×{f4["r0"]:,.0f} by {c4["up"]} s (Sun {SUN_RATE * f4["r0"] / 3600:.0f}°/s, '
+                 f'Jupiter a turn every {P_ROT_J_EU * 3600 / f4["r0"]:.1f} s) → eases from {c4["t0"]} s to ×{f4["ri"]:.0f} at '
+                 f'first contact ({c4["contact"]} s), holds (the bead shrinks evenly) → real time at second contact '
+                 f'({c4["gone"]} s); {c4["dur"] - c4["gone"]:.1f} s of night in real time'))
+    for e_j in (1e8, FLASH_E[0], FLASH_E[1]):
+        flu, irr, mag, rel = flash_seen(e_j)
+        rows.append((f'04: lightning {e_j:.0e} J seen from Europa', f'{flu:.1e} J/m²; in one 1/48 s shutter '
+                     f'{irr:.1e} W/m² = {rel:.1e}× the Sun, V {mag:+.1f} (Sirius −1.5); spot '
+                     f'{2 * FLASH_HWHM[0]:.0f}–{2 * FLASH_HWHM[1]:.0f} km = '
+                     f'{px_across(deg(2 * FLASH_HWHM[0] / jupiter_local()[1]), 50):.1f}–'
+                     f'{px_across(deg(2 * FLASH_HWHM[1] / jupiter_local()[1]), 50):.1f} px at 50 mm: a point'))
+    b_sun = E_SUN / (math.pi * math.sin(math.radians(R_SUN_DEG)) ** 2)
+    rows.append(('04: the solar corona over the limb (Baumbach)', ', '.join(f'{r:g} R☉ {b_sun * corona(r):.3g}'
+                 for r in (1.05, 1.5, 2, 3, 5)) + f' W/m²/sr (the Sun\'s disc {b_sun:.2e}; sunlit ice ≈ 10); 1 R☉ = '
+                 f'{R_SUN_DEG:.3f}° = {px_across(R_SUN_DEG, 50):.1f} px at 50 mm; the Sun\'s centre is '
+                 f'{-sun_limb_sep(fit04()["e2"]):.3f}° behind the limb at second contact, '
+                 f'{-sun_limb_sep(lapse04_elong(SHOT04["dur"])):.3f}° at the clip\'s end'))
     rows.append(('Radiation at the surface', f'{DOSE_SV_DAY} Sv/day: a ~50 %-lethal dose ({LD50_SV} Sv) in '
                  f'{LD50_SV / DOSE_SV_DAY * 24:.0f} h'))
     # ------------------------------------------------ down
