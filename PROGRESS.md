@@ -1,8 +1,8 @@
 # Europa · 木卫二 · 深渊: progress
 
 ## State (2026-10-05)
-**Sprint 3.1 (shot 01, the turn) done 2026-10-05, branch `sprint-3.1-shot01`: animatic + Cycles check, waiting for the
-user's yes to lock. Next: 3.2 = shot 02.** Sprint 2.4 (the under-ice ocean) done, approved and merged (PR #8). Sprint 2.3 (the ice-shell interior) done, approved and merged (PR #7). Sprint 2.2 (the cryobot)
+**Sprint 3.1 (shot 01, the turn) done 2026-10-05, 01 locked by the user (not rendered), PR from `sprint-3.1-shot01`.
+Next: 3.2 = shot 02.** Sprint 2.4 (the under-ice ocean) done, approved and merged (PR #8). Sprint 2.3 (the ice-shell interior) done, approved and merged (PR #7). Sprint 2.2 (the cryobot)
 done, approved and merged (PR #6).
 Sprint 2.1 (the ground) done and
 merged 2026-10-05 (PR #5). Sprint 2.0 (01 framing test) done 2026-10-05
@@ -271,7 +271,7 @@ about light) and `out/01-horizon-animatic-wb.mp4` (Workbench, 0.5 s/frame, first
 Finding 1 (Io + two shadows in 02): verified, in TREATMENT as C2 and in 02's row (user 2026-10-05).
 01's framing test done (2.0, the turn); the ground done (2.1); the cryobot done (2.2); the shell interior done (2.3,
 approved: puck release in 05, porosity 0.2 %); the under-ice ocean done (2.4, approved: melt ceiling, frazil ⚠ only if
-07 wants it; particles and 08's sink speed open for those shots). Sprint 2 builds are complete → Sprint 3, shots one per session (01 first). Asset hunt by the user in parallel
+07 wants it; particles and 08's sink speed open for those shots). Sprint 2 builds are complete → Sprint 3, shots one per session: **01 locked (3.1); next 02 (3.2)**. Asset hunt by the user in parallel
 (REFERENCES.md "Wanted": W1 Mixamo kneel/stand, W2–W3 ice sounds and hydrophone).
 
 ## Sprints (plan, 2026-10-04)
@@ -290,6 +290,9 @@ approved: puck release in 05, porosity 0.2 %); the under-ice ocean done (2.4, ap
 5. Batch render (overnight, resume) → 4K compile, srt, poster; then the 9:16 climax cut (own portrait cameras).
 
 ## Decisions (locked)
+- 01 locked (user 2026-10-05, Sprint 3.1): `s01_horizon.py` as checked: pan 150° → 6° over 2.3–8.8 s (peak 42°/s),
+  24 → 35 mm, +1.5 → −3.5 EV by heading, push 3.6 m, motion blur 0.5, limb mesa `1.0:2.5:40`, caption 8.2–11.6 s.
+  Renders in the Sprint 5 batch (≈ 41 min at 64 spp).
 - 05 (user 2026-10-05, Sprint 2.3 finding 2): the probe releases a relay puck and the clear column freezes over it
   ("no way back" made visible; the freezing front itself is nearly invisible). Near-surface porosity stays 0.2 %
   (milky: the probe is a lantern in the ice).
