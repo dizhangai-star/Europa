@@ -2,7 +2,7 @@
 
 ## State (2026-10-05)
 **Sprint 3.6 (shot 06, descent) DRAFTED 2026-10-05 in a cloud session (phone) without Blender: physics clock +
-counter, overlay, `s06_descent.py` written, nothing run or rendered; merged (PR #PRNUM) so the Mac can pull it. Next, on
+counter, overlay, `s06_descent.py` written, nothing run or rendered; merged (PR #14) so the Mac can pull it. Next, on
 the Mac: run 06 (one preview still, then the animatic), fix what breaks, answer the 3.6 questions, lock 06; then 3.7 =
 shot 07 (breakthrough).** Sprint 3.5 (shot 05, the lid) done 2026-10-05, 05 locked by the user (not rendered; core as
 built, EV ride +3 → +5.5, clock as built; merged, PR #13). Sprint 3.4 (shot 04, the fall of the Sun) done, 04 locked (merged,
