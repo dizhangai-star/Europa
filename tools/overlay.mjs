@@ -1,10 +1,11 @@
-// Film-local caption + counter layer (copied from Io, Sprint 0.3; the counter is still Io's 03 eclipse clock: Europa's
-// 06 counter, days · depth · temperature · pressure from physics.py, replaces it in Sprint 3): a clip's `caps` and
-// its `counter` drawn in headless Chrome with 巨物's overlay type (cg-lab: Cinzel caps over 中文 in the lower letterbox bar, a JetBrains Mono readout top-left of
-// the picture), on a transparent 1920×1080 canvas → a qtrle .mov that compile.mjs lays over the clip. The ffmpeg here
-// has no drawtext, and this keeps the captions in the series' type.
+// Film-local caption + counter layer (copied from Io, Sprint 0.3): a clip's `caps` and its `counter` drawn in headless
+// Chrome with 巨物's overlay type (cg-lab: Cinzel caps over 中文 in the lower letterbox bar, a JetBrains Mono readout
+// top-left of the picture), on a transparent 1920×1080 canvas → a qtrle .mov that compile.mjs lays over the clip. The
+// ffmpeg here has no drawtext, and this keeps the captions in the series' type.
 // Usage: node tools/overlay.mjs <id> [--out out/.overlay-<id>.mov] [--stills t1,t2,… (→ frames/<id>-overlay-tNN.png)]
-//   Counter hours per frame come from physics.lapse03 (eased), never from a straight line.
+//   `counter: 'counter05'` names a physics.py function: clip second → (hours, depth m), sampled per frame (eased
+//   clocks come from the shot's own lapse, never a straight line). READOUT below holds each counter's label and format;
+//   06's (days · depth · temperature · pressure) joins it in its sprint.
 //   Logical units are 巨物's 640×360 grid (letterbox bars 46 = 138 px: 1080 − 804 over 2), drawn ×3.
 import { execFileSync, spawn } from 'node:child_process';
 import fs from 'node:fs';
@@ -17,11 +18,14 @@ const K = A.has('4k') ? 2 : 1, W = 1920 * K, H = 1080 * K;   // --4k: the same l
 const [id] = A.positional();
 const C = loadClip(id);
 const n = Math.round(C.duration * config.fps);
-// counter: hours at each frame from the clip's own lapse (03 only so far)
-const hours = C.counter ? JSON.parse(execFileSync('python3', ['-c',
+// counter: (hours, depth) at each frame from the named physics function
+const READOUT = {
+  counter05: { zh: '投放中继器后', en: 'SINCE THE RELAY WAS LEFT', h: 1, m: 1 },
+};
+const vals = C.counter ? JSON.parse(execFileSync('python3', ['-c',
   `import sys, json; sys.path.insert(0, ${JSON.stringify(rel('tools'))}); import physics as P; ` +
-  `print(json.dumps([round(P.lapse03(i / ${config.fps}), 3) for i in range(${n + 1})]))`], { encoding: 'utf8' })) : null;
-const S = { caps: C.caps || [], counter: C.counter ?? null, hours, fps: config.fps };
+  `print(json.dumps([[round(x, 3) for x in P.${C.counter}(i / ${config.fps})] for i in range(${n + 1})]))`], { encoding: 'utf8' })) : null;
+const S = { caps: C.caps || [], readout: C.counter ? READOUT[C.counter] : null, vals, fps: config.fps };
 
 const page_ = `<!doctype html><meta charset="utf-8">
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=JetBrains+Mono:wght@400&family=Noto+Serif+SC:wght@400&display=block" rel="stylesheet">
@@ -46,15 +50,16 @@ window.renderAt = (t, f) => {
     text(en.toUpperCase(), 320, 360 - BAR + 16, '600 10px ' + EN, '#e9e2d0', a, 'center', 3);
     text(zh, 320, 360 - BAR + 31, '400 9px ' + ZH, '#b9b2a2', a, 'center', 2);
   }
-  if (S.hours) {                                       // 03 counter, 巨物's readout: top-left of the picture
-    const a = seg(t, 0, 0.25), h = S.hours[Math.min(f, S.hours.length - 1)], y0 = BAR + 14, L = 18;
-    text('距上次日食  SINCE THE LAST ECLIPSE', L, y0, '400 6px ' + MONO, '#8a8f96', a * 0.8, 'left', 1);
-    text('+' + h.toFixed(1).padStart(4, '0') + ' h', L, y0 + 11, '400 8px ' + MONO, '#c9c2b4', a, 'left', 1);
+  if (S.vals) {                                        // counter, 巨物's readout: top-left of the picture
+    const R = S.readout, a = seg(t, 0, 0.25), [h, m] = S.vals[Math.min(f, S.vals.length - 1)], y0 = BAR + 14, L = 18;
+    text(R.zh + '  ' + R.en, L, y0, '400 6px ' + MONO, '#8a8f96', a * 0.8, 'left', 1);
+    text('+' + h.toFixed(R.h).padStart(3, '0') + ' h', L, y0 + 11, '400 8px ' + MONO, '#c9c2b4', a, 'left', 1);
+    text(m.toFixed(R.m) + ' m', L + 52, y0 + 11, '400 8px ' + MONO, '#c9c2b4', a, 'left', 1);
   }
 };
 window.ready = (async () => {
   const fonts = ['600 10px "Cinzel"', '400 9px "Noto Serif SC"', '400 6px "JetBrains Mono"'];
-  const all = S.caps.map((c) => c[2].toUpperCase() + c[3]).join('') + '距上次日食SINCETHELASTECLIPSE+0123456789.h';
+  const all = S.caps.map((c) => c[2].toUpperCase() + c[3]).join('') + (S.readout ? S.readout.zh + S.readout.en : '') + '+0123456789.hm';
   await Promise.all(fonts.map((f) => document.fonts.load(f, all)));
   await document.fonts.ready;
   return fonts.filter((f) => !document.fonts.check(f, all));

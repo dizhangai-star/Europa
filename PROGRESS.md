@@ -1,8 +1,9 @@
 # Europa · 木卫二 · 深渊: progress
 
 ## State (2026-10-05)
-**Sprint 3.4 (shot 04, the fall of the Sun) done 2026-10-05, 04 locked by the user (not rendered; no corona, no
-lightning, eased ingress, backlit grey-white ice), branch `sprint-3.4-shot04`. Next: 3.5 = shot 05.** Sprint 3.3 (shot 03, the probe) done, 03 locked (merged,
+**Sprint 3.5 (shot 05, the lid) in review 2026-10-05, branch `sprint-3.5-shot05`: animatic + Cycles check done,
+waiting for the user's answers (findings below).** Sprint 3.4 (shot 04, the fall of the Sun) done, 04 locked (merged,
+PR #12). Sprint 3.3 (shot 03, the probe) done, 03 locked (merged,
 PR #11). Sprint 3.2 (shot 02, Io sets) done, 02
 locked (merged, PR #10). Sprint 3.1 (shot 01, the turn) done, 01 locked (merged, PR #9). Sprint 2.4 (the under-ice ocean) done, approved and merged (PR #8). Sprint 2.3 (the ice-shell interior) done, approved and merged (PR #7). Sprint 2.2 (the cryobot)
 done, approved and merged (PR #6).
@@ -405,11 +406,52 @@ ingress as built. 3. keep the backlit grey-white ice. 4. lightning first "bigger
 flashes inside the eclipse looked odd (`--flashes 0` default; `jupiter.lightning` and `physics.flash_seen` stay for
 true 1-px flashes). 5. framing OK. The animatic `out/04-sunfall-animatic.mp4` is re-rendered without them.
 
+**Sprint 3.5 (shot 05, the lid) 2026-10-05, branch `sprint-3.5-shot05`.** User picks at the start (2026-10-05):
+**30 m, puck 1** (film pick `physics.CRYO_PUCK_FIRST`: dropped just under the regolith, then every 2 km), **camera
+stays in the ice with the puck** (the probe sinks away), **a small clock**.
+**`blender/shots/s05_lid.py`**: `shell.build` at 30 m (cutaway, as the 2.3 lid board) + the cryobot (port −40°); the
+world is the probe's frame, so the ice (shell root), the dropped puck and the camera all move up by the descent d(t).
+Clock (physics `SHOT05`, `fit05`, `lapse05`): real time at 0 s (the puck has just left the open top), log-rate eased
+0.6 → 2.4 s up to **×2,438**, held; the freezing front (1.34 m above the probe's top, `refreeze`: 1.99 h at 0.68 m/h)
+comes down after the probe and **reaches the puck's top at 5.0 s** (2.01 h, probe sunk 1.36 m), the caption's start;
+5.39 h / 3.65 m by 10 s (33.6 m down). Camera 35 mm, f/4, 13° right of the cut's normal, push-in 4.0 → 2.6 m, aim the
+puck (drop-frame 3.05 → 3.1 m), looking down 12° → 4° (sees into the open top), eased 0.5–9.6 s; focus on the puck.
+Exposure +3 → +5.5 EV over 4–9.5 s (the eye follows the fading light: the lamp sinks away, red dies first).
+- physics.py new rows ("05: …"): the drop (front, shut time, the 25 mm water ring round the puck shuts in ~5 min:
+  invisible), the clock; **`HOLE_CORE`** (new, real on Earth): a refreezing hole freezes inward and pushes its gas/salt
+  to the axis: IceCube's 55–60 cm holes have a ~16 cm milky **bubble column**, scattering length 2–30 cm (Rongen 2016,
+  EPJ Web Conf. 116, 06011; arXiv:2307.15298). Film pick for Europa: 0.27 of the hole (Ø 6.8 cm), 5 cm, g 0.75.
+- New code: **`shell.core`** (`build(..., with_core=True)`): the core as a homogeneous volume above the front (world-fixed
+  like the front, a short cone at its tip), so in the ice's frame it comes down the column onto the puck. `counter05`
+  + **`tools/overlay.mjs` counters generalised**: clip `counter: '<physics fn>'` → (hours, depth) per frame, READOUT
+  holds label/format (Io's dead `lapse03` path removed); 05: `投放中继器后 SINCE THE RELAY WAS LEFT` `+2.7 h  31.8 m`.
+- Tried and dropped: a wide pull-back to 11.6 m (puck + probe + glow in one frame): the puck was 24 px and the
+  porosity bands owned the frame. Freezing the sheets' Booleans (the slide is along the hole's axis): 91 dB identical
+  and no faster (2.4 s/frame at 25 %/16 spp either way), removed.
+- **Cost**: full res 64 spp ≈ **60 s/frame** (3 stills 188 s incl. build) → 240 frames ≈ **4 h**. The camera moves
+  all clip long (no plate); ladder for the batch sprint: 32 spp A/B, fewer volume bounces A/B (128 now), persistent data.
+
+- Animatic `out/05-lid-animatic.mp4` (Cycles 25 %/16 spp, 2.5 s/frame, 10 min) and `out/05-lid-animatic-ov.mp4` (with
+  the clock and caption laid over); check `frames/05-check.png` (50 %/64 spp: 0.5 probe top · 2.5 the puck out of the
+  top, the probe below · 6.5 the puck alone, fading blue).
+
+**Findings for the user (Sprint 3.5):**
+1. **The closing itself barely shows.** The milky core is real (IceCube) and in the scene, but in the probe's diffuse
+   glow a pure scatterer is nearly invisible (it only redirects light that comes from every side): faint mottling in
+   the column above the puck. What carries "no way back": the puck coming out of the top (~2 s), the probe sinking out
+   of the frame (~3 s), the light leaving, the clock, the caption at 5 s. Keep the core (honest, subtle), drop it, or
+   make it denser (scattering length 5 → 1–2 cm, still inside IceCube's 2–30 cm)?
+2. **Exposure ride +3 → +5.5 EV (4–9.5 s)**: the puck stays readable at the end; the fade still shows. Less ride = darker
+   end (the light truly leaving), more = flatter.
+3. The puck is hidden in the open top for the first ~1.5 s (12° down isn't enough to see inside the rim at 4 m).
+4. Clock label `投放中继器后 · SINCE THE RELAY WAS LEFT`, hours with one decimal + nose depth (30.0 → 33.6 m). Wording OK?
+5. Cost ≈ 4 h at 64 spp (60 s/frame): the most expensive clip so far; 32 spp / fewer volume bounces to A/B in Sprint 5.
+
 ## Next
 Finding 1 (Io + two shadows in 02): verified, in TREATMENT as C2 and in 02's row (user 2026-10-05).
 01's framing test done (2.0, the turn); the ground done (2.1); the cryobot done (2.2); the shell interior done (2.3,
 approved: puck release in 05, porosity 0.2 %); the under-ice ocean done (2.4, approved: melt ceiling, frazil ⚠ only if
-07 wants it; particles and 08's sink speed open for those shots). Sprint 2 builds are complete → Sprint 3, shots one per session: **01 locked (3.1); 02 locked (3.2); 03 locked (3.3); 04 locked (3.4); next 05 (3.5)**. Asset hunt by the user in parallel
+07 wants it; particles and 08's sink speed open for those shots). Sprint 2 builds are complete → Sprint 3, shots one per session: **01 locked (3.1); 02 locked (3.2); 03 locked (3.3); 04 locked (3.4); 05 in review (3.5); next 06 (3.6)**. Asset hunt by the user in parallel
 (REFERENCES.md "Wanted": W1 Mixamo kneel/stand, W2–W3 ice sounds and hydrophone).
 
 ## Sprints (plan, 2026-10-04)

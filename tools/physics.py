@@ -531,6 +531,15 @@ def lamp_seen(d):
     return out
 
 
+# The refrozen hole's bubble column (real on Earth: IceCube's 'hole ice'). A water-filled hole freezes from the walls
+# inward and pushes the gas (and on Europa the salt) it holds to the centre: the last water to freeze leaves a milky
+# core. IceCube's 55–60 cm holes have a ~16 cm column (0.27 of the hole) with a scattering length of 2–30 cm
+# (Rongen 2016, EPJ Web Conf. 116, 06011; IceCube 2023, arXiv:2307.15298). Europa's melt (radiolytic O2, sulfate and
+# chloride salts in the ice) should do the same; how much is a film pick: the fraction scaled from IceCube, the
+# scattering length in its middle.
+HOLE_CORE = (0.27, 0.05, 0.75)   # core diameter / hole diameter, scattering length m, g (bubbles, forward)
+
+
 def refreeze(z_km, h_ice, a=CRYO_D / 2, wall=0.0):
     """The borehole behind the probe freezing shut at depth z_km: radial conduction with ice k(T) = K_ICE/T, c(T),
     enthalpy method. Water at the melting point fills r < a; the ice beyond starts at the lid's temperature, warmed
@@ -798,6 +807,56 @@ def rate04(s):
 def lapse04_elong(s):
     """04: the Sun's elongation (deg) at clip second s."""
     return fit04()['e1'] - lapse04(s) / 3600 * SUN_RATE
+
+
+# 05 (film picks, Sprint 3.5, user 2026-10-05): the first relay puck is dropped just under the regolith (30 m), then
+# one every CRYO_PUCK_KM. The camera stays in the ice with the puck while the probe sinks away. Real time at 0 s (the
+# puck has just left the probe's open top); the log-rate eases up over up0 → up1 s to a steady rate r, held to the
+# end (06's time-lapse takes over); fit05 solves r so that the freezing front (it trails the probe by refreeze's
+# open column) comes down onto the puck's top at `shut` s.
+CRYO_PUCK_FIRST = 0.03        # km, puck 1 (film pick: below the cracked regolith, where the tether is still short)
+SHOT05 = dict(dur=10.0, up0=0.6, up1=2.4, shut=5.0)
+_FIT05 = {}
+
+
+def _rate05(s, L):
+    c = SHOT05
+    return math.exp(L * _ss(c['up0'], c['up1'], s))
+
+
+def _int05(a, b, L, n=None):
+    n = n or max(40, 2 * int(abs(b - a) * 60))
+    h = (b - a) / n
+    return h / 3 * sum((1 if i in (0, n) else 4 if i % 2 else 2) * _rate05(a + i * h, L) for i in range(n + 1))
+
+
+def fit05():
+    """05: the puck's drop at CRYO_PUCK_FIRST. Returns v (m/s, 10 kW), hrs/prof (refreeze), open_m (open column above
+    the probe's top), z0 (puck bottom, m above the nose, seated in the open top), d_shut (m the probe sinks until the
+    front reaches the puck's top), t_shut (real s), L, r (steady rate), end (real s at the clip's end), d_end (m)."""
+    if not _FIT05:
+        c, z = SHOT05, CRYO_PUCK_FIRST
+        v = cryo_speed(CRYO_P[2], ICE_H[1], z)
+        hrs, prof = refreeze(z, ICE_H[1])
+        open_m = hrs * 3600 * v
+        z0 = CRYO_LEN - 0.015 - CRYO_PUCK[1]
+        d_shut = CRYO_LEN + open_m - (z0 + CRYO_PUCK[1])
+        L = _bisect(lambda x: _int05(0.0, c['shut'], x), d_shut / v)
+        end = _int05(0.0, c['dur'], L)
+        _FIT05.update(v=v, hrs=hrs, prof=prof, open_m=open_m, z0=z0, d_shut=d_shut, t_shut=d_shut / v, L=L,
+                      r=math.exp(L), end=end, d_end=end * v)
+    return _FIT05
+
+
+def lapse05(s):
+    """05: clip second → real seconds since the puck left the probe."""
+    return _int05(0.0, s, fit05()['L'])
+
+
+def counter05(s):
+    """05's clock (tools/overlay.mjs): hours since the puck's drop, the probe's nose depth (m)."""
+    sec = lapse05(s)
+    return sec / 3600, CRYO_PUCK_FIRST * 1000 + fit05()['v'] * sec
 
 
 def corona(r):
@@ -1079,6 +1138,17 @@ elif __name__ == '__main__':
         hrs, _ = refreeze(z, h)
         rows.append((f'Hole refreezes, {z:g} km down ({t:.0f} K)', f'shut {hrs:.2g} h behind the probe = '
                      f'≈ {hrs * v:.2g} m above it at ~{v:.2f} m/h (10 kW; walls not pre-warmed: lower bound)'))
+    f5, c5 = fit05(), SHOT05
+    gap = (CRYO_D - CRYO_PUCK[0]) / 2
+    rows.append((f'05: puck 1 dropped {CRYO_PUCK_FIRST * 1000:g} m down (film pick)', f'the probe sinks '
+                 f'{f5["v"] * 3600:.3f} m/h; the column stays open {f5["hrs"]:.2f} h = {f5["open_m"]:.2f} m above its '
+                 f'top; the front reaches the puck\'s top after the probe has sunk {f5["d_shut"]:.2f} m = '
+                 f'{f5["t_shut"] / 3600:.2f} h; a {gap * 1000:.0f} mm ring of '
+                 f'water round the puck itself shuts sooner (~{(gap / (CRYO_D / 2)) ** 2 * f5["hrs"] * 60:.0f} '
+                 f'min by a²: invisible in milky ice)'))
+    rows.append(('05: clock (fit05)', f'real time at 0 s → ×{f5["r"]:,.0f} by {c5["up1"]} s (eased from {c5["up0"]} s), '
+                 f'held; the front meets the puck at {c5["shut"]} s; {f5["end"] / 3600:.2f} h by {c5["dur"]:g} s: the probe '
+                 f'{f5["d_end"]:.2f} m below where it dropped the puck ({CRYO_PUCK_FIRST * 1000 + f5["d_end"]:.1f} m down)'))
     rows.append(('Lamp in pure water (e-fold distance)', ', '.join(f'{wl} nm {1 / a:.0f} m' for wl, a in A_WATER.items())
                  + ': red gone within metres, blue reaches ~100 m (before 1/r²)'))
     rows.append(('Ice base: current, scallops, terraces', f'current {OCEAN_U * 100:g} cm/s (film pick) → melt scallops '
