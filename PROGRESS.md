@@ -1,8 +1,8 @@
 # Europa · 木卫二 · 深渊: progress
 
 ## State (2026-10-05)
-**Sprint 3.4 (shot 04, the fall of the Sun) built 2026-10-05, branch `sprint-3.4-shot04`: animatic + Cycles check
-done, waiting for the user's review (findings below).** Sprint 3.3 (shot 03, the probe) done, 03 locked (merged,
+**Sprint 3.4 (shot 04, the fall of the Sun) done 2026-10-05, 04 locked by the user (not rendered; no corona, no
+lightning, eased ingress, backlit grey-white ice), branch `sprint-3.4-shot04`. Next: 3.5 = shot 05.** Sprint 3.3 (shot 03, the probe) done, 03 locked (merged,
 PR #11). Sprint 3.2 (shot 02, Io sets) done, 02
 locked (merged, PR #10). Sprint 3.1 (shot 01, the turn) done, 01 locked (merged, PR #9). Sprint 2.4 (the under-ice ocean) done, approved and merged (PR #8). Sprint 2.3 (the ice-shell interior) done, approved and merged (PR #7). Sprint 2.2 (the cryobot)
 done, approved and merged (PR #6).
@@ -351,7 +351,7 @@ first 12 s timing). Cycles check `frames/03-check.png` (50 %/64 spp:
    hold on Ganymede.**
 4. Astronaut idles (no kneel clip yet, W1); the lean back sells "watching it go up".
 
-**Sprint 3.4 (shot 04, the fall of the Sun) built 2026-10-05, branch `sprint-3.4-shot04`; waiting for review.**
+**Sprint 3.4 (shot 04, the fall of the Sun) done 2026-10-05, branch `sprint-3.4-shot04`; 04 locked (answers below).**
 **`blender/shots/s04_sunfall.py`**: 01/02's knoll and ground (same HERO plates: the limb mesa at az −7° bites the disc's
 lower left), eye 1.6 m, **50 mm locked**, Jupiter's top limb 3° under the frame top (frame −4.5° … 12.6°: the near ice
 and blocks fill the lower third). Animatic `out/04-sunfall-animatic.mp4` (Cycles 25 %/16 spp), check
@@ -399,11 +399,17 @@ and blocks fill the lower third). Animatic `out/04-sunfall-animatic.mp4` (Cycles
    brightness): subtle; a longer pulse train (3–5 frames, like Earth's in-cloud flashes) would read more.
 5. Frame: the top limb 3° under the frame top (the Sun is in frame from 7.2 s); `--top` moves it.
 
+**User's answers (2026-10-05):** 1. corona **off** (`--corona 0` default; the code and physics row stay). 2. eased
+ingress as built. 3. keep the backlit grey-white ice. 4. lightning first "bigger, a bit exaggerated" (tried: a
+1,500–3,000 km glow, ×6 energy, 3–5-frame trains: it read as a hard white dot, a moon, not lightning), then **dropped**:
+flashes inside the eclipse looked odd (`--flashes 0` default; `jupiter.lightning` and `physics.flash_seen` stay for
+true 1-px flashes). 5. framing OK. The animatic `out/04-sunfall-animatic.mp4` is re-rendered without them.
+
 ## Next
 Finding 1 (Io + two shadows in 02): verified, in TREATMENT as C2 and in 02's row (user 2026-10-05).
 01's framing test done (2.0, the turn); the ground done (2.1); the cryobot done (2.2); the shell interior done (2.3,
 approved: puck release in 05, porosity 0.2 %); the under-ice ocean done (2.4, approved: melt ceiling, frazil ⚠ only if
-07 wants it; particles and 08's sink speed open for those shots). Sprint 2 builds are complete → Sprint 3, shots one per session: **01 locked (3.1); 02 locked (3.2); 03 locked (3.3); 04 built (3.4), waiting for review; next 05 (3.5)**. Asset hunt by the user in parallel
+07 wants it; particles and 08's sink speed open for those shots). Sprint 2 builds are complete → Sprint 3, shots one per session: **01 locked (3.1); 02 locked (3.2); 03 locked (3.3); 04 locked (3.4); next 05 (3.5)**. Asset hunt by the user in parallel
 (REFERENCES.md "Wanted": W1 Mixamo kneel/stand, W2–W3 ice sounds and hydrophone).
 
 ## Sprints (plan, 2026-10-04)
@@ -422,6 +428,10 @@ approved: puck release in 05, porosity 0.2 %); the under-ice ocean done (2.4, ap
 5. Batch render (overnight, resume) → 4K compile, srt, poster; then the 9:16 climax cut (own portrait cameras).
 
 ## Decisions (locked)
+- 04 locked (user 2026-10-05, Sprint 3.4): `s04_sunfall.py` as checked: 50 mm, top limb 3° under the frame top,
+  03's dawn → ×25,373 day → first contact 10 s, covered at ×31 by 13.5 s (87 s real; "real time" eased), real time
+  after; exposure −4.5 → +5 EV (13.0–15.5 s), stars at true brightness, red arch on the ice; **no corona, no
+  lightning**; backlit grey-white ice kept. Renders in the Sprint 5 batch (≈ 45–50 min at 64 spp).
 - 03 locked (user 2026-10-05, Sprint 3.3): `s03_probe.py` as checked: **dawn** (1.18 h after Io set, Sun 2.3° up
   behind the camera, −4.5 EV), 35 mm, eye 0.4 m, camera 3 m right of 01/02's spot, probe on its tripod at 8 m, frost
   burst at 1.0 s (G = blown frost; the vapour lobe off: invisible), tilt 5° → 55° over 3.0–8.0 s to Ganymede, **9 s**

@@ -11,8 +11,9 @@ After the Sun: the eyes adjust (exposure EV_DAY → EV_NIGHT): the stars come ou
 except where the black disc hides them; the refraction ring round the disc (jupiter._ring, keyed by the Sun's
 distance from the limb as Io's 04), cut by the ice: a red arch standing on the horizon; the solar corona (sky.corona,
 Baumbach profile, true surface brightness) sits on the top limb where the Sun went in (it is only 0.05° behind the
-limb: the corona's inner 1–3 solar radii stand above it); lightning flashes on the night side (jupiter.lightning,
-Galileo energies 1e9–1.6e10 J: V −0.2 … −3.2 points, physics.flash_seen).
+limb: the corona's inner 1–3 solar radii stand above it; off by default, user 2026-10-05); lightning on the
+night side (jupiter.lightning, Galileo energies 1e9–1.6e10 J: V −0.2 … −3.2 points, physics.flash_seen) is off:
+it looked odd inside the eclipse (user 2026-10-05), `--flashes N` puts true flashes back.
 
 Light: the Sun lamp on the ground keyed by the uncovered fraction of its disc (physics.sun_visible); Jupiter has its
 own copy of the Sun (light linking) shadowed by the scaled Europa (jupiter.europa_shadow, as 03), never dimmed.
@@ -20,7 +21,7 @@ own copy of the Sun (light linking) shadowed by the scaled Europa (jupiter.europ
     node render.mjs 04-sunfall --animatic --engine cycles --pct 25 --samples 16
     node preview.mjs 04-sunfall 0.5 4 9 11.5 17 --pct 50
 Options: --lens MM  --top DEG (frame top above Jupiter's top limb)  --day EV  --night EV  --adapt T0,T1 (s)
-         --arc A --haze H --focus K --tail F --haze-from DEG --arc-from DEG (ring)  --corona 0|1  --flashes N --flash-t0 S  --star-mag V (brightest)
+         --arc A --haze H --focus K --tail F --haze-from DEG --arc-from DEG (ring)  --corona 0|1 (off)  --flashes N (0) --flash-t0 S  --star-mag V (brightest)
          --star-density D  --glare S  --mblur SHUTTER  --nseg-deg  --grs DEG
 """
 import math
@@ -123,25 +124,24 @@ cam.data.dof.use_dof = False                               # hyperfocal 10 m at 
 cam.data.clip_start, cam.data.clip_end = 0.1, 2.0e6
 
 cor = None
-if int(A.opt('corona', 1)):
+if int(A.opt('corona', 0)):                                # off (user 2026-10-05); real, kept as an option
     cor = sky.corona(sc, e0)
     sky.track(cor, cam)
 
-# ---------------------------------------------------------------- lightning: storms on the night face, flashes after the Sun
-rng = np.random.default_rng(int(A.opt('flash-seed', 5)))
-STORMS = [(0.42, 0.35), (-0.30, 0.55), (0.62, -0.05), (0.15, 0.78)]      # disc radii right/up (bands: right = north)
-NFL = int(A.opt('flashes', 9))
-T_FL = float(A.opt('flash-t0', 14.6))
+# ---------------------------------------------------------------- lightning: off (user 2026-10-05: odd inside the eclipse)
 flashes = []
-for k in range(NFL):
-    t = T_FL + (C4['dur'] - 0.2 - T_FL) * (k + rng.uniform(0.1, 0.9)) / NFL
-    si = int(rng.choice(len(STORMS), p=[0.4, 0.25, 0.2, 0.15]))
-    e = math.exp(rng.uniform(math.log(P.FLASH_E[0]), math.log(P.FLASH_E[1])))
-    f = int(round(t * FPS)) + 1
-    split = [1.0] if rng.uniform() < 0.5 else [0.6, 0.4]    # a pulse train can spill into the next frame
-    for j, w in enumerate(split):
-        flashes.append((si, f + j, e * w))
+NFL = int(A.opt('flashes', 0))                               # true flashes (Galileo energies, 1-px points) if asked
 if NFL:
+    rng = np.random.default_rng(int(A.opt('flash-seed', 5)))
+    STORMS = [(0.42, 0.35), (-0.30, 0.55), (0.62, -0.05), (0.15, 0.78)]  # disc radii right/up (bands: right = north)
+    T_FL = float(A.opt('flash-t0', 14.6))
+    for k in range(NFL):
+        t = T_FL + (C4['dur'] - 0.2 - T_FL) * (k + rng.uniform(0.1, 0.9)) / NFL
+        si = int(rng.choice(len(STORMS), p=[0.4, 0.25, 0.2, 0.15]))
+        e = math.exp(rng.uniform(math.log(P.FLASH_E[0]), math.log(P.FLASH_E[1])))
+        f = int(round(t * FPS)) + 1
+        for j, w in enumerate([1.0] if rng.uniform() < 0.5 else [0.6, 0.4]):
+            flashes.append((si, f + j, e * w))
     jupiter.lightning(sc, jup, cam_loc, STORMS, flashes, SHUTTER / FPS, FPS)
 
 

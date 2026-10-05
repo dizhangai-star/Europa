@@ -265,11 +265,11 @@ def sky_point(jup, cam_loc, dx, dy):
 
 
 def lightning(sc, jup, cam_loc, storms, flashes, shutter_s, fps=24):
-    """Lightning on the night side (04): one camera-only emitter per storm at its cloud-top point (`storms`: list of
-    (dx, dy) in disc radii, sky_point), a sphere of the flash spot's HWHM at Jupiter's scale (sub-pixel: a point).
-    `flashes`: list of (storm index, frame, optical energy J landing in that frame's shutter). Strength keyed per
-    frame (constant) so the irradiance at the camera is physics.flash_seen's over the shutter, × cos of the view angle
-    (Lambertian cloud tops). Returns the emitters."""
+    """Lightning on the night side (04, off by default since the user's review): one camera-only emitter per storm at
+    its cloud-top point (`storms`: list of (dx, dy) in disc radii, sky_point), a sphere of the flash spot's HWHM at
+    Jupiter's scale (sub-pixel: a point). `flashes`: list of (storm index, frame, optical energy J landing in that
+    frame's shutter). Strength keyed per frame (constant) so the irradiance at the camera is physics.flash_seen's over
+    the shutter, × cos of the view angle (Lambertian cloud tops). Returns the emitters."""
     k = DIST / (P.jupiter_local()[1] * 1000.0)
     hwhm = 0.5 * sum(P.FLASH_HWHM) * 1000.0 * k
     obs = []
@@ -289,10 +289,13 @@ def lightning(sc, jup, cam_loc, storms, flashes, shutter_s, fps=24):
         g = nodes.Graph(m)
         em = g.add('ShaderNodeEmission')
         g.set(em, 'Color', (0.9, 0.95, 1.0))
-        g.set(em, 'Strength', 0.0)
+        amp = g.add('ShaderNodeValue')
+        amp.name = 'Flash'
+        amp.outputs[0].default_value = 0.0
+        g.link(amp, 0, em, 'Strength')
         g.output(g.o(em, 0))
         ob.data.materials.append(m)
-        s_ = em.inputs['Strength']
+        s_ = amp.outputs[0]
         unit = cosv / (math.pi * (hwhm / D) ** 2)            # radiance per W/m² at the camera
         keys = {}
         for si, f, e in flashes:
