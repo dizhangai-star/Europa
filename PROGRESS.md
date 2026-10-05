@@ -1,8 +1,11 @@
 # Europa · 木卫二 · 深渊: progress
 
 ## State (2026-10-05)
-**Sprint 3.5 (shot 05, the lid) done 2026-10-05, 05 locked by the user (not rendered; core as built, EV ride
-+3 → +5.5, clock as built), branch `sprint-3.5-shot05`. Next: 3.6 = shot 06 (descent).** Sprint 3.4 (shot 04, the fall of the Sun) done, 04 locked (merged,
+**Sprint 3.6 (shot 06, descent) DRAFTED 2026-10-05 in a cloud session (phone) without Blender: physics clock +
+counter, overlay, `s06_descent.py` written, nothing run or rendered; merged (PR #PRNUM) so the Mac can pull it. Next, on
+the Mac: run 06 (one preview still, then the animatic), fix what breaks, answer the 3.6 questions, lock 06; then 3.7 =
+shot 07 (breakthrough).** Sprint 3.5 (shot 05, the lid) done 2026-10-05, 05 locked by the user (not rendered; core as
+built, EV ride +3 → +5.5, clock as built; merged, PR #13). Sprint 3.4 (shot 04, the fall of the Sun) done, 04 locked (merged,
 PR #12). Sprint 3.3 (shot 03, the probe) done, 03 locked (merged,
 PR #11). Sprint 3.2 (shot 02, Io sets) done, 02
 locked (merged, PR #10). Sprint 3.1 (shot 01, the turn) done, 01 locked (merged, PR #9). Sprint 2.4 (the under-ice ocean) done, approved and merged (PR #8). Sprint 2.3 (the ice-shell interior) done, approved and merged (PR #7). Sprint 2.2 (the cryobot)
@@ -456,11 +459,75 @@ Exposure +3 → +5.5 EV over 4–9.5 s (the eye follows the fading light: the la
 kept. 3. the puck hidden in the top for the first seconds: fine. 4. clock wording OK. 5. ≈ 4 h render accepted.
 Before that the user spotted a "hard cut" at ~2 s: the band bug above, fixed (`shell.fix_bore`) with the softer ramp.
 
+**Sprint 3.6 (shot 06, descent) DRAFTED 2026-10-05 (cloud session from the phone: no Blender, no `../../_kit`, no
+`../../_assets`, download.blender.org blocked by the session's network policy).** Everything below is written and its
+numbers printed by `physics.py`; **no frame has been rendered and the Blender code has never run.** User's go: "do
+what can be done, open a PR, merge it, update the docs" (2026-10-05).
+- **Clock (physics `SHOT06`, `fit06`, `z06`, `speed06`, `days_to`, `counter06`; new rows "06: …").** The clip is driven
+  by depth, not time: the nose's depth moves in **ln z** (each second covers a factor of depth, so the milky top →
+  clear ice change, 0.1 → 3 km, gets as long as 3 → 20 km); its rate eases (log-smoothstep, as 04/05) from 05's held
+  **×2,890** (at 05's end, 34.1 m, day 2.1) up over 0–3 s to a peak **×27 M = 255 m of ice per frame at 11.6 s**, and
+  down over 11–19 s to ×2,890 again, **20 m above the base** (19,980 m, day 1,043.4; 07 melts the last metres: day
+  1,044.1). Depth marks: 0.1 km 3.8 s · 1 km 7.6 s · 3 km (the end of the cracked lid) 9.4 s · 10 km 11.3 s · 19 km
+  13.4 s · 19.9 km 14.9 s; the last 5 s are the landing (×330 k → ×2,890, the ice −3 → −2 °C). Days = ∫ dz / v from
+  the cryobot model (day 0 = the head first melts; 03's start in vacuum is left out).
+- **Readout** `counter06` → `tools/overlay.mjs` (counters generalised: a READOUT entry is a label + one field per
+  value; 05 draws exactly as before): `开始下潜后  SINCE THE DESCENT BEGAN` / `+2 d  34 m  −173 °C  0 bar` →
+  `+1,043 d  19,980 m  −2 °C  242 bar` (the ice's temperature round the probe, `shell_T`; the pressure of the ice
+  overhead).
+- **`blender/shots/s06_descent.py`** (draft): `shell.build` at 05's end depth (cutaway, as 05) + the cryobot (port −40°,
+  tether to the box top); camera **fixed to the probe**, 35 mm f/4, 13° right of the cut's normal, easing 1–17 s from
+  the probe's top (aim 3.4 m, 3.2 m away, looking down 8°) to its head (aim 0.45 m, 2.4 m, 2°): 05 ends on the top, 07
+  starts at the nose. Keyed from the true depth: σs (`physics.pore`: 5.7/m → 0.14 at 3 km → 0.006: **glow → beam → dark
+  ice**, the 2.3 board's row 2), open cracks hidden below 3 km, the **open column** above the probe (`refreeze` on a
+  depth grid: 1.3 m at the top, 6 m at 15 km; the melt-water lathe stretches by a shape key, the milky core and the
+  beads' front move up with it; out of the frame below ~16.5 km), the seated puck (the magazine empties at 18 km: one
+  dropped every 2 km after 05's), exposure **+3 → +5 EV over 0.3–3 km** (a guess until the animatic), motion blur 0.5.
+- **The treadmill (new technique, untested):** 20 km of ice can't be built. The sheets (bands, veins, cracks, beads)
+  are built for a 160 m window (+ 66 m blur margins either side, 292 m in all, ≈ 1,600 veins / 700 bands / 270 cracks)
+  and bored once (`shell.fix_bore`); root z wraps inside the window **only while the ice moves ≥ 4 m per frame** (the
+  frame is ~1.5 m tall at the axis; dry run: 106 wraps, the slowest at 5.1 m/frame). 05's handover (124 m) and the
+  landing (61 m) each fit without a wrap. Root z is keyed at the frame and both shutter ends on one wrap branch,
+  LINEAR, so the blur shows the true travel and never the wrap. The pure-Python part (clock, treadmill, column grid)
+  was dry-run in the session: all positions stay inside the built window.
+- `shell.py`: **`key_sigma`** (split out of `key_depth`): keys σs and, where the ice clears below `SIMILAR_MIN`, switches
+  a material built in similarity mode back to the true σs and g (the beam's side-look depends on g); `_volume` names
+  its scatter / multiply nodes (`SigmaScatter`, `SigmaSimilar`), the beads' front node is `Front` (keyable).
+- `clips/06-descent.js`: `counter: 'counter06'`.
+
+**First steps on the Mac (in order):**
+1. `git pull`, then `python3 tools/physics.py | grep "06:"` (the three 06 rows) and
+   `Blender -b --factory-startup -P blender/shots/s06_descent.py -- --frames 480 --stills 1 --pct 25 --samples 16`
+   (scene build + one still; the log prints the clock, the treadmill and the wraps). Untried API: shape keys on the
+   water lathe, keyed node sockets (`SigmaSimilar`, `SigmaScatter` Anisotropy, `Front`), keys at quarter frames,
+   keyed `hide_render`, `keyframe_new_interpolation_type`, motion blur through volumes (if the sheets don't blur,
+   `--shutter 0` and judge without it).
+2. `node preview.mjs 06-descent 1 6 8.5 11.6 19.5 --pct 50`, then the animatic `node render.mjs 06-descent --animatic
+   --engine cycles --pct 25 --samples 16` and `node tools/overlay.mjs 06-descent --stills 1,10,19.5`.
+
+**Questions for the user (Sprint 3.6, answer after the animatic):**
+1. **The landing**: the last ~5 s are within 100 m of the base and slowing to ×2,890 (only the counter's last digits
+   and the ice warming −3 → −2 °C move). Keep (a held breath before 07), or shorten it (`dn0`/`dn1` later, e.g.
+   13 → 19.5 s) and give the dark deep ice more time?
+2. **The middle is a blur by necessity**: 8–15 s the ice passes at 30–255 m per frame; what can show is the glow
+   fading to a beam, veins streaking through it, the counter running. If it reads as noise, the alternative is
+   "stations": the clock slows at two or three depths (1 km cracks, 3 km clear ice, 15 km dark veins) and jumps
+   between them.
+3. **Counter wording**: `开始下潜后 · SINCE THE DESCENT BEGAN`, `+1,043 d  19,980 m  −2 °C  242 bar` (the ice's
+   temperature, not the probe's; the pressure of the ice overhead). OK?
+4. **New physics fact, spectacle candidate for 07**: near the base the warm ice barely freezes the hole shut:
+   open 12 days / **341 m** of water above the probe at 19.8 km, 27 days / **775 m** at 19.9 km, ~174 days / ~5 km
+   at 19.98 km (conduction only, lower bounds; `refreeze`). The probe reaches the ocean at the bottom of a long
+   water tube. Out of 06's frame; 07 could look up it (lit by the lamp) as the probe breaks through. Use it?
+5. Puck drops (every 2 km) happen inside the blur, unseen; the seated puck is gone after 18 km. OK?
+6. Cost unknown until run: 05 was 60 s/frame at 30 m (milky); the 2.3 board's deep stills were ~6× cheaper. Guess
+   2–5 h for 480 frames at 64 spp.
+
 ## Next
 Finding 1 (Io + two shadows in 02): verified, in TREATMENT as C2 and in 02's row (user 2026-10-05).
 01's framing test done (2.0, the turn); the ground done (2.1); the cryobot done (2.2); the shell interior done (2.3,
 approved: puck release in 05, porosity 0.2 %); the under-ice ocean done (2.4, approved: melt ceiling, frazil ⚠ only if
-07 wants it; particles and 08's sink speed open for those shots). Sprint 2 builds are complete → Sprint 3, shots one per session: **01 locked (3.1); 02 locked (3.2); 03 locked (3.3); 04 locked (3.4); 05 locked (3.5); next 06 (3.6)**. Asset hunt by the user in parallel
+07 wants it; particles and 08's sink speed open for those shots). Sprint 2 builds are complete → Sprint 3, shots one per session: **01 locked (3.1); 02 locked (3.2); 03 locked (3.3); 04 locked (3.4); 05 locked (3.5); 06 drafted without Blender (3.6: run it on the Mac, then answer and lock); next 07 (3.7)**. Asset hunt by the user in parallel
 (REFERENCES.md "Wanted": W1 Mixamo kneel/stand, W2–W3 ice sounds and hydrophone).
 
 ## Sprints (plan, 2026-10-04)

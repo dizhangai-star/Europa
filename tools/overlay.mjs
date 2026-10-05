@@ -3,9 +3,9 @@
 // top-left of the picture), on a transparent 1920×1080 canvas → a qtrle .mov that compile.mjs lays over the clip. The
 // ffmpeg here has no drawtext, and this keeps the captions in the series' type.
 // Usage: node tools/overlay.mjs <id> [--out out/.overlay-<id>.mov] [--stills t1,t2,… (→ frames/<id>-overlay-tNN.png)]
-//   `counter: 'counter05'` names a physics.py function: clip second → (hours, depth m), sampled per frame (eased
-//   clocks come from the shot's own lapse, never a straight line). READOUT below holds each counter's label and format;
-//   06's (days · depth · temperature · pressure) joins it in its sprint.
+//   `counter: 'counter05'` names a physics.py function: clip second → a tuple of values (05: hours, depth m; 06: days,
+//   depth m, °C, bar), sampled per frame (eased clocks come from the shot's own lapse, never a straight line). READOUT
+//   below holds each counter's label and one field per value.
 //   Logical units are 巨物's 640×360 grid (letterbox bars 46 = 138 px: 1080 − 804 over 2), drawn ×3.
 import { execFileSync, spawn } from 'node:child_process';
 import fs from 'node:fs';
@@ -18,9 +18,12 @@ const K = A.has('4k') ? 2 : 1, W = 1920 * K, H = 1080 * K;   // --4k: the same l
 const [id] = A.positional();
 const C = loadClip(id);
 const n = Math.round(C.duration * config.fps);
-// counter: (hours, depth) at each frame from the named physics function
+// counter: the named physics function's values at each frame. A field: [x offset (logical px), decimals, prefix,
+// suffix, zero-pad width, thousands separator]; a minus is drawn as '−'.
 const READOUT = {
-  counter05: { zh: '投放中继器后', en: 'SINCE THE RELAY WAS LEFT', h: 1, m: 1 },
+  counter05: { zh: '投放中继器后', en: 'SINCE THE RELAY WAS LEFT', f: [[0, 1, '+', ' h', 3], [52, 1, '', ' m']] },
+  counter06: { zh: '开始下潜后', en: 'SINCE THE DESCENT BEGAN',
+    f: [[0, 0, '+', ' d', 0, 1], [52, 0, '', ' m', 0, 1], [104, 0, '', ' °C'], [150, 0, '', ' bar']] },
 };
 const vals = C.counter ? JSON.parse(execFileSync('python3', ['-c',
   `import sys, json; sys.path.insert(0, ${JSON.stringify(rel('tools'))}); import physics as P; ` +
@@ -51,15 +54,17 @@ window.renderAt = (t, f) => {
     text(zh, 320, 360 - BAR + 31, '400 9px ' + ZH, '#b9b2a2', a, 'center', 2);
   }
   if (S.vals) {                                        // counter, 巨物's readout: top-left of the picture
-    const R = S.readout, a = seg(t, 0, 0.25), [h, m] = S.vals[Math.min(f, S.vals.length - 1)], y0 = BAR + 14, L = 18;
+    const R = S.readout, a = seg(t, 0, 0.25), v = S.vals[Math.min(f, S.vals.length - 1)], y0 = BAR + 14, L = 18;
     text(R.zh + '  ' + R.en, L, y0, '400 6px ' + MONO, '#8a8f96', a * 0.8, 'left', 1);
-    text('+' + h.toFixed(R.h).padStart(3, '0') + ' h', L, y0 + 11, '400 8px ' + MONO, '#c9c2b4', a, 'left', 1);
-    text(m.toFixed(R.m) + ' m', L + 52, y0 + 11, '400 8px ' + MONO, '#c9c2b4', a, 'left', 1);
+    R.f.forEach(([dx, d, pre, suf, pad = 0, sep = 0], i) => {
+      const n = sep ? v[i].toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d }) : v[i].toFixed(d);
+      text(pre + n.padStart(pad, '0').replace('-', '−') + suf, L + dx, y0 + 11, '400 8px ' + MONO, '#c9c2b4', a, 'left', 1);
+    });
   }
 };
 window.ready = (async () => {
   const fonts = ['600 10px "Cinzel"', '400 9px "Noto Serif SC"', '400 6px "JetBrains Mono"'];
-  const all = S.caps.map((c) => c[2].toUpperCase() + c[3]).join('') + (S.readout ? S.readout.zh + S.readout.en : '') + '+0123456789.hm';
+  const all = S.caps.map((c) => c[2].toUpperCase() + c[3]).join('') + (S.readout ? S.readout.zh + S.readout.en + S.readout.f.map((x) => x[2] + x[3]).join('') : '') + '+−0123456789.,';
   await Promise.all(fonts.map((f) => document.fonts.load(f, all)));
   await document.fonts.ready;
   return fonts.filter((f) => !document.fonts.check(f, all));

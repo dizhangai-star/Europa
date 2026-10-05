@@ -859,6 +859,87 @@ def counter05(s):
     return sec / 3600, CRYO_PUCK_FIRST * 1000 + fit05()['v'] * sec
 
 
+# 06 (film picks, Sprint 3.6 draft, not yet seen in an animatic): the descent through the whole shell. The clip is
+# driven by depth, not by time: the nose's depth z moves in w = ln z (each second covers a factor of depth, so the
+# milky top → clear ice change, 0.1 → 3 km, gets as long as 3 → 20 km), and the counter's days come from integrating
+# the probe's speed (cryo_speed) over that depth. dw/dt eases (log-smoothstep, as 04/05) from 05's held rate (×2,890 at
+# 05's end depth) up to a peak over up0 → up1 s, holds, and eases down over dn0 → dn1 s to the same real rate at the
+# base, `gap` m short of it (07 melts the last metres). fit06 solves the peak so the clip covers 05's end → H − gap.
+SHOT06 = dict(dur=20.0, up0=0.0, up1=3.0, dn0=11.0, dn1=19.0, gap=20.0)
+_FIT06 = {}
+_DAYS = {}
+
+
+def days_to(z_m, h_ice=ICE_H[1], p_kw=CRYO_P[2]):
+    """Days for the probe to melt from the surface down to z_m (10 kW, the model of `cryobot`; the start in vacuum,
+    03, is left out: day 0 = the head first melts)."""
+    key = (h_ice, p_kw)
+    if key not in _DAYS:
+        n, H = 4000, h_ice * 1000
+        cum, s = [0.0], 0.0
+        for i in range(n):
+            s += H / n / cryo_speed(p_kw, h_ice, (i + 0.5) * H / n / 1000)
+            cum.append(s / 86400)
+        _DAYS[key] = (H / n, cum)
+    dz, cum = _DAYS[key]
+    x = min(max(z_m / dz, 0.0), len(cum) - 1.000001)
+    i = int(x)
+    return cum[i] + (cum[i + 1] - cum[i]) * (x - i)
+
+
+def _a06(s, la, lp, lb):
+    c = SHOT06
+    u, d = _ss(c['up0'], c['up1'], s), _ss(c['dn0'], c['dn1'], s)
+    return math.exp(la * (1 - u) * (1 - d) + lp * u * (1 - d) + lb * d)
+
+
+def _int06(a, b, la, lp, lb, n=None):
+    n = n or max(40, 2 * int(abs(b - a) * 60))
+    h = (b - a) / n
+    return h / 3 * sum((1 if i in (0, n) else 4 if i % 2 else 2) * _a06(a + i * h, la, lp, lb) for i in range(n + 1))
+
+
+def fit06():
+    """06: returns H (base, m), z0 (05's end depth), z1 (06's end depth), r (real-time rate at both ends, = 05's),
+    la, lp, lb (log dw/dt at the start, peak, end), w0, w1, day0, day1."""
+    if not _FIT06:
+        c, f5 = SHOT06, fit05()
+        H = ICE_H[1] * 1000
+        z0 = CRYO_PUCK_FIRST * 1000 + f5['d_end']
+        z1 = H - c['gap']
+        r = f5['r']
+
+        def lw(z):                                           # log dw/dt that gives real rate r at depth z
+            return math.log(r * cryo_speed(CRYO_P[2], ICE_H[1], z / 1000) / z)
+        la, lb = lw(z0), lw(z1)
+        w0, w1 = math.log(z0), math.log(z1)
+        lp = _bisect(lambda x: _int06(0.0, c['dur'], la, x, lb), w1 - w0, lo=la, hi=12.0)
+        _FIT06.update(H=H, z0=z0, z1=z1, r=r, la=la, lp=lp, lb=lb, w0=w0, w1=w1,
+                      day0=days_to(z0), day1=days_to(z1))
+    return _FIT06
+
+
+def z06(s):
+    """06: clip second → the nose's depth (m)."""
+    f = fit06()
+    return math.exp(f['w0'] + _int06(0.0, s, f['la'], f['lp'], f['lb']))
+
+
+def speed06(s):
+    """06: the ice's speed past the camera (m per clip second) and the real-time rate (real s per clip s)."""
+    f, z = fit06(), z06(s)
+    v = _a06(s, f['la'], f['lp'], f['lb']) * z
+    return v, v / cryo_speed(CRYO_P[2], ICE_H[1], z / 1000)
+
+
+def counter06(s):
+    """06's readout (tools/overlay.mjs): days since the head first melted, the nose's depth (m), the ice's temperature
+    there (°C, shell_T: the conductive lid) and its pressure (bar, the ice overhead)."""
+    z = z06(s)
+    t, _ = shell_T(z / 1000, ICE_H[1])
+    return days_to(z), z, t - 273.15, RHO_ICE * g_at() * z / 1e5
+
+
 def corona(r):
     """Corona radiance relative to the Sun's mean disc radiance at r solar radii (Baumbach)."""
     return 1e-6 * sum(a * r ** -n for a, n in CORONA) / LIMB_DARK
@@ -1149,6 +1230,25 @@ elif __name__ == '__main__':
     rows.append(('05: clock (fit05)', f'real time at 0 s → ×{f5["r"]:,.0f} by {c5["up1"]} s (eased from {c5["up0"]} s), '
                  f'held; the front meets the puck at {c5["shut"]} s; {f5["end"] / 3600:.2f} h by {c5["dur"]:g} s: the probe '
                  f'{f5["d_end"]:.2f} m below where it dropped the puck ({CRYO_PUCK_FIRST * 1000 + f5["d_end"]:.1f} m down)'))
+    f6, c6 = fit06(), SHOT06
+    pk = max((speed06(i / 24), i / 24) for i in range(int(c6['dur'] * 24) + 1))
+    marks = []
+    for km in (0.1, 1.0, BRITTLE_KM, 10.0, 19.0, 19.9):
+        s = _bisect(lambda x: z06(x), km * 1000, lo=0.0, hi=c6['dur'])
+        marks.append(f'{km:g} km at {s:.1f} s')
+    rows.append(('06: clock (fit06, depth moves in ln z)', f'{f6["z0"]:.1f} m (05\'s end, day {f6["day0"]:.1f}) → '
+                 f'{f6["z1"]:,.0f} m (day {f6["day1"]:,.1f}, {c6["gap"]:g} m above the base) in {c6["dur"]:g} s; ×{f6["r"]:,.0f} at '
+                 f'both ends, eased up {c6["up0"]:g}–{c6["up1"]:g} s, down {c6["dn0"]:g}–{c6["dn1"]:g} s; peak ×{pk[0][1]:,.0f} at '
+                 f'{pk[1]:.1f} s = {pk[0][0] / 24:.0f} m of ice per frame; ' + ', '.join(marks)))
+    d0, z_0, t0, p0 = counter06(0.0)
+    d1, z_1, t1, p1 = counter06(c6['dur'])
+    rows.append(('06: readout (counter06)', f'day {d0:.1f} → {d1:,.1f} · {z_0:.0f} → {z_1:,.0f} m · {t0:+.0f} → {t1:+.1f} °C '
+                 f'(the ice round the probe) · {p0:.1f} → {p1:.0f} bar (the ice overhead)'))
+    for z in (19.8,):                                         # (19.9 km: 27 d, 775 m; 19.98: 174 d, 5 km; slow)
+        hrs, _ = refreeze(z, h)
+        rows.append((f'06: the open column, {z:g} km down', f'the hole stays open {hrs / 24:.0f} days behind the probe = '
+                     f'{hrs * cryo_speed(CRYO_P[2], h, z) * 3600:,.0f} m of water above it (conduction only; warm ice '
+                     f'near its melting point barely freezes it)'))
     rows.append(('Lamp in pure water (e-fold distance)', ', '.join(f'{wl} nm {1 / a:.0f} m' for wl, a in A_WATER.items())
                  + ': red gone within metres, blue reaches ~100 m (before 1/r²)'))
     rows.append(('Ice base: current, scallops, terraces', f'current {OCEAN_U * 100:g} cm/s (film pick) → melt scallops '
