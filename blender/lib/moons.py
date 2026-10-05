@@ -105,3 +105,36 @@ def io(sc, dlt, cam_loc, sun_jupiter=None):
     print(f'NOTE io: Δ {dlt:+.4f} rad, el {el:.2f}° az {az:+.2f}°, {2 * math.degrees(math.asin(r / p.length)):.2f}° '
           f'wide at {p.length / 1000:.0f} km (k {k:.5f}), albedo gain {gain:.2f}')
     return ob
+
+
+P_GEOM_GA = 0.43                 # Ganymede's geometric albedo (V)
+
+
+def ganymede(sc, dlt, elong, cam_loc, seed=3.0):
+    """Ganymede (Sprint 3.3, 03) at its Laplace place for Io at `dlt` (physics.ganymede_pos), scale k like Io, lit by
+    the main Sun (it is never near Europa's or Jupiter's shadow on the transits that put it in the sky). At ~8 px no
+    map is resolved: a mottled albedo (dark old terrain, bright grooved) round P_GEOM_GA. Returns the object."""
+    fr = P.site(*P.SITE[1:])
+    k = k_scale()
+    p = Vector(P.to_local(P.from_site(P.ganymede_pos(dlt), fr), fr)) * 1000.0 * k
+    r = P.R_GA * 1000.0 * k
+    bpy.ops.mesh.primitive_uv_sphere_add(segments=96, ring_count=48, radius=r, location=Vector(cam_loc) + p)
+    ob = bpy.context.object
+    ob.name = 'Ganymede'
+    bpy.ops.object.shade_smooth()
+    m = bpy.data.materials.new('Ganymede')
+    g = nodes.Graph(m)
+    tc = g.add('ShaderNodeTexCoord')
+    n = g.add('ShaderNodeTexNoise', Scale=2.5, Detail=4.0, Roughness=0.6, W=seed, noise_dimensions='4D')
+    g.set(n, 'Vector', g.o(tc, 'Object'))
+    a = 1.5 * P_GEOM_GA                                           # mean Lambert albedo, as Io's
+    col = g.ramp(g.o(n, 'Fac'), [(0.40, (0.55 * a, 0.52 * a, 0.48 * a)), (0.60, (1.3 * a, 1.28 * a, 1.25 * a))])
+    b = g.add('ShaderNodeBsdfDiffuse')
+    g.set(b, 'Color', col)
+    g.output(g.o(b, 0))
+    ob.data.materials.append(m)
+    u, dd, lit = P.ganymede_seen(dlt, elong, fr)
+    el, az = P.alt_az(u)
+    print(f'NOTE ganymede: Δ {dlt:+.4f} rad, el {el:.2f}° az {az:+.2f}°, {dd:.3f}° wide, {100 * lit:.0f} % lit, '
+          f'at {p.length / 1000:.0f} km (k {k:.5f})')
+    return ob

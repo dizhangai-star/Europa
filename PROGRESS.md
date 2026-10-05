@@ -1,8 +1,9 @@
 # Europa · 木卫二 · 深渊: progress
 
 ## State (2026-10-05)
-**Sprint 3.2 (shot 02, Io sets) done 2026-10-05, 02 locked by the user (not rendered), PR from `sprint-3.2-shot02`.
-Next: 3.3 = shot 03.** Sprint 3.1 (shot 01, the turn) done, 01 locked (merged, PR #9). Sprint 2.4 (the under-ice ocean) done, approved and merged (PR #8). Sprint 2.3 (the ice-shell interior) done, approved and merged (PR #7). Sprint 2.2 (the cryobot)
+**Sprint 3.3 (shot 03, the probe) done 2026-10-05, 03 locked by the user (not rendered; dawn, lobe off, 9 s), PR from
+`sprint-3.3-shot03`. Next: 3.4 = shot 04.** Sprint 3.2 (shot 02, Io sets) done, 02
+locked (merged, PR #10). Sprint 3.1 (shot 01, the turn) done, 01 locked (merged, PR #9). Sprint 2.4 (the under-ice ocean) done, approved and merged (PR #8). Sprint 2.3 (the ice-shell interior) done, approved and merged (PR #7). Sprint 2.2 (the cryobot)
 done, approved and merged (PR #6).
 Sprint 2.1 (the ground) done and
 merged 2026-10-05 (PR #5). Sprint 2.0 (01 framing test) done 2026-10-05
@@ -307,11 +308,53 @@ kept: max 221/255, no clip, half a stop from 01's end).
    would drift down with Io. Leave dark unless wanted.
 4. Caption `IO. WE STOOD THERE.` 6.5–11.4 s lands as Io comes out of the shadow and sinks: kept.
 
+**Sprint 3.3 (shot 03, the probe) done 2026-10-05, branch `sprint-3.3-shot03`.** User picks at the start (2026-10-05):
+G = **blown frost + the vapour's wisp** (not a flash-boil burst), **35 mm tilt only** to Ganymede.
+**`blender/shots/s03_probe.py`**: 01/02's ground (same plates; the camera stands 3 m right of 0,0, `--cam`, because
+a 0.8 m boulder at 5 m filled the left of the frame; `Shifted` moves the ground so the camera's spot is the origin),
+eye 0.4 m, 35 mm, azimuth = Ganymede's (−15°). Probe nose-down on the ice at 8 m (az −9°), hanging from a tripod;
+astronaut 1.8 m left of it in profile (Breathing Idle + a 22° lean back 1.6–4.2 s: he watches the frost go up).
+**Real time at dawn, 1.18 h after Io set** (Sun 174°, 2.3° up at az −179°: directly behind the camera; Jupiter 99.7 %
+lit), −4.5 EV throughout. Burst at 1.0 s; tilt 5° → 55° over 3.0–8.0 s, 1 s hold (9 s clip after the review; first
+cut 12 s, tilt to 9.0 s); Ganymede 57.7° up, 0.233°, 74 % lit, slightly above centre at the end. Animatics:
+`out/03-probe-animatic.mp4` (Cycles 50 %/12 spp, the locked 9 s cut), `out/03-probe-animatic-wb.mp4` (Workbench,
+first 12 s timing). Cycles check `frames/03-check.png` (50 %/64 spp:
+0.5 s before · 2.6 s burst · 10.5 s Ganymede); full-res crops in `frames/03/`.
+- physics.py new rows (all printed, "03: …"): **`vacuum_start`** (10 kW sublimates 1.6 g/s, head 0.13 m/h = 5.2×
+  slower than melting; vapour choked at the triple point leaves at 409 m/s, ≤ 1,008 m/s expanded), **`jet_s0`/`jet_seen`**
+  (condensed-grain lobe σs = S0·cos²θ/r², HG g 0.85: 4–8 stops under the lit plain 0.1–1 m up), **`flash`** (liquid
+  meeting vacuum: 11.8 % boils, the rest freezes; not used), **`ballistic`** (0.134 g: 5 m/s at 75° → 8.9 m, 7.3 s),
+  **`ganymede_pos`/`ganymede_seen`** (Laplace: −90° − Δ/2 from Europa), film picks `FROST_*` (5,000 flakes 2–15 mm from
+  a 0.14–0.7 m ring, 0.3–6.5 m/s, e-fold 0.6 s; momentum check: 18 % of the vapour's over the burst), `TRIPOD_*`, `REEL`.
+- New code: **`lib/vent.py`** (`frost`: each flake its own vacuum parabola by Geometry Nodes on the scene time,
+  attributes vel/t0/t1/size/spin, landing solved on the real ground; `lobe`: the grain volume), **`cryobot.tripod`**
+  (three legs, sheave, tether over it to a reel box), **`moons.ganymede`** (scale k, main Sun, mottled albedo round
+  0.43: no map is resolved at 8 px).
+- The vapour lobe is **off** (`--lobe 1` puts it back): A/B at 2.6 s = 47.9 dB, the difference is sampling noise only,
+  and it costs 2.2× (physics said invisible; Cycles agrees).
+- **Cost**: full res 64 spp ≈ **40–60 s/frame** (burst 63 s incl. sync; 26 s without motion blur: the 5,000 flake
+  instances under blur double it) → ≈ **2.5–3 h** for the 9 s cut (216 frames). Ladder for the batch sprint: motion blur only where flakes stream
+  (per-frame toggle), 32 spp A/B, persistent data (the ground is static).
+
+**Findings for the user (Sprint 3.3):**
+1. **Night → dawn (needs a yes).** At night (Sun 177°) everything in the shot is backlit by Jupiter: astronaut and
+   probe black, Jupiter blown at an exposure that shows them (`frames/03/cy-grid.png`). At dawn the Sun rises exactly
+   opposite Jupiter (az −179°), behind the camera: suit, probe, frost, Jupiter's full disc and Ganymede are all sunlit
+   at one exposure (`frames/03/dawn-grid.png`, `03-check.png`), the shadows point at Jupiter, and 04 (the day) follows
+   on. The TREATMENT row said "Jupiter-lit side". **Yes, dawn (user 2026-10-05).**
+2. **The wisp is invisible, as physics says** (finding above): G on screen = the frost burst. It reads at 8 m:
+   specks bursting out round the nose against the sky and Jupiter, landing in 1–10 s (`frames/03/f3-grid.png` 2.5 s).
+3. **The last ~4 s are a near-empty black sky**: Ganymede is a 7.7 px gibbous disc (reads at full res,
+   `frames/03/f3-sky.png`), only a few flakes get that high. Options: trim 03 to ~9 s (TREATMENT's trim candidate),
+   slow the tilt to arrive at ~10.5 s, or keep the stillness. **Trim to 9 s (user 2026-10-05): tilt 3.0–8.0 s, 1 s
+   hold on Ganymede.**
+4. Astronaut idles (no kneel clip yet, W1); the lean back sells "watching it go up".
+
 ## Next
 Finding 1 (Io + two shadows in 02): verified, in TREATMENT as C2 and in 02's row (user 2026-10-05).
 01's framing test done (2.0, the turn); the ground done (2.1); the cryobot done (2.2); the shell interior done (2.3,
 approved: puck release in 05, porosity 0.2 %); the under-ice ocean done (2.4, approved: melt ceiling, frazil ⚠ only if
-07 wants it; particles and 08's sink speed open for those shots). Sprint 2 builds are complete → Sprint 3, shots one per session: **01 locked (3.1); 02 locked (3.2); next 03 (3.3)**. Asset hunt by the user in parallel
+07 wants it; particles and 08's sink speed open for those shots). Sprint 2 builds are complete → Sprint 3, shots one per session: **01 locked (3.1); 02 locked (3.2); 03 locked (3.3); next 04 (3.4)**. Asset hunt by the user in parallel
 (REFERENCES.md "Wanted": W1 Mixamo kneel/stand, W2–W3 ice sounds and hydrophone).
 
 ## Sprints (plan, 2026-10-04)
@@ -330,6 +373,10 @@ approved: puck release in 05, porosity 0.2 %); the under-ice ocean done (2.4, ap
 5. Batch render (overnight, resume) → 4K compile, srt, poster; then the 9:16 climax cut (own portrait cameras).
 
 ## Decisions (locked)
+- 03 locked (user 2026-10-05, Sprint 3.3): `s03_probe.py` as checked: **dawn** (1.18 h after Io set, Sun 2.3° up
+  behind the camera, −4.5 EV), 35 mm, eye 0.4 m, camera 3 m right of 01/02's spot, probe on its tripod at 8 m, frost
+  burst at 1.0 s (G = blown frost; the vapour lobe off: invisible), tilt 5° → 55° over 3.0–8.0 s to Ganymede, **9 s**
+  (film ≈ 1:55). Renders in the Sprint 5 batch (≈ 2.5–3 h at 64 spp before the ladder).
 - 02 locked (user 2026-10-05, Sprint 3.2): `s02_neighbour.py` as checked: 75 mm locked, horizon 0.3° above the foot,
   time-lapse ×512 (Io on the top limb 1.0 s, sets 10.5 s), −4.0 EV; **Europa's shadow crosses Io mid-shot** (mutual
   eclipse, real at Jupiter's equinox season; `--e-end 179`: 2.4–7.3 s, deepest 4.9 s). Renders in the Sprint 5 batch
