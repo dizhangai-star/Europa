@@ -19,11 +19,14 @@ const [id] = A.positional();
 const C = loadClip(id);
 const n = Math.round(C.duration * config.fps);
 // counter: the named physics function's values at each frame. A field: [x offset (logical px), decimals, prefix,
-// suffix, zero-pad width, thousands separator]; a minus is drawn as '−'.
+// suffix, zero-pad width, thousands separator, align ('left' default; 'right': x is the field's right edge)]; a minus is
+// drawn as '−'.
 const READOUT = {
   counter05: { zh: '投放中继器后', en: 'SINCE THE RELAY WAS LEFT', f: [[0, 1, '+', ' h', 3], [52, 1, '', ' m']] },
   counter06: { zh: '开始下潜后', en: 'SINCE THE DESCENT BEGAN',
-    f: [[0, 0, '+', ' d', 0, 1], [52, 0, '', ' m', 0, 1], [104, 0, '', ' °C'], [150, 0, '', ' bar']] },
+    // right-aligned at each column's right edge (the widest values: +1,043 d · 19,980 m · −173 °C · 242 bar)
+    f: [[46, 0, '+', ' d', 0, 1, 'right'], [108, 0, '', ' m', 0, 1, 'right'], [164, 0, '', ' °C', 0, 0, 'right'],
+      [214, 0, '', ' bar', 0, 0, 'right']] },
 };
 const vals = C.counter ? JSON.parse(execFileSync('python3', ['-c',
   `import sys, json; sys.path.insert(0, ${JSON.stringify(rel('tools'))}); import physics as P; ` +
@@ -56,9 +59,9 @@ window.renderAt = (t, f) => {
   if (S.vals) {                                        // counter, 巨物's readout: top-left of the picture
     const R = S.readout, a = seg(t, 0, 0.25), v = S.vals[Math.min(f, S.vals.length - 1)], y0 = BAR + 14, L = 18;
     text(R.zh + '  ' + R.en, L, y0, '400 6px ' + MONO, '#8a8f96', a * 0.8, 'left', 1);
-    R.f.forEach(([dx, d, pre, suf, pad = 0, sep = 0], i) => {
+    R.f.forEach(([dx, d, pre, suf, pad = 0, sep = 0, align = 'left'], i) => {
       const n = sep ? v[i].toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d }) : v[i].toFixed(d);
-      text(pre + n.padStart(pad, '0').replace('-', '−') + suf, L + dx, y0 + 11, '400 8px ' + MONO, '#c9c2b4', a, 'left', 1);
+      text(pre + n.padStart(pad, '0').replace('-', '−') + suf, L + dx, y0 + 11, '400 8px ' + MONO, '#c9c2b4', a, align, 1);
     });
   }
 };

@@ -1,10 +1,10 @@
 # Europa · 木卫二 · 深渊: progress
 
-## State (2026-10-05)
-**Sprint 3.6 (shot 06, descent) DRAFTED 2026-10-05 in a cloud session (phone) without Blender: physics clock +
-counter, overlay, `s06_descent.py` written, nothing run or rendered; merged (PR #14) so the Mac can pull it. Next, on
-the Mac: run 06 (one preview still, then the animatic), fix what breaks, answer the 3.6 questions, lock 06; then 3.7 =
-shot 07 (breakthrough).** Sprint 3.5 (shot 05, the lid) done 2026-10-05, 05 locked by the user (not rendered; core as
+## State (2026-10-06)
+**Sprint 3.6 (shot 06, descent) done 2026-10-06, 06 locked by the user (not rendered; branch `sprint-3.6-shot06`).
+The phone draft built and rendered as written; added an end exposure ride (+5 → +2 EV, 12–16 s), shutter 1.0 (the
+user: soften the bands' flicker) and right-aligned counter columns. Next: 3.7 = shot 07 (breakthrough), now with the
+open water tube above the probe (user: use it).** Sprint 3.5 (shot 05, the lid) done 2026-10-05, 05 locked by the user (not rendered; core as
 built, EV ride +3 → +5.5, clock as built; merged, PR #13). Sprint 3.4 (shot 04, the fall of the Sun) done, 04 locked (merged,
 PR #12). Sprint 3.3 (shot 03, the probe) done, 03 locked (merged,
 PR #11). Sprint 3.2 (shot 02, Io sets) done, 02
@@ -505,6 +505,23 @@ what can be done, open a PR, merge it, update the docs" (2026-10-05).
 2. `node preview.mjs 06-descent 1 6 8.5 11.6 19.5 --pct 50`, then the animatic `node render.mjs 06-descent --animatic
    --engine cycles --pct 25 --samples 16` and `node tools/overlay.mjs 06-descent --stills 1,10,19.5`.
 
+**Mac run (2026-10-06).** Build + one still 26 s (scene build dominates); the log's clock / treadmill / wraps match the
+draft (106 wraps, cracks end 9.38 s, magazine empty 12.92 s). Every untried API worked (shape key, keyed sockets,
+quarter-frame keys, keyed `hide_render`). Only warning: "closures 66 > 64" (known since 2.3, frames clean).
+- Check `frames/06-descent-strip.png` (50 %/16 spp: 1 · 6 · 8.5 · 11.6 · 19.5 s): milky glow → veins streaking → black
+  ice with the lamp's beam → the head. Glow → beam → dark ice reads as planned.
+- **Motion blur through volumes works** (frame 120 with shutter 0 vs 0.5: the bands smear). The flicker at 5–7 s
+  (frame-to-frame luma jumps up to ~30/255) is bands passing between the glow and the camera, several per frame:
+  real time-lapse flicker, not the treadmill (no jump at the wrap boundaries 4.54 / 15.04 s beyond the rest).
+- **Fix: the end blew out.** The port (−40°, as 05) faces the camera (−77°) once the camera reaches the head; at +5 EV
+  the window was a white blob. New `--ev2 2 --evt 12,16`: EV +5 → +2 by time as the camera arrives. Tested at 19.5 s:
+  port −40° / 0° × +5 / +2 EV; +2 keeps the window a readable source with its beam. Port 0° (beam side-on, more of a
+  "beam") would break continuity with 05 and set 07's lamp direction: kept −40°.
+- At ~18 s a porosity band drifts slowly up through the beam and lights as a sheet (the slow landing makes it visible).
+- Counter: fields right-aligned per column (`overlay.mjs` field option `align`; 05 unchanged). The pressure reads
+  `0 bar` for the first ~2 s (0.4 bar rounds down).
+- Animatic: Cycles 25 %/16 spp, 480 frames ≈ 13 min (~1.6 s/frame); `out/06-descent-animatic-ov.mp4` = with counter.
+
 **Questions for the user (Sprint 3.6, answer after the animatic):**
 1. **The landing**: the last ~5 s are within 100 m of the base and slowing to ×2,890 (only the counter's last digits
    and the ice warming −3 → −2 °C move). Keep (a held breath before 07), or shorten it (`dn0`/`dn1` later, e.g.
@@ -521,13 +538,25 @@ what can be done, open a PR, merge it, update the docs" (2026-10-05).
    water tube. Out of 06's frame; 07 could look up it (lit by the lamp) as the probe breaks through. Use it?
 5. Puck drops (every 2 km) happen inside the blur, unseen; the seated puck is gone after 18 km. OK?
 6. Cost unknown until run: 05 was 60 s/frame at 30 m (milky); the 2.3 board's deep stills were ~6× cheaper. Guess
-   2–5 h for 480 frames at 64 spp.
+   2–5 h for 480 frames at 64 spp. **Timed 2026-10-06** (full res, 64 spp, one still each): milky 6 s = **82 s/frame**
+   (heavier than 05's 60), clear 19.5 s = **15 s/frame** → ≈ 216 milky frames (to ~9 s) + 264 clear ≈ **5.5–6 h**
+   before the ladder (32 spp / fewer volume bounces A/B in Sprint 5: the milky half is the target).
+7. (Mac run) The flicker at 5–7 s (bands crossing the glow): keep (reads as speed), or soften with a longer shutter
+   (1.0: the blur doubles)?
+8. (Mac run) End exposure +5 → +2 EV over 12–16 s, lamp port −40° kept (as 05). OK, or port 0° for a side-on beam?
+
+**User's answers (2026-10-06):** 1. the slow landing kept. 2. the blurred middle OK. 3. counter wording OK (incl.
+`0 bar` at the start). 4. **the water tube: use it in 07.** 5. pucks unseen, gone after 18 km: OK. 6. **soften the
+flicker: shutter 0.5 → 1.0** (default now; treadmill margins grow with it). 7. EV +5 → +2 and port −40° OK.
+→ Animatic re-rendered at shutter 1.0: frame-to-frame luma change at 4.5–7.5 s mean 8.7 → 5.5, peak 40 → 18.5
+(whole clip peak 26 at 8.2 s = the milky → dark change itself). Treadmill margins 66 → 129 m (still 106 wraps);
+full-res milky still 82 → **101 s/frame** → the clip ≈ **6.5–7 h** at 64 spp before the ladder. **06 locked.**
 
 ## Next
 Finding 1 (Io + two shadows in 02): verified, in TREATMENT as C2 and in 02's row (user 2026-10-05).
 01's framing test done (2.0, the turn); the ground done (2.1); the cryobot done (2.2); the shell interior done (2.3,
 approved: puck release in 05, porosity 0.2 %); the under-ice ocean done (2.4, approved: melt ceiling, frazil ⚠ only if
-07 wants it; particles and 08's sink speed open for those shots). Sprint 2 builds are complete → Sprint 3, shots one per session: **01 locked (3.1); 02 locked (3.2); 03 locked (3.3); 04 locked (3.4); 05 locked (3.5); 06 drafted without Blender (3.6: run it on the Mac, then answer and lock); next 07 (3.7)**. Asset hunt by the user in parallel
+07 wants it; particles and 08's sink speed open for those shots). Sprint 2 builds are complete → Sprint 3, shots one per session: **01 locked (3.1); 02 locked (3.2); 03 locked (3.3); 04 locked (3.4); 05 locked (3.5); 06 locked (3.6); next 07 (3.7, with the water tube)**. Asset hunt by the user in parallel
 (REFERENCES.md "Wanted": W1 Mixamo kneel/stand, W2–W3 ice sounds and hydrophone).
 
 ## Sprints (plan, 2026-10-04)
@@ -546,6 +575,12 @@ approved: puck release in 05, porosity 0.2 %); the under-ice ocean done (2.4, ap
 5. Batch render (overnight, resume) → 4K compile, srt, poster; then the 9:16 climax cut (own portrait cameras).
 
 ## Decisions (locked)
+- 06 locked (user 2026-10-06, Sprint 3.6): `s06_descent.py` as checked: cutaway 35 mm, the camera fixed to the probe
+  (top → head over 1–17 s); depth in ln z, ×2,890 → ×27 M → ×2,890, 34 m → 19,980 m (day 2.1 → 1,043.4) in 20 s,
+  the slow ~5 s landing kept; treadmill (106 wraps), **shutter 1.0**; EV +3 → +5 by depth (0.3–3 km), then → +2 by
+  time (12–16 s), lamp port −40° (as 05); pucks dropped unseen, gone after 18 km; counter `开始下潜后 · SINCE THE
+  DESCENT BEGAN` days · m · °C · bar. **07 uses the open water tube above the probe** (finding 4). Renders in the
+  Sprint 5 batch (≈ 6.5–7 h at 64 spp before the ladder: the milky first half is the target).
 - 05 locked (user 2026-10-05, Sprint 3.5): `s05_lid.py` as checked: 30 m, puck 1 (film pick `CRYO_PUCK_FIRST`),
   cutaway 35 mm, camera stays in the ice with the puck, push-in 4.0 → 2.6 m, looking down 12° → 4°; real time → ×2,890
   over 0.5–3.0 s, the front reaches the puck at 5.0 s (caption), 4.07 m sunk by 10 s; refrozen core (IceCube's bubble

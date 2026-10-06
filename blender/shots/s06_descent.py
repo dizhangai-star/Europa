@@ -1,4 +1,4 @@
-"""06 · descent (Sprint 3.6, DRAFT: written in a session without Blender, not run yet; first run = the animatic).
+"""06 · descent (Sprint 3.6: drafted without Blender, first run on the Mac 2026-10-06; ran as written, + the end EV ride).
 Cutaway, 35 mm, the camera follows the probe down the whole shell: 34 m → 19,980 m, day 2 → day 1,043, in 20 s.
 
 The clock (physics.SHOT06, fit06): the clip is driven by depth. The nose's depth z moves in ln z (the milky top → clear
@@ -26,7 +26,8 @@ and never the wrap. The sheets are bored once (shell.fix_bore: 05's lesson, live
     node preview.mjs 06-descent 1 6 8.5 11.6 19.5 --pct 50
 Options: --lens MM  --d0 --d1 M (camera distance from the axis)  --aim0 --aim1 M (aim height above the nose: the
          probe's top → its head)  --el0 --el1 DEG (looking down)  --side DEG  --move T0,T1  --ev EV --ev1 EV
-         --evkm KM0,KM1 (exposure ride by depth)  --lampaz DEG  --win M (treadmill window)  --wrapstep M  --shutter S
+         --evkm KM0,KM1 (exposure ride by depth)  --ev2 EV --evt T0,T1 (down again by time, as the camera reaches
+         the lamp port)  --lampaz DEG  --win M (treadmill window)  --wrapstep M  --shutter S
          (motion blur, 0 = off)  --nocore 1  --fstop F  --vbounces N  --hide A,B
 """
 import math
@@ -57,9 +58,12 @@ SIDE = math.radians(float(A.opt('side', 13.0)))
 MOVE = tuple(float(x) for x in A.opt('move', '1.0,17.0').split(','))
 EV0, EV1 = float(A.opt('ev', 3.0)), float(A.opt('ev1', 5.0))
 EVKM = tuple(float(x) for x in A.opt('evkm', '0.3,3.0').split(','))
+# then down again as the camera reaches the head: the port faces it (−40°), +5 EV blew the lamp out (3.6 check)
+EV2 = float(A.opt('ev2', 2.0))
+EVT = tuple(float(x) for x in A.opt('evt', '12.0,16.0').split(','))
 WIN = float(A.opt('win', 160.0))
 WRAPSTEP = float(A.opt('wrapstep', 4.0))
-SHUTTER = float(A.opt('shutter', 0.5))
+SHUTTER = float(A.opt('shutter', 1.0))     # 1.0 (user 2026-10-06): softens the bands' flicker at 5–7 s (0.5 in the draft)
 assert abs(A.frames / FPS - C6['dur']) < 1e-6 or A.opt('stills'), f'clip is {A.frames / FPS} s, SHOT06 says {C6["dur"]}'
 
 
@@ -203,7 +207,7 @@ for f, t in enumerate(TS, start=1):
     cam.keyframe_insert('location', frame=f)
     cam.keyframe_insert('rotation_euler', frame=f)
     cam.data.dof.keyframe_insert('focus_distance', frame=f)
-    ev = EV0 + (EV1 - EV0) * smoothstep(EVKM[0], EVKM[1], z / 1000.0)
+    ev = EV0 + (EV1 - EV0) * smoothstep(EVKM[0], EVKM[1], z / 1000.0) + (EV2 - EV1) * smoothstep(*EVT, t)
     sc.view_settings.exposure = ev
     sc.view_settings.keyframe_insert('exposure', frame=f)
     if f % 24 == 1 or f == sc.frame_end:
