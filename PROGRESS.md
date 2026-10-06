@@ -1,6 +1,10 @@
 # Europa · 木卫二 · 深渊: progress
 
 ## State (2026-10-06)
+**Sprint 3.9 (09, title card) done 2026-10-06, 09 locked by the user (branch `sprint-3.9-title`): kicker dropped
+(title block re-centred, EUROPA at y 153 on the 640×360 grid), English readout ends "… IN 20 HOURS ON THE ICE" (= 地表),
+held 1 s longer (both gone by 5.5 s, clip 6 → 7 s; film 116 s). No Blender: `out/09-title-animatic.mp4` is the real
+card (168 frames in 1.4 s). All nine clips locked → next: Sprint 4 (whole-film animatic + joints + score).**
 **Sprint 3.8 (shot 08, abyss) done 2026-10-06, 08 locked by the user (not rendered; branch `sprint-3.8-shot08`):
 brake off, real time → ×3, the light goes out at ~11 s under the caption; counter time · depth · bar; ≈ 40–50 min at
 64 spp. Next: 3.9 = 09 (title card), then Sprint 4 (whole-film animatic).**
@@ -649,7 +653,7 @@ time → ×3** (gone under the caption; real time alone ends at 54 m on a faint 
 Finding 1 (Io + two shadows in 02): verified, in TREATMENT as C2 and in 02's row (user 2026-10-05).
 01's framing test done (2.0, the turn); the ground done (2.1); the cryobot done (2.2); the shell interior done (2.3,
 approved: puck release in 05, porosity 0.2 %); the under-ice ocean done (2.4, approved: melt ceiling, frazil ⚠ only if
-07 wants it; particles and 08's sink speed open for those shots). Sprint 2 builds are complete → Sprint 3, shots one per session: **01 locked (3.1); 02 locked (3.2); 03 locked (3.3); 04 locked (3.4); 05 locked (3.5); 06 locked (3.6); 07 locked (3.7); 08 locked (3.8); next 09 (3.9, the card)**. Asset hunt by the user in parallel
+07 wants it; particles and 08's sink speed open for those shots). Sprint 2 builds are complete → Sprint 3, shots one per session: **01 locked (3.1); 02 locked (3.2); 03 locked (3.3); 04 locked (3.4); 05 locked (3.5); 06 locked (3.6); 07 locked (3.7); 08 locked (3.8); 09 locked (3.9, the card); next Sprint 4 (whole-film animatic)**. Asset hunt by the user in parallel
 (REFERENCES.md "Wanted": W1 Mixamo kneel/stand, W2–W3 ice sounds and hydrophone).
 
 ## Sprints (plan, 2026-10-04)

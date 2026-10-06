@@ -18,14 +18,14 @@ const P = JSON.parse(execFileSync('python3', [rel('tools/physics.py'), '--card']
 const variant = A.opt('variant', C.card?.variant ?? 'europa');
 
 const TITLE = {
-  europa: { en: 'EUROPA', zh: '深 渊', enPx: 30, enSp: 12, zhPx: 13, zhSp: 6, kicker: ['木 卫 二', 'A MOON OF JUPITER'] },   // title 木卫二 · 深渊 / Europa · Abyss (layout tuned in Sprint 3)
+  europa: { en: 'EUROPA', zh: '深 渊', enPx: 30, enSp: 12, zhPx: 13, zhSp: 6, y: 153 },   // title 木卫二 · 深渊 / Europa · Abyss; Sprint 3.9 (user): no kicker, the block re-centred (title 162 → 153)
   io: { en: 'IO', zh: '永 恒', enPx: 30, enSp: 18, zhPx: 13, zhSp: 6, kicker: ['木 卫 一', 'A MOON OF JUPITER'] },   // ep. 2's card, for comparison
 }[variant];
 const LINES = [
   `冰下的海，地球海洋的 ${P.oceans} 倍  ·  海底 ${P.floor_bar.toLocaleString('en')} 巴  ·  地表辐射 ${P.lethal_h} 小时致死`,
-  `${P.oceans}× EARTH'S OCEANS · ${P.floor_bar.toLocaleString('en')} BAR AT THE SEA FLOOR · A LETHAL DOSE IN ${P.lethal_h} HOURS`,
+  `${P.oceans}× EARTH'S OCEANS · ${P.floor_bar.toLocaleString('en')} BAR AT THE SEA FLOOR · A LETHAL DOSE IN ${P.lethal_h} HOURS ON THE ICE`,   // 'on the ice' = 地表 (user 3.9)
 ];
-const T = { title: [0.4, 4.5, 0.8, 1.6], lines: [1.1, 4.5, 0.8, 1.6] };   // [in, out, fade in, fade out] s: black 0–0.4, both gone by 4.5, black tail; slow 1.6 s fade out (user 2026-10-03: the end was too quick)
+const T = { title: [0.4, 5.5, 0.8, 1.6], lines: [1.1, 5.5, 0.8, 1.6] };   // [in, out, fade in, fade out] s: black 0–0.4, both gone by 5.5, black tail; slow 1.6 s fade out (user 2026-10-03: the end was too quick; 3.9: held 1 s longer, clip 7 s)
 
 const page_ = `<!doctype html><meta charset="utf-8">
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=JetBrains+Mono:wght@400&family=Noto+Serif+SC:wght@400&display=block" rel="stylesheet">
@@ -44,15 +44,15 @@ function text(s, px, py, font, color, a, spacing = 0) {
 }
 window.renderAt = (t) => {
   x.setTransform(1, 0, 0, 1, 0, 0); x.fillStyle = '#000'; x.fillRect(0, 0, ${W}, ${H}); x.setTransform(${3 * K}, 0, 0, ${3 * K}, 0, 0);
-  const a = alphaIn(t, S.T.title), b = alphaIn(t, S.T.lines), M = S.TITLE;
+  const a = alphaIn(t, S.T.title), b = alphaIn(t, S.T.lines), M = S.TITLE, y = M.y ?? 162, dy = y - 162;
   if (M.kicker) {                                    // small label above the title: what Europa is
     text(M.kicker[0], 320, 119, '400 7px ' + ZH, '#b9b2a2', a * 0.9, 3);
     text(M.kicker[1], 320, 129, '600 5.5px ' + EN, '#8a8f96', a * 0.9, 2.5);
   }
-  text(M.en, 320, 162, '600 ' + M.enPx + 'px ' + EN, '#e9e2d0', a, M.enSp);
-  text(M.zh, 320, 162 + M.enPx * 0.5 + 12, '400 ' + M.zhPx + 'px ' + ZH, '#d8d0bf', a, M.zhSp);
-  text(S.LINES[0], 320, 210, '400 6px ' + MONO, '#b9b2a2', b, 1);
-  text(S.LINES[1], 320, 219, '400 6px ' + MONO, '#8a8f96', b * 0.9, 1);
+  text(M.en, 320, y, '600 ' + M.enPx + 'px ' + EN, '#e9e2d0', a, M.enSp);
+  text(M.zh, 320, y + M.enPx * 0.5 + 12, '400 ' + M.zhPx + 'px ' + ZH, '#d8d0bf', a, M.zhSp);
+  text(S.LINES[0], 320, 210 + dy, '400 6px ' + MONO, '#b9b2a2', b, 1);
+  text(S.LINES[1], 320, 219 + dy, '400 6px ' + MONO, '#8a8f96', b * 0.9, 1);
 };
 window.ready = (async () => {
   const fonts = ['600 30px "Cinzel"', '400 13px "Noto Serif SC"', '400 6px "JetBrains Mono"'];
