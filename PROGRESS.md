@@ -1,6 +1,10 @@
 # Europa · 木卫二 · 深渊: progress
 
 ## State (2026-10-06)
+**Sprint 4.0b (shot 02's head + tail) in progress 2026-10-06, branch `sprint-4.0b-shot02`:** 02 opens on 01's next
+frame and zooms in; its tail zooms out, cranes to 03's spot and runs the clock to 03's dawn, so the 02→03 dissolve only
+brings in the probe and the astronaut. 02 is 12 → 14.5 s (film 115.7 s). Waiting on the user: 01→02 (re-time 01's
+sky, or a dissolve). See the 4.0b section below.
 **Sprint 4.0 (whole-film animatic) in progress 2026-10-06, branch `sprint-4.0-animatic`.** Hard-cut baseline 117.0 s;
 edit-level joints in → `out/europa-animatic.mp4` **113.2 s** (2,717 frames). Next: **4.0b = shot 02's new head + tail** (new
 session), then 4.0c (03→04 whip), 4.0d (04→05 tilt into the ice). See the 4.0 section below.
@@ -678,6 +682,44 @@ dissolve near black on the downward motion).
   03's disc position; dissolve kept), **4.0c** = 03→04 whip (03 tail + 04 head), **4.0d** = 04→05 tilt into the ice
   (04 tail + 05 head). Each: script → that shot's animatic → joint frames → Cycles stills of the new head/tail →
   recompile → user. Then 4.0e: whole film v3, trims (05 into 06? 08 → 10 s?), captions/counters, QC → merge; 4.1 score.
+
+**Sprint 4.0b (shot 02: head + tail) 2026-10-06, branch `sprint-4.0b-shot02`.**
+- **Head** (`s02_neighbour.py`): frame 1 = 01's t = 12.0 s (35 mm, heading 6°, tilt 4°, −3.5 EV, 01's 0.3 m/s push
+  easing out over 2 s); zoom 35 → 75 mm (log, 01's ease) with the heading → 0° and the tilt → the locked aim over
+  0–2.6 s; clock ×1 → ×512 over 0–1.5 s (smoothstep rate, joined to the locked clock: Io still enters ~1.0 s; the
+  shadow window, the setting at 10.5 s and the caption are unchanged). Star spots keyed with the lens (01's 24 mm
+  size at frame 1 → 75 mm → 03's 35 mm), so the stars stay ~1 px through both joints.
+- **Finding 1: the 02→03 dissolve only holds Jupiter if 02's clock runs on to 03's time.** 03 is set 1.18 h after Io
+  sets; Jupiter turns 38° more in that time, so a disc frozen at Io's setting would show the GRS twice in the
+  dissolve. → **Tail** 10.8–13.25 s: zoom back out 75 → 35 mm, turn to 03's azimuth (Ganymede's, −15.1°) and tilt 5°,
+  crane 3 m right and 1.6 → 0.4 m down onto 03's spot, EV −4 → −4.5, focus/f-stop onto 03's (8 m, f/8); the clock
+  (quintic Hermite) goes ×512 → peak ×2,900 → real time and lands on 03's sky (Io set + 1.18 h). **The Sun rises
+  behind the camera at 12.0 s** and lights the ice in the time-lapse: real, and a first sunrise for the film.
+  From 13.25 s every frame is 03's first frame without the probe; the 30-frame dissolve brings in only the probe,
+  tripod, astronaut and frost. 02 = **14.5 s** (was 12).
+- The ground is built about 03's spot (03's `Shifted` ground, rings from 0.3 m, az −46…+37°, ~13.5 M verts, split
+  ≤ 1 M): the 02 tail and 03 match rock for rock (`frames/02-joints-v1.png`, bottom row).
+- **03 fix (stars):** 03's star field was at turn 0; at its time the stars have turned 10.7° about the pole, so they
+  doubled in the dissolve. `s03_probe.py` now sets the turn to `S['turn']` (one line; nothing else in 03 changes).
+- **Finding 2: 01's sky is not 02's.** 01 is lit at elongation 178° (0.24 h *after* Io sets in 02's clock); 02's first
+  frame is 1.4 h before that (−174.7°): Io stands 1° above the disc (in 01's 35 mm frame, missing there), Europa's
+  own-shadow dot sits 3.3° away and the clouds are turned 4.6°. On a hard cut Io pops in. Options: **(C)** re-time
+  01's sky to 02's first frame (Sun, GRS, star turn, Io added above the disc; 01's light barely changes: the Sun is
+  below the horizon either way, Jupiter ≥ 99 % lit) → one continuous shot across the cut; or **(B)** a 12-frame
+  dissolve at the same framing (Io fades in; reads as the time-lapse starting). Recommended: C.
+- **Animatic** (`node render.mjs 02-neighbour --animatic --engine cycles --pct 25 --samples 16`, 0.4 s/frame, 3.1 min):
+  the head zoom reads as one move with Io coming onto the limb; in the tail the limb mesa (2.4 km, 120 m) catches the
+  Sun first (11.7 s), the plain ~0.15 s later (no air: sunlight comes on almost at once), then the long shadows
+  shorten to 13 s. 03's animatic re-rendered at the same settings (old one predated the star fix);
+  `node compile.mjs --animatic --silent` → `out/europa-animatic.mp4` **115.71 s** (01 @ 1.00 · 02 @ 13.00 · 03 @
+  26.25 · 04 @ 35.25 · 05 @ 53.25 · 06 @ 62.50 · 07 @ 81.50 · 08 @ 95.50 · 09 @ 108.71). Dissolve measured: ground,
+  rocks and Jupiter within 1/255 between 02's last and 03's first frame; only the probe, tripod, astronaut, crate and
+  frost ring fade in.
+- Cycles stills (50 %, 32 spp: 0 · 1.3 · 11.8 · 13.3 s): Io and its shadow at the head, the lit mesa against the disc
+  at sunrise, 03's frame at the end. Render cost: 02 grows 288 → 348 frames (≈ +20 %, ≈ 37 min at 64 spp).
+- Open (minor): 03's frost burst (its 1.0 s) falls in the last 6 frames of the 30-frame dissolve (probe at ~80 %);
+  a 24-frame dissolve would end on it (02 → 14.25 s). The sunrise could be slowed (hold the clock near ×500 round
+  12 s) if the user wants the light to creep down the mesa.
 
 ## Next
 Finding 1 (Io + two shadows in 02): verified, in TREATMENT as C2 and in 02's row (user 2026-10-05).
