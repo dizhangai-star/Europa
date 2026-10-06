@@ -823,10 +823,10 @@ def lapse04_elong(s):
 # snap, then a soft landing). One path in (az, el) from 03's end aim (Ganymede's azimuth, `under03` deg under it) to
 # 04's (Jupiter's top limb `top04` deg under the frame top at 50 mm); the peak *screen* speed is the same on both sides
 # of the cut (angular speed × focal length). v1 (out 8, inn 12, smooth S both sides, 147°/s) cut in the black sky: 0.6 s
-# of black, read as a dip, not a whip; now the cut falls ~41° down the path (peak 278°/s), with the lit ground and Jupiter's limb
+# of black, read as a dip, not a whip; v2 (out 10, inn 7, 278°/s): a bit fast (user); now half the speed (143°/s), the cut still ~41° down the path, with the lit ground and Jupiter's limb
 # streaking into 03's frame. Whip frames use `shutter` (a full-frame smear; the shots' 0.5 elsewhere).
 # Whip time tau: 0 = 03's last held frame, frame k after it at k/24; 04's old first frame at (out + inn + 1)/24.
-WHIP34 = dict(out=10, inn=7, acc=2, dec=4, shutter=1.0, lens03=35.0, lens04=50.0, under03=2.5, top04=3.0, fps=24)
+WHIP34 = dict(out=20, inn=14, acc=2, dec=4, shutter=1.0, lens03=35.0, lens04=50.0, under03=2.5, top04=3.0, fps=24)
 _W34 = {}
 
 
