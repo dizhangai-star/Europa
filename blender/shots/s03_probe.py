@@ -119,6 +119,7 @@ jupiter.lamp(sc, jup, S['elong'])
 gan = moons.ganymede(sc, S['dlt'], S['elong'], cam_loc)
 
 # ---------------------------------------------------------------- the probe on its tripod, the astronaut, the frost
+_before_probe = set(bpy.data.objects)                  # → PROBE_OBJS: hidden in the whip (Sprint 4.0e)
 PAZ, PD = float(A.opt('probe-az', -9.0)), float(A.opt('probe-d', 8.0))
 px, py = at(PAZ, PD)
 nose = (px, py, float(ground(px, py)))
@@ -141,6 +142,8 @@ if arm.type == 'ARMATURE' and not A.opt('proxy'):
         u = min(max(((f - 1) / FPS - L0_) / (L1_ - L0_), 0.0), 1.0)
         return Quaternion((1, 0, 0), -math.radians(LEAN) * u * u * (3 - 2 * u))
     retarget.retarget(sc, arm, 'Breathing Idle.fbx', extra={'chest': lean})
+
+PROBE_OBJS = [o for o in bpy.data.objects if o not in _before_probe]
 
 # ---------------------------------------------------------------- camera: low, 35 mm, one tilt; exposure by tilt
 
@@ -191,6 +194,17 @@ for f in range(sc.frame_start, sc.frame_end + 1):
         sc.render.motion_blur_shutter = P.WHIP34['shutter'] if t > T_HOLD + 1e-6 else SHUTTER
         sc.keyframe_insert('render.motion_blur_shutter', frame=f)
     rows.append((t, el))
+
+# Sprint 4.0e (user 2026-10-07): once the whip leaves Ganymede the probe is done with: the tripod, probe, astronaut and
+# frost would smear through 03's last frames (231–235) on the way down, so they're off from the first whip frame (the
+# camera has been on the sky since the tilt; 04 shows neither, continuity A). `--whip-hide 0` keeps them.
+if WHIP and int(A.opt('whip-hide', 1)):
+    f_w = round(9.0 * FPS) + 1                            # first whip frame (t > T_HOLD)
+    for o in PROBE_OBJS:
+        for f, h in ((f_w - 1, False), (f_w, True)):
+            o.hide_render = h
+            o.keyframe_insert('hide_render', frame=f)
+    print(f'NOTE 03 whip: {len(PROBE_OBJS)} probe/tripod/astronaut/frost objects hidden from frame {f_w}')
 
 if WHIP:                                                  # one key past the end: motion blur samples ±½ frame
     az, el, _ = P.whip34((sc.frame_end - 1 + 1) / FPS - T_HOLD, ASPECT)   # (the last frame was half-sharp without it)

@@ -836,6 +836,12 @@ dissolve near black on the downward motion).
   · SUN 48.67–55.07 · NO WAY BACK 64.50–68.90 · NO SUNLIGHT 95.75–101.15 · 100 KM 107.96–112.56; none crosses a cut; 05's
   ends 0.15 s into its dissolve (faded by then). Layout = compile (asserted).
 - Render cost: 08 −48 frames (≈ −6 min).
+- **User (2026-10-07), reversing 4.0c's "keep": no probe in the whip.** The tripod and probe smeared through 03's frames
+  231–235. `s03_probe.py`: every object built for the probe, tripod, astronaut and frost (90) gets `hide_render` keyed
+  on from the first whip frame (217); `--whip-hide 0` keeps them. The camera has left them since the tilt and 04 shows
+  neither (continuity A), so the whip now lands on lit ground and Jupiter only. One high frost flake that showed in the
+  whip frames went with them; no pop at 216 → 217 (frames 212–219 at 4× gain: stars only). 03 animatic re-rendered
+  (4.5 min); joint clip `out/03-04-whip-joint.mp4` (film 34.5–39.5 s). Film unchanged, 119.96 s.
 
 ## Next
 Finding 1 (Io + two shadows in 02): verified, in TREATMENT as C2 and in 02's row (user 2026-10-05).
@@ -860,7 +866,8 @@ approved: puck release in 05, porosity 0.2 %); the under-ice ocean done (2.4, ap
 5. Batch render (overnight, resume) → 4K compile, srt, poster; then the 9:16 climax cut (own portrait cameras).
 
 ## Decisions (locked)
-- Whole film v3 (user 2026-10-07, Sprint 4.0e): 08 → 12 s; 05→06 unchanged; readouts never overlap (`counter_out`).
+- Whole film v3 (user 2026-10-07, Sprint 4.0e): 08 → 12 s; 05→06 unchanged; readouts never overlap (`counter_out`);
+  no probe/tripod/astronaut/frost in 03's whip frames (hidden from frame 217; replaces 4.0c's "keep").
   Film 119.96 s.
 - 04→05 tilt (user 2026-10-07, Sprint 4.0d): `physics.TILT45`: 04 tilts down from the caption's end (clock 17.4 s, up
   to 15°/s) into the black ice, ends 6 frames after its frame goes black (clip 19.92 s); 12-frame dissolve centred on
