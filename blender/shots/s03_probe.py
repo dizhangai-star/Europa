@@ -104,8 +104,9 @@ cam_loc = Vector((0.0, 0.0, W.ground_z(height, 0.0, 0.0) + EYE))
 # ---------------------------------------------------------------- sky: the night after 02 (Sun below, full Jupiter)
 u_j, _, r_eq, _, pole = P.jupiter_local()
 sun = sky.sun(sc, S['elong'])
-sky.stars(sc, sky.px_angle(LENS, A.pct), gain=float(A.opt('star-gain', 20.0)),
-          density=float(A.opt('star-density', 0.06)), axis=pole, camera_only=True)
+_, s_turn, _ = sky.stars(sc, sky.px_angle(LENS, A.pct), gain=float(A.opt('star-gain', 20.0)),
+                         density=float(A.opt('star-density', 0.06)), axis=pole, camera_only=True)
+s_turn.outputs[0].default_value = math.radians(S['turn'])   # 4.0b: turned since Io's entry (02's tail ends here)
 s0 = P.lapse(FR, E_END, H0_02)
 jup, _ = jupiter.build(sc, cam_loc, grs=float(A.opt('grs', -40.0)) - s0['spin'])     # 02's Jupiter, turned on
 J_LOC, J_ROT, J_SCL = jup.matrix_world.decompose()

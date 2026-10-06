@@ -1,6 +1,9 @@
 """01 · horizon (Sprint 3.1).  The turn (user 2026-10-05, Sprint 2.0 option A): 24 → 35 mm, eye 1.6 m, night.
 
-Night with full Jupiter (Sun at elongation 178°, 2° below the anti-Jupiter horizon): the ground is lit by Jupiter alone
+Night with full Jupiter: the sky of 02's first frame (Sprint 4.0b, user's option C: 01 → 02 is one shot across the
+cut; `physics.lapse02_start`: Sun at elongation −174.7°, 8.4° below the horizon, Io standing 1° above the disc's top
+limb with its shadow on the bands, the stars turned with 02's; before 4.0b the Sun sat at 178°, an hour and a half
+later, and Io was missing). The ground is lit by Jupiter alone
 (`jupiter.lamp`), so only faces turned toward it glow. The shot opens on the lit mesa ~150° right of Jupiter (its face
 30° off Jupiter, 600 m out: the hero plate of Sprint 2.0), holds, then pans left ~145° through the dark middle (nothing
 seen from headings 40–95° faces Jupiter: the pan runs fastest there), zooming 24 → 35 mm while the exposure rides
@@ -18,7 +21,7 @@ ramps at both ends (`ease`). Lens follows the plain eased time; exposure follows
     node render.mjs 01-horizon --animatic                    (Workbench → out/01-horizon-animatic.mp4)
     node render.mjs 01-horizon --animatic --engine cycles --pct 25 --samples 16      (light in motion, ~3 s/frame)
     node preview.mjs 01-horizon 1.5 5.5 10.5 --pct 50
-Options: --elong DEG  --h0 --h1 (headings)  --lens0 --lens1  --ev0 --ev1  --t0 --t1 (pan start / end, s)  --dark W
+Options: --elong DEG (static Sun there, no Io: the pre-4.0b sky)  --h0 --h1 (headings)  --lens0 --lens1  --ev0 --ev1  --t0 --t1 (pan start / end, s)  --dark W
 --drift M/S  --limb plains:tilt:rot  --tilt DEG  --mblur SHUTTER (0 = off)  --seed
 """
 import math
@@ -32,8 +35,8 @@ import importlib
 import bpy
 from mathutils import Vector
 import physics
-from lib import nodes, rig, shot, europa_world, jupiter, sky
-for m in (physics, nodes, rig, shot, europa_world, jupiter, sky):
+from lib import nodes, rig, shot, europa_world, jupiter, sky, moons
+for m in (physics, nodes, rig, shot, europa_world, jupiter, sky, moons):
     importlib.reload(m)
 P, W = physics, europa_world
 C = P.CHAOS
@@ -41,7 +44,10 @@ C = P.CHAOS
 A = shot.args()
 FPS = 24
 EYE = 1.6
-ELONG = float(A.opt('elong', 178.0))
+ELONG = A.opt('elong', None)
+FR = P.site(*P.SITE[1:])
+E_END = P.LAPSE_E_END[1]
+SKY = P.lapse(FR, E_END, P.lapse02_start(FR, E_END))                   # 02's first frame (01 is real time: 12 s = 0.003 h)
 H0, H1 = float(A.opt('h0', 150.0)), float(A.opt('h1', 6.0))            # heading, deg (0 = Jupiter, + = right)
 L0, L1 = float(A.opt('lens0', 24.0)), float(A.opt('lens1', 35.0))
 EV0, EV1 = float(A.opt('ev0', 1.5)), float(A.opt('ev1', -3.5))
@@ -87,12 +93,23 @@ def cam_at(t):
 
 
 mid = cam_at(A.frames / FPS / 2)
-sun = sky.sun(sc, ELONG)
-sky.stars(sc, sky.px_angle(L0, A.pct), gain=float(A.opt('star-gain', 20.0)), density=float(A.opt('star-density', 0.06)),
-          camera_only=True)
-jup, _ = jupiter.build(sc, mid)
-jupiter.europa_shadow(sc, sun, jup, (0.0, 0.0, 0.0))
-jupiter.lamp(sc, jup, ELONG)
+u_j, _, _, _, pole = P.jupiter_local()
+if ELONG is not None:                         # the pre-4.0b sky
+    sun = sky.sun(sc, float(ELONG))
+    sky.stars(sc, sky.px_angle(L0, A.pct), gain=float(A.opt('star-gain', 20.0)),
+              density=float(A.opt('star-density', 0.06)), camera_only=True)
+    jup, _ = jupiter.build(sc, mid)
+    jupiter.europa_shadow(sc, sun, jup, (0.0, 0.0, 0.0))
+    jupiter.lamp(sc, jup, float(ELONG))
+else:                                         # 02's first frame, built as s02_neighbour builds it
+    sun = sky.sun(sc, SKY['elong'])
+    _, s_turn, _ = sky.stars(sc, sky.px_angle(L0, A.pct), gain=float(A.opt('star-gain', 20.0)),
+                             density=float(A.opt('star-density', 0.06)), axis=pole, camera_only=True)
+    s_turn.outputs[0].default_value = math.radians(SKY['turn'])
+    jup, _ = jupiter.build(sc, mid, grs=-40.0 - SKY['spin'])          # 02's: the GRS at −40° when Io enters
+    sj, _ = jupiter.europa_shadow(sc, sun, jup, (0.0, 0.0, 0.0))
+    jupiter.lamp(sc, jup, P.lapse(FR, E_END, SKY['dur'] / 2)['elong'])  # 02's lamp
+    moons.io(sc, SKY['dlt'], mid, sun_jupiter=sj)
 
 
 # ---------------------------------------------------------------- camera: the turn
