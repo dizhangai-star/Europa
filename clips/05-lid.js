@@ -5,5 +5,6 @@ window.CLIP = {
   caps: [[3 + 5.0, 3 + 9.4, 'THERE IS NO WAY BACK', '没有回头路']],
   counter: 'counter05',         // physics.counter05: hours since the drop · depth of the probe's nose
   counter_in: 3,                // the clock fades in as the descent lands (physics.TILT45.head), not over the black dissolve
+  counter_out: 12.5,            // gone 6 frames into the 18-frame dissolve to 06 (Sprint 4.0e): 06's readout fades in after it, never on top
   sfx: [],
 };

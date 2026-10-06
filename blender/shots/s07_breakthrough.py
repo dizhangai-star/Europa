@@ -60,6 +60,10 @@ EVT2 = tuple(float(x) for x in A.opt('evt2', '9.0,13.0').split(','))
 SHUTTER = float(A.opt('shutter', 0.5))
 FILM_W = 0.002                                                    # the melt film under the head (m): the plug's top
 assert abs(A.frames / FPS - C7['dur']) < 1e-6 or A.opt('stills'), f'clip is {A.frames / FPS} s, SHOT07 says {C7["dur"]}'
+S78 = P.SEAM78                                                    # 08's head starts on this shot's end pose (Sprint 4.0e)
+if (round(math.degrees(CAMAZ), 6), LAMPAZ, SIDE, UP, BACK, REACH, round(math.degrees(EL1), 6), LENS, EV2) != tuple(
+        S78[k] for k in ('camaz', 'lampaz07', 'side', 'up', 'back', 'reach', 'el1', 'lens07', 'ev07')):
+    print('NOTE 07: end pose ≠ physics.SEAM78 (08\'s head starts on SEAM78\'s): look-dev only')
 
 
 def smoothstep(a, b, x):

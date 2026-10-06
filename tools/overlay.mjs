@@ -34,7 +34,7 @@ const READOUT = {
 const vals = C.counter ? JSON.parse(execFileSync('python3', ['-c',
   `import sys, json; sys.path.insert(0, ${JSON.stringify(rel('tools'))}); import physics as P; ` +
   `print(json.dumps([[round(x, 3) for x in P.${C.counter}(i / ${config.fps})] for i in range(${n + 1})]))`], { encoding: 'utf8' })) : null;
-const S = { caps: C.caps || [], readout: C.counter ? READOUT[C.counter] : null, vals, cin: C.counter_in ?? 0, fps: config.fps };   // counter_in: s it fades in (05: after its head)
+const S = { caps: C.caps || [], readout: C.counter ? READOUT[C.counter] : null, vals, cin: C.counter_in ?? 0, cout: C.counter_out ?? null, fps: config.fps };   // counter_in: s it fades in (05: after its head); counter_out: s it is gone (05 → 06: the readouts swap inside the dissolve instead of overlapping)
 
 const page_ = `<!doctype html><meta charset="utf-8">
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=JetBrains+Mono:wght@400&family=Noto+Serif+SC:wght@400&display=block" rel="stylesheet">
@@ -60,7 +60,7 @@ window.renderAt = (t, f) => {
     text(zh, 320, 360 - BAR + 31, '400 9px ' + ZH, '#b9b2a2', a, 'center', 2);
   }
   if (S.vals) {                                        // counter, 巨物's readout: top-left of the picture
-    const R = S.readout, a = seg(t, S.cin, S.cin + 0.25), v = S.vals[Math.min(f, S.vals.length - 1)], y0 = BAR + 14, L = 18;
+    const R = S.readout, a = seg(t, S.cin, S.cin + 0.25) * (S.cout == null ? 1 : 1 - seg(t, S.cout - 0.25, S.cout)), v = S.vals[Math.min(f, S.vals.length - 1)], y0 = BAR + 14, L = 18;
     text(R.zh + '  ' + R.en, L, y0, '400 6px ' + MONO, '#8a8f96', a * 0.8, 'left', 1);
     R.f.forEach(([dx, d, pre, suf, pad = 0, sep = 0, align = 'left'], i) => {
       const n = sep ? v[i].toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d }) : v[i].toFixed(d);
