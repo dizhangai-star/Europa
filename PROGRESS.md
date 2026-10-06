@@ -1,6 +1,8 @@
 # Europa · 木卫二 · 深渊: progress
 
 ## State (2026-10-06)
+**Sprint 3.8 (shot 08, abyss) 2026-10-06, branch `sprint-3.8-shot08`: draft + animatic + Cycles check done, waiting for
+the user's answers (below). User picks at the start: real time → ×3; counter depth + bar.**
 **Sprint 3.7 (shot 07, breakthrough) done 2026-10-06, 07 locked by the user (not rendered; branch
 `sprint-3.7-shot07`, merged, PR #16): physics (`tube07` 351 m, `drop07`), the tube board (black from below; user: black well), volume
 base ice, `s07_breakthrough.py`, animatic v3, Cycles check, ≈ 3.5–4 h at 64 spp. Next: 3.8 = shot 08 (abyss).**
@@ -614,11 +616,36 @@ snow in the beam ahead. Animatic **v3** (10.9 min) reads continuously. **Cycles 
 against the lit terraces, the end frame. **Full res 64 spp: glow 54 s/frame, end 32 s/frame → ≈ 3.5–4 h** before the
 ladder (Sprint 5 A/B: 32 volume bounces / fewer samples on the glow). **07 locked.**
 
+**Sprint 3.8 (shot 08, abyss) 2026-10-06, branch `sprint-3.8-shot08`.** User picks at the start: **brake off, real
+time → ×3** (gone under the caption; real time alone ends at 54 m on a faint point), **counter: time · depth · bar**.
+- **physics.py (rows "08: …")**: `SHOT08` (dur 14, `rel` 1 s, ×1 → ×`rate` 3 over `up0`–`up1` 2.5–7 s), `drop08` (drop07's
+  forces without the brake: the tether pays out from the probe's own spool and lies still behind it, no drag;
+  0.89 m/s² → terminal 4.5 m/s, ~12 m/s on Earth), `lapse08`, `fit08`, `nose08`, `counter08`. Held 7.0 m below the base
+  (07's stop) → 130 m at 14 s (31.9 s real). Lamp vs 5 m (blue): 4 s 11 m −3 EV · 7 s 36 m −7 · 10 s 76 m −11 ·
+  12 s 103 m −13 · 14 s 130 m −15. Counter `破冰后 · SINCE THE BREAKTHROUGH` +10 s 20,007 m 242.0 bar → +42 s
+  20,130 m 243.7 bar (`tools/overlay.mjs` counter08; t0 = 07's end, 10.5 s after the break).
+- **`blender/shots/s08_abyss.py`**: ocean frame (no tube: out of view), camera **locked** 1.2 m off the hole's axis,
+  0.6 m under the base, 35 mm f/4, gaze at the axis 60 m down, rolled so the offset lies across the frame: the probe
+  starts at the left edge (tether in from the left, the probe foreshortened), slides into the vanishing point near the
+  centre and goes out there. EV +4 fixed (the fade is honest); port 30° off straight-away; focus keyed on the port;
+  shutter 0.5; no motes (sub-pixel at these distances; `--motes 1` to test).
+- **Animatic** (Cycles 25 %/16 spp, **0.3 s/frame, 1.9 min**): `out/08-abyss-animatic.mp4`. Mean luma falls smoothly;
+  a blue point from ~6 s, gone by ~11 s: ~2.5 s of black under the caption (7.0–13.4).
+- **Cycles check** `frames/08-check.png` (50 %/64 spp: 0.5 · 6 · 10 s): silhouette with the lit underside and the
+  beam's glow; a blue point with a small halo; a last speck. **Full res 64 spp ≈ 7–9 s/frame → ≈ 40–50 min** (the
+  film's cheapest Cycles shot); ladder step 1 for Sprint 5: the black tail (~11–14 s) is one frame repeated.
+
+**Questions for the user (Sprint 3.8, after the animatic):**
+1. Composition: the probe starts at the left edge (tether from the left), foreshortened from above, and slides to the
+   centre where it goes out. OK, or start nearer the centre (smaller `--r`)?
+2. Timing: gone at ~11 s, ~2.5 s black under the caption. Keep, or hold the point longer (×2.5: gone ~12.5 s)?
+3. Exposure fixed at +4 EV (honest), or a slow ride up (the eye follows the light, as 05)?
+
 ## Next
 Finding 1 (Io + two shadows in 02): verified, in TREATMENT as C2 and in 02's row (user 2026-10-05).
 01's framing test done (2.0, the turn); the ground done (2.1); the cryobot done (2.2); the shell interior done (2.3,
 approved: puck release in 05, porosity 0.2 %); the under-ice ocean done (2.4, approved: melt ceiling, frazil ⚠ only if
-07 wants it; particles and 08's sink speed open for those shots). Sprint 2 builds are complete → Sprint 3, shots one per session: **01 locked (3.1); 02 locked (3.2); 03 locked (3.3); 04 locked (3.4); 05 locked (3.5); 06 locked (3.6); 07 locked (3.7); next 08 (3.8)**. Asset hunt by the user in parallel
+07 wants it; particles and 08's sink speed open for those shots). Sprint 2 builds are complete → Sprint 3, shots one per session: **01 locked (3.1); 02 locked (3.2); 03 locked (3.3); 04 locked (3.4); 05 locked (3.5); 06 locked (3.6); 07 locked (3.7); 08 draft (3.8, waiting for answers)**. Asset hunt by the user in parallel
 (REFERENCES.md "Wanted": W1 Mixamo kneel/stand, W2–W3 ice sounds and hydrophone).
 
 ## Sprints (plan, 2026-10-04)
