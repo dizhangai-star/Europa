@@ -1189,6 +1189,13 @@ def nose07(s):
 # ease mirrored), so the lamp (`lamp_seen`: a blue point by ~40 m, gone by ~100 m) goes out under the caption.
 # dur 14 → 12 s (Sprint 4.0e, user 2026-10-07): the light is gone by ~11 s; 1 s of black, then the title card.
 SHOT08 = dict(dur=12.0, rel=1.0, up0=2.5, up1=7.0, rate=3.0)
+# 07 → 08 (Sprint 4.0e, user 2026-10-07: "start 08 on a frame closer to 07's last view"; film picks). 08 opens on 07's
+# end pose (07's own defaults, copied here: s07 asserts them) through a `dis`-frame dissolve, holds it while the
+# dissolve runs, then one move (smoothstep over `move` clip s) cranes up beside the hole and turns down onto 08's
+# locked view, the lens 24 → 35 mm and EV 07's +5 → 08's +4. 08's own clock (SHOT08, nose08) starts `head` s into the
+# clip, so the brake lets go (rel) as the camera settles; before that the probe hangs in real time.
+SEAM78 = dict(camaz=-60.0, lampaz07=40.0, side=1.0, up=0.25, back=1.6, reach=3.0, el1=-3.0, lens07=24.0, ev07=5.0,
+              port_z=0.5, motesr=1.2, dis=12, head=2.5, move=(0.5, 3.5))
 _FIT08 = {}
 
 
@@ -1242,10 +1249,11 @@ def nose08(s):
 
 
 def counter08(s):
-    """08's readout (tools/overlay.mjs): real seconds since the head broke through, the nose's depth below the surface
+    """08's readout (tools/overlay.mjs), at clip second s (SEAM78's head first): real seconds since the head broke through, the nose's depth below the surface
     (m), the pressure there (bar: the ice overhead + the water column below the base)."""
-    d = -nose08(s)
-    return fit08()['t0'] + lapse08(0.0, s), ICE_H[1] * 1000 + d, (ocean(ICE_H[1])[0] * 1e5 + RHO_SEA * g_at() * d) / 1e5
+    h = SEAM78['head']                                  # s is the clip second: 08's clock starts at `head`
+    d = -nose08(s - h)
+    return fit08()['t0'] + h + lapse08(0.0, s - h), ICE_H[1] * 1000 + d, (ocean(ICE_H[1])[0] * 1e5 + RHO_SEA * g_at() * d) / 1e5
 
 
 def corona(r):
@@ -1594,7 +1602,7 @@ elif __name__ == '__main__':
                  f'{f8["v_end"]:.2f} m/s; clock ×1 → ×{c8["rate"]:g} over {c8["up0"]:g}–{c8["up1"]:g} s '
                  f'({f8["real"]:.1f} s real); nose (lamp vs 5 m): {seen8}'))
     rows.append(('08: counter (counter08)', ' → '.join('+{:.0f} s {:,.0f} m {:.1f} bar'.format(*counter08(s))
-                                                     for s in (0, c8['dur']))))
+                                                     for s in (0, c8['dur'] + SEAM78['head']))))
     rows.append(('Lamp in pure water (e-fold distance)', ', '.join(f'{wl} nm {1 / a:.0f} m' for wl, a in A_WATER.items())
                  + ': red gone within metres, blue reaches ~100 m (before 1/r²)'))
     rows.append(('Ice base: current, scallops, terraces', f'current {OCEAN_U * 100:g} cm/s (film pick) → melt scallops '

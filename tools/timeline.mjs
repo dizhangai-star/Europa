@@ -12,9 +12,10 @@ export const JOINTS = {                                      // the joint after 
   '04-sunfall': { kind: 'dissolve', d: 12 },               // the tilt into the ice (physics.TILT45, d = its `dis`): 04 tilts down into black, 05 comes down through black ice into the lamp's glow
   '05-lid': { kind: 'dissolve', d: 18 },                   // the same cutaway, 34 m in both; counters cross in place
   '06-descent': { kind: 'dissolve', d: 24 },                // the same lamp: in the ice (06) → its glow from below (07)
+  '07-breakthrough': { kind: 'dissolve', d: 12 },           // 08 opens on 07's end pose (physics.SEAM78, d = its `dis`) and cranes up to its locked view
 };
 export const TRIM_IN = {                                     // frames cut from a clip's head (its clock is unchanged)
-  '08-abyss': 19,                                           // 07 → 08 cut on the action: 0.2 s before the brake lets go (1.0 s)
+  // '08-abyss': 19 (07 → 08 cut on the action) until Sprint 4.0e: 08 now opens on 07's end pose (SEAM78)
 };
 export const FADE_OUT = {};                                  // s at the clip's end, to black, e.g. { '08-abyss': 1.0 }
 

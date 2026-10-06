@@ -3,7 +3,7 @@
 ## State (2026-10-07)
 **Sprint 4.0e (whole film v3) 2026-10-07, branch `sprint-4.0e-film`, waiting for the user's look:** 08 → 12 s (user:
 the light out by ~11 s, 1 s of black, then the card; caption 7.0–11.6 s), 05→06 kept; counters swap inside the 05→06
-dissolve (new `counter_out`) and 08's fades before the card. `out/europa-animatic.mp4` **119.96 s**. QC: layout =
+dissolve (new `counter_out`) and 08's fades before the card. `out/europa-animatic.mp4` **122.75 s**. QC: layout =
 compile, captions clear of the cuts. Next: user sign-off → merge; then 4.1 score. See the 4.0e section below.
 **Sprint 4.0d (04→05 tilt into the ice) done 2026-10-07, approved by the user, branch `sprint-4.0d-tilt` (PR):**
 after the caption 04 tilts down (physics.TILT45, up to 15°/s): the red arch and the stars slide up and out over the
@@ -842,6 +842,21 @@ dissolve near black on the downward motion).
   neither (continuity A), so the whip now lands on lit ground and Jupiter only. One high frost flake that showed in the
   whip frames went with them; no pop at 216 → 217 (frames 212–219 at 4× gain: stars only). 03 animatic re-rendered
   (4.5 min); joint clip `out/03-04-whip-joint.mp4` (film 34.5–39.5 s). Film unchanged, 119.96 s.
+- **07→08: 08 opens on 07's last view (user 2026-10-07: tried, approved).** The old cut (07 beside the probe, level,
+  the probe upright → 08 from above, the probe lying across the frame, bright → black) read as a new scene.
+  `physics.SEAM78` (07's end-pose defaults copied; `s07_breakthrough.py` prints a NOTE if its pose drifts from them):
+  08's head starts on 07's end pose (24 mm, beside/behind the port, el −3°, EV +5, 07's grain cloud) under a
+  **12-frame dissolve**, holds 0.5 s, then one smoothstep move 0.5–3.5 s: crane up 5.7 m beside the hole, slerp onto the
+  locked view (a ~90° roll on the way: the probe turns from upright to across the frame), 24 → 35 mm (log), EV +5 → +4.
+  08's own clock starts at clip 2.5 s (`head`), so the brake lets go at 3.5 s as the camera settles. The port sits at
+  07's 40° (08 had 30°: no twist at the seam). `TRIM_IN` 08 removed; `counter08` takes clip seconds; counter fades in
+  at 3.5 s; caption 9.5–14.1 s. `--head 0` = 08 as locked in 3.8. 08 = 14.5 s.
+  - Seam: 08's first frame matches 07's last (probe, beam, motes); only the ceiling's scallops show faintly at the top
+    (07's base ice is the glowing volume, 08's the surface material); the dissolve hides it.
+  - Animatic 0.4 s/frame (2.3 min); joint clip `out/07-08-seam-joint.mp4` (film 98.5–106.5 s); Cycles check
+    `frames/07-08-seam-check.png` (50 %, 32 spp: 0 · 1.75 · 3.0 s).
+  - `compile.mjs --animatic --silent` → **122.75 s** (… 07 @ 87.75 · 08 @ 101.25 · 09 @ 115.75). Render cost: 08 +60
+    frames near the lamp (≈ +20–30 min).
 
 ## Next
 Finding 1 (Io + two shadows in 02): verified, in TREATMENT as C2 and in 02's row (user 2026-10-05).
@@ -868,7 +883,8 @@ approved: puck release in 05, porosity 0.2 %); the under-ice ocean done (2.4, ap
 ## Decisions (locked)
 - Whole film v3 (user 2026-10-07, Sprint 4.0e): 08 → 12 s; 05→06 unchanged; readouts never overlap (`counter_out`);
   no probe/tripod/astronaut/frost in 03's whip frames (hidden from frame 217; replaces 4.0c's "keep").
-  Film 119.96 s.
+- 07→08 (user 2026-10-07, Sprint 4.0e): `physics.SEAM78`: 08 opens on 07's end pose, 12-frame dissolve, crane up +
+  turn down onto the locked view 0.5–3.5 s, brake at 3.5 s; port at 07's 40°; 08 = 14.5 s; film 122.75 s.
 - 04→05 tilt (user 2026-10-07, Sprint 4.0d): `physics.TILT45`: 04 tilts down from the caption's end (clock 17.4 s, up
   to 15°/s) into the black ice, ends 6 frames after its frame goes black (clip 19.92 s); 12-frame dissolve centred on
   the black; 05 opens 3 s early, 5 m up, coming down at 04's screen speed into the lamp's glow (clip 13 s, motion blur
