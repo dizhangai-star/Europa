@@ -1,8 +1,9 @@
 # Europa · 木卫二 · 深渊: progress
 
 ## State (2026-10-06)
-**Sprint 3.8 (shot 08, abyss) 2026-10-06, branch `sprint-3.8-shot08`: draft + animatic + Cycles check done, waiting for
-the user's answers (below). User picks at the start: real time → ×3; counter depth + bar.**
+**Sprint 3.8 (shot 08, abyss) done 2026-10-06, 08 locked by the user (not rendered; branch `sprint-3.8-shot08`):
+brake off, real time → ×3, the light goes out at ~11 s under the caption; counter time · depth · bar; ≈ 40–50 min at
+64 spp. Next: 3.9 = 09 (title card), then Sprint 4 (whole-film animatic).**
 **Sprint 3.7 (shot 07, breakthrough) done 2026-10-06, 07 locked by the user (not rendered; branch
 `sprint-3.7-shot07`, merged, PR #16): physics (`tube07` 351 m, `drop07`), the tube board (black from below; user: black well), volume
 base ice, `s07_breakthrough.py`, animatic v3, Cycles check, ≈ 3.5–4 h at 64 spp. Next: 3.8 = shot 08 (abyss).**
@@ -641,11 +642,14 @@ time → ×3** (gone under the caption; real time alone ends at 54 m on a faint 
 2. Timing: gone at ~11 s, ~2.5 s black under the caption. Keep, or hold the point longer (×2.5: gone ~12.5 s)?
 3. Exposure fixed at +4 EV (honest), or a slow ride up (the eye follows the light, as 05)?
 
+**User's answers (2026-10-06):** all three as drafted (composition from the left edge, gone at ~11 s, EV +4 fixed).
+**08 locked.**
+
 ## Next
 Finding 1 (Io + two shadows in 02): verified, in TREATMENT as C2 and in 02's row (user 2026-10-05).
 01's framing test done (2.0, the turn); the ground done (2.1); the cryobot done (2.2); the shell interior done (2.3,
 approved: puck release in 05, porosity 0.2 %); the under-ice ocean done (2.4, approved: melt ceiling, frazil ⚠ only if
-07 wants it; particles and 08's sink speed open for those shots). Sprint 2 builds are complete → Sprint 3, shots one per session: **01 locked (3.1); 02 locked (3.2); 03 locked (3.3); 04 locked (3.4); 05 locked (3.5); 06 locked (3.6); 07 locked (3.7); 08 draft (3.8, waiting for answers)**. Asset hunt by the user in parallel
+07 wants it; particles and 08's sink speed open for those shots). Sprint 2 builds are complete → Sprint 3, shots one per session: **01 locked (3.1); 02 locked (3.2); 03 locked (3.3); 04 locked (3.4); 05 locked (3.5); 06 locked (3.6); 07 locked (3.7); 08 locked (3.8); next 09 (3.9, the card)**. Asset hunt by the user in parallel
 (REFERENCES.md "Wanted": W1 Mixamo kneel/stand, W2–W3 ice sounds and hydrophone).
 
 ## Sprints (plan, 2026-10-04)
@@ -664,6 +668,11 @@ approved: puck release in 05, porosity 0.2 %); the under-ice ocean done (2.4, ap
 5. Batch render (overnight, resume) → 4K compile, srt, poster; then the 9:16 climax cut (own portrait cameras).
 
 ## Decisions (locked)
+- 08 locked (user 2026-10-06, Sprint 3.8): `s08_abyss.py` as checked: camera locked 1.2 m off the hole's axis,
+  0.6 m under the base, 35 mm f/4, looking down the tether (gaze at 60 m on the axis); held 7.0 m down, brake off at
+  1 s, free fall (`drop08`, terminal 4.5 m/s), clock ×1 → ×3 over 2.5–7 s → 130 m at 14 s; EV +4 fixed; the light a
+  blue point from ~6 s, gone ~11 s; counter `破冰后 · SINCE THE BREAKTHROUGH` s · m · bar. Renders in the Sprint 5 batch
+  (≈ 40–50 min at 64 spp; the black tail one frame repeated).
 - 07 locked (user 2026-10-06, Sprint 3.7): `s07_breakthrough.py` as checked: in the water, 24 mm, f/4; hold on the
   hole (gaze 40° up), crane down 6.5–12.5 s to behind/beside the probe looking out along its beam; clock ×2,890 → real
   time by 3.4 s, break 3.5 s, the 0.134 g drop stops 7 m down at 9.0 s (`drop07`); the glow hold kept; the tube a black
