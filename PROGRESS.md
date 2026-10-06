@@ -1,7 +1,12 @@
 # Europa · 木卫二 · 深渊: progress
 
 ## State (2026-10-06)
-**Sprint 4.0b (shot 02's head + tail) built 2026-10-06, branch `sprint-4.0b-shot02`:** 01's sky re-timed to 02's
+**Sprint 4.0c (03→04 whip) done 2026-10-07, branch `sprint-4.0c-whip` (PR):** 03 holds on Ganymede to 9 s, then whips
+down toward Jupiter (20 frames, accelerating to 143°/s; user: half v2's speed); the cut falls at the peak as the tripod
+and the lit ground smear into frame; 04 opens on a smeared Jupiter that snaps and settles onto its locked frame in 14
+frames (04's clock unchanged, from 0.58 s). 03 9 → 9.83 s, 04 18 → 18.58 s, film 118.13 s. Continuity: A (04 as locked). Next:
+**4.0d** (04→05 tilt into the ice). See the 4.0c section below.
+**Sprint 4.0b (shot 02's head + tail) done 2026-10-06 (merged, PR #20):** 01's sky re-timed to 02's
 first frame (user: C; Io now above the disc in 01, the hard cut 01 → 02 differs by 0.06/255); 02 opens on 01's next
 frame and zooms in; its tail zooms out, cranes to 03's spot and runs the clock to 03's dawn, slowing through the
 sunrise, so the 24-frame 02→03 dissolve only brings in the probe and the astronaut. 02 is 12 → 15.25 s. Waiting for
@@ -736,6 +741,49 @@ dissolve near black on the downward motion).
     96.50 · 09 @ 109.71). In motion: Io holds through the 01→02 cut; the light creeps down the limb mesa ~1 s before
     the plain comes up. Render cost: 02 ≈ 366 frames (≈ 40 min at 64 spp); 01 unchanged (+ Io, a 0.8° sphere).
 
+**Sprint 4.0c (03→04 whip) 2026-10-06, branch `sprint-4.0c-whip`.**
+- **`physics.WHIP34` + `whip34_ends(aspect)` / `whip34(tau, aspect)`**: one path in (az, el) from 03's end aim
+  (Ganymede's azimuth −15.1°, 55.2° up) to 04's (az 0, 4.06° up), 52.8° long, shared by both shots (each asserts its
+  own end pose = the path's end). 03: after the held 9 s, `out` 10 frames with speed ∝ t² (leaves the hold smoothly)
+  up to **278°/s** (≈ 11.6°/frame, half 03's frame height); the cut at the peak, 41° down the path; 04: `inn` 7 frames
+  in front of its old first frame, speed ∝ (time left)⁴ (a snap, then a soft landing), the peak screen speed matched
+  across the cut (angular speed × focal length: 35 → 50 mm). Whip frames keyed to **shutter 1.0** (the shots keep 0.5).
+- **v1 (rejected by me before showing):** out 8 / inn 12, smooth S both sides, 147°/s: the cut fell in the black sky
+  (03's whip all black, Jupiter only from 04's 3rd frame): 0.6 s of black, read as a dip, not a whip.
+- `s03_probe.py` `--whip 0` / `s04_sunfall.py` `--whip 0` restore the locked shots (clips back to 9 / 18 s). 04's clock
+  is unchanged: `t` = clip second − 7/24 (real time before 0); caption moved by the same 7 frames; flash frames too.
+- `tools/timeline.mjs`: `'03-probe': { kind: 'cut' }` (documents the whip joint).
+- **Bug found in the Cycles check, fixed:** 03's last frame came out nearly sharp and 04's first half-smeared: motion
+  blur samples the camera ±½ frame and the f-curves stopped at the clip's ends. Both shots now key one extra camera
+  pose on the path (03 at `frame_end + 1`, 04 at frame 0). Cycles check `frames/03-04-whip-check.png` (50 %, 32 spp;
+  top 03 at 9.0 · 9.33 · 9.375 s, bottom 04 at 0 · 0.04 · 0.125 s): the cut is smear → smear, Jupiter low centre-right
+  in both; the shutter key works (frames 225/226 fully smeared).
+- **Animatics** (Cycles 25 %, 16 spp): 03 1.0 s/frame (4.5 min), 04 0.4 s/frame (3.7 min). Joint sheet
+  `frames/03-04-whip-joint.png` (03's last 10 frames, 04's first 10): Ganymede leaves the top in ~5 frames, ~4 frames of
+  streaked sky, the tripod and ground smear into 03's last two frames, 04's first frame is Jupiter smeared upward,
+  settled by its 4th. `node compile.mjs --animatic --silent` → **117.42 s** (01 @ 1.00 · 02 @ 13.00 · 03 @ 27.25 · 04 @
+  36.67 · 05 @ 54.96 · 06 @ 64.21 · 07 @ 83.21 · 08 @ 97.21 · 09 @ 110.42).
+- **Finding (continuity, for the user):** 04's camera is on 01/02's knoll (0, 0), 03's is 3 m right of it; 03's tripod
+  and astronaut are 8–9 m in front of 04's camera and inside its locked 50 mm frame (checked on the real
+  ground): the tripod at az +12.5° (sheave 16.8° up, nose −12.3°: legs across the frame just right of the disc's right
+  limb), the astronaut at az −1.6°, head 1.2° up (in front of the disc's lower centre). 04 shows neither. A hard cut
+  hid this; a whip says "same place, same moment". Options: **A** keep 04 as locked (a whip-cut can jump place; the
+  40 h time-lapse follows; recommended), **B** add the tripod (and the astronaut for the real-time start) to 04 where
+  they stand (true, but a new foreground across the disc's right limb in a locked shot), **C** move 04's camera ~6 m
+  left so both fall just outside its frame (true geometry, looks like A; the foreground ice changes).
+- Render cost: 03 +10 frames (flakes under a 1.0 shutter, ≈ +10–15 min), 04 +7 frames (≈ +1 min).
+- **User (2026-10-07):** the whip "a bit fast" → **half the speed**: `out` 20, `inn` 14 (same exponents, so the cut
+  stays ~41° down the path), peak **143°/s** (≈ 6°/frame at 35 mm); 03 = 9.83 s, 04 = 18.58 s (caption + 14 frames).
+  Continuity **A**: 04 stays as locked (no tripod, no astronaut; the whip-cut jumps place). Render cost now 03 +20
+  frames (≈ +20–30 min), 04 +14 (≈ +2 min).
+  Animatics re-rendered (03 1.1 s/frame, 04 0.5 s/frame); `compile.mjs --animatic --silent` → **118.13 s** (01 @ 1.00 ·
+  02 @ 13.00 · 03 @ 27.25 · 04 @ 37.08 · 05 @ 55.67 · 06 @ 64.92 · 07 @ 83.92 · 08 @ 97.92 · 09 @ 111.13); joint clip
+  `out/03-04-whip-joint.mp4`; Cycles check `frames/03-04-whip-check.png` (03 at 9.67 · 9.79 s, 04 at 0 · 0.08 s): smear
+  → smear, Jupiter in the same place across the cut.
+- **User (2026-10-07):** the probe on its tripod shows in 03's last 3 whip frames (234–236, 0.12 s: az −9°, sheave
+  27° up, on the whip's path from Ganymede to Jupiter; the cut was put there to hide in bright smear) → **keep** (the
+  camera leaves the probe for Jupiter). Not moving the cut earlier (black sky again) or bending the path round it.
+
 ## Next
 Finding 1 (Io + two shadows in 02): verified, in TREATMENT as C2 and in 02's row (user 2026-10-05).
 01's framing test done (2.0, the turn); the ground done (2.1); the cryobot done (2.2); the shell interior done (2.3,
@@ -759,6 +807,9 @@ approved: puck release in 05, porosity 0.2 %); the under-ice ocean done (2.4, ap
 5. Batch render (overnight, resume) → 4K compile, srt, poster; then the 9:16 climax cut (own portrait cameras).
 
 ## Decisions (locked)
+- 03→04 whip (user 2026-10-07, Sprint 4.0c): `physics.WHIP34` out 20 / inn 14, speed ∝ t² then ∝ (time left)⁴, peak
+  143°/s, cut at the peak ~41° down the path (tripod and lit ground smearing in), whip shutter 1.0; 03 = 9.83 s, 04 =
+  18.58 s (clock from 0.58 s). Continuity A: 04 as locked, no tripod or astronaut in its frame.
 - 08 locked (user 2026-10-06, Sprint 3.8): `s08_abyss.py` as checked: camera locked 1.2 m off the hole's axis,
   0.6 m under the base, 35 mm f/4, looking down the tether (gaze at 60 m on the axis); held 7.0 m down, brake off at
   1 s, free fall (`drop08`, terminal 4.5 m/s), clock ×1 → ×3 over 2.5–7 s → 130 m at 14 s; EV +4 fixed; the light a

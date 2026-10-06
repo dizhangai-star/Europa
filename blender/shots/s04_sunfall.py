@@ -18,11 +18,14 @@ it looked odd inside the eclipse (user 2026-10-05), `--flashes N` puts true flas
 Light: the Sun lamp on the ground keyed by the uncovered fraction of its disc (physics.sun_visible); Jupiter has its
 own copy of the Sun (light linking) shadowed by the scaled Europa (jupiter.europa_shadow, as 03), never dimmed.
 
+Sprint 4.0c: the clip opens with the end of the whip from 03 (physics.WHIP34: `inn` frames decelerating onto the
+locked aim); the clock's 0 s (03's dawn) is the first locked frame, HEAD s into the clip; before it, real time.
+
     node render.mjs 04-sunfall --animatic --engine cycles --pct 25 --samples 16
     node preview.mjs 04-sunfall 0.5 4 9 11.5 17 --pct 50
 Options: --lens MM  --top DEG (frame top above Jupiter's top limb)  --day EV  --night EV  --adapt T0,T1 (s)
          --arc A --haze H --focus K --tail F --haze-from DEG --arc-from DEG (ring)  --corona 0|1 (off)  --flashes N (0) --flash-t0 S  --star-mag V (brightest)
-         --star-density D  --glare S  --mblur SHUTTER  --nseg-deg  --grs DEG
+         --star-density D  --glare S  --mblur SHUTTER  --nseg-deg  --grs DEG  --whip 0 (no whip head; clip back to 18 s)
 """
 import math
 import os
@@ -56,7 +59,12 @@ E_END = P.LAPSE_E_END[1]
 DUR02 = P.lapse(FR, E_END, 0.0)['dur']
 H0_02 = -1.0 / (10.5 - 1.0) * DUR02                        # 02's first frame (its Jupiter is built from there)
 F4 = P.fit04()
-assert abs(A.frames / FPS - C4['dur']) < 1e-6 or A.opt('stills'), f'clip is {A.frames / FPS} s, SHOT04 says {C4["dur"]}'
+ASPECT = shot.RES[1] / shot.RES[0]
+WHIP = int(A.opt('whip', 1))
+N_HEAD = P.WHIP34['inn'] if WHIP else 0
+HEAD = N_HEAD / FPS                                        # s of whip in front of the clock's 0 s
+assert abs(A.frames / FPS - C4['dur'] - HEAD) < 1e-6 or A.opt('stills'), \
+    f'clip is {A.frames / FPS} s, SHOT04 + head says {C4["dur"] + HEAD}'
 
 
 def hours(t):                                              # clip second → hours since Io entered the disc in 02
@@ -120,6 +128,15 @@ HAZE_FROM, ARC_FROM = float(A.opt('haze-from', 0.05)), float(A.opt('arc-from', 1
 PITCH = J_EL + r_eq + TOP - VFOV / 2
 d = Vector((0.0, math.cos(math.radians(PITCH)), math.sin(math.radians(PITCH))))
 cam = rig.camera(sc, cam_loc, cam_loc + d * 1000, lens=LENS, fstop=8.0)
+if WHIP:
+    _, (wa, we) = P.whip34_ends(ASPECT)
+    assert abs(wa) < 1e-9 and abs(we - PITCH) < 1e-6 and LENS == P.WHIP34['lens04'] and TOP == P.WHIP34['top04'], \
+        'whip path ≠ 04\'s aim'
+TAU0 = (P.WHIP34['out'] + 1) / FPS                        # whip time of 04's first frame
+if WHIP:                                                   # one key before the start: motion blur samples ±½ frame
+    az_, el_, _ = P.whip34(TAU0 - 1.0 / FPS, ASPECT)       # (the first frame was half-smeared without it)
+    cam.rotation_euler = (math.radians(90.0 + el_), 0.0, -math.radians(az_))
+    cam.keyframe_insert('rotation_euler', frame=0)
 cam.data.dof.use_dof = False                               # hyperfocal 10 m at f/8: the near ice starts at ~20 m
 cam.data.clip_start, cam.data.clip_end = 0.1, 2.0e6
 
@@ -139,7 +156,7 @@ if NFL:
         t = T_FL + (C4['dur'] - 0.2 - T_FL) * (k + rng.uniform(0.1, 0.9)) / NFL
         si = int(rng.choice(len(STORMS), p=[0.4, 0.25, 0.2, 0.15]))
         e = math.exp(rng.uniform(math.log(P.FLASH_E[0]), math.log(P.FLASH_E[1])))
-        f = int(round(t * FPS)) + 1
+        f = int(round((t + HEAD) * FPS)) + 1
         for j, w in enumerate([1.0] if rng.uniform() < 0.5 else [0.6, 0.4]):
             flashes.append((si, f + j, e * w))
     jupiter.lightning(sc, jup, cam_loc, STORMS, flashes, SHUTTER / FPS, FPS)
@@ -155,7 +172,14 @@ bpy.context.preferences.edit.keyframe_new_interpolation_type = 'LINEAR'
 q_prev, log, sun_in = None, [], None
 top_el = PITCH + VFOV / 2
 for f in range(sc.frame_start, sc.frame_end + 1):
-    t = (f - 1) / FPS
+    t = (f - 1) / FPS - HEAD                               # the clock's second (< 0: the whip, real time)
+    if f <= N_HEAD + 1:
+        az_, el_, _ = P.whip34(TAU0 + (f - 1) / FPS, ASPECT) if WHIP else (0.0, PITCH, 0.0)
+        cam.rotation_euler = (math.radians(90.0 + el_), 0.0, -math.radians(az_))
+        cam.keyframe_insert('rotation_euler', frame=f)
+        if WHIP and SHUTTER > 0:                            # whip frames: a full-frame smear (physics.WHIP34)
+            sc.render.motion_blur_shutter = P.WHIP34['shutter'] if f <= N_HEAD else SHUTTER
+            sc.keyframe_insert('render.motion_blur_shutter', frame=f)
     tau, rate = P.lapse04(t), P.rate04(t)
     e = P.lapse04_elong(t)
     sep, vis = P.sun_limb_sep(e), P.sun_visible(e)
@@ -196,10 +220,13 @@ for f in range(sc.frame_start, sc.frame_end + 1):
     el, az = P.alt_az(uu)
     if sun_in is None and el < top_el and abs(az) < HFOV / 2:
         sun_in = t
-    if f % 24 == 1 or f == sc.frame_end:
+    if (f - 1 - N_HEAD) % 24 == 0 or f == sc.frame_end:
         log.append(f'{t:4.1f}s ×{rate:6.0f} Sun {el:5.1f}° az {az:+6.1f} sep {sep:+.3f} vis {100 * vis:3.0f}% '
                    f'Jupiter {100 * P.lit_fraction(e):5.2f}% lit')
 
+if WHIP:
+    print('NOTE 04 whip: ' + ', '.join('f%d el %.1f° %.0f°/s' % (k + 1, *P.whip34(TAU0 + k / FPS, ASPECT)[1:])
+                                       for k in range(0, N_HEAD + 1, 3)) + f'; locked from frame {N_HEAD + 1}')
 print(f'NOTE 04: {LENS:.0f} mm (hfov {HFOV:.1f}°, vfov {VFOV:.1f}°), pitch {PITCH:.2f}° (frame {PITCH - VFOV / 2:.2f}° … '
       f'{top_el:.2f}°), Jupiter centre {J_EL:.2f}° r {r_eq:.2f}°; peak ×{F4["r0"]:,.0f}, ingress ×{F4["ri"]:.0f}; '
       f'Sun enters the frame at {sun_in:.2f} s; stars: brightest V {A.opt("star-mag", -1.5)} = gain {star_gain:.3g}; '
