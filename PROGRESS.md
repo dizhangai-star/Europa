@@ -1,10 +1,11 @@
 # Europa · 木卫二 · 深渊: progress
 
 ## State (2026-10-06)
-**Sprint 4.0b (shot 02's head + tail) in progress 2026-10-06, branch `sprint-4.0b-shot02`:** 02 opens on 01's next
-frame and zooms in; its tail zooms out, cranes to 03's spot and runs the clock to 03's dawn, so the 02→03 dissolve only
-brings in the probe and the astronaut. 02 is 12 → 14.5 s (film 115.7 s). Waiting on the user: 01→02 (re-time 01's
-sky, or a dissolve). See the 4.0b section below.
+**Sprint 4.0b (shot 02's head + tail) built 2026-10-06, branch `sprint-4.0b-shot02`:** 01's sky re-timed to 02's
+first frame (user: C; Io now above the disc in 01, the hard cut 01 → 02 differs by 0.06/255); 02 opens on 01's next
+frame and zooms in; its tail zooms out, cranes to 03's spot and runs the clock to 03's dawn, slowing through the
+sunrise, so the 24-frame 02→03 dissolve only brings in the probe and the astronaut. 02 is 12 → 15.25 s. Waiting for
+the user's look at the whole-film animatic; then 4.0c (03→04 whip). See the 4.0b section below.
 **Sprint 4.0 (whole-film animatic) in progress 2026-10-06, branch `sprint-4.0-animatic`.** Hard-cut baseline 117.0 s;
 edit-level joints in → `out/europa-animatic.mp4` **113.2 s** (2,717 frames). Next: **4.0b = shot 02's new head + tail** (new
 session), then 4.0c (03→04 whip), 4.0d (04→05 tilt into the ice). See the 4.0 section below.
@@ -720,6 +721,20 @@ dissolve near black on the downward motion).
 - Open (minor): 03's frost burst (its 1.0 s) falls in the last 6 frames of the 30-frame dissolve (probe at ~80 %);
   a 24-frame dissolve would end on it (02 → 14.25 s). The sunrise could be slowed (hold the clock near ×500 round
   12 s) if the user wants the light to creep down the mesa.
+- **User (2026-10-06): C** (the hard cut was odd: Io popped in), **24-frame dissolve**, **slow sunrise**. Done:
+  - `physics.lapse02_start` = 02's first-frame hours (shared by both shots; 02 asserts its clock matches). `s01_horizon`
+    is lit at that sky: Sun −174.7° (8.4° down), GRS = 02's, star turn = 02's, 02's lamp, **Io added** (1° above the
+    top limb, its shadow on the bands; Jupiter's own Sun light-linked as in 02). `--elong DEG` keeps the old static sky.
+    01 last frame vs 02 first frame (50 %, 32 spp): mean difference 0.06/255.
+  - Dissolve 30 → 24 frames (`timeline.mjs`): it ends on 03's frost burst. `--tt1` = end − 24 frames.
+  - Slow sunrise: the tail clock is Hermite → constant ×577 for `--rise-s` 1.2 s while the Sun climbs −1.1° → −0.3°
+    (the limb mesa's top catching the light → the knoll's plain lit, measured in the first animatic) → Hermite to 03's
+    sky at real time. Tail 10.8–14.25 s (3.45 s), **02 = 15.25 s**. Clock: ×512 → ×2,300 → ×577 (11.6–12.8 s) →
+    ×2,600 → ×1 at 14.25 s. At 12.0 s only the mesa's top is lit.
+  - Animatics (Cycles 25 %, 16 spp): 01 1.6 min, 02 3.1 min (366 frames); `compile.mjs --animatic --silent` →
+    **116.71 s** (01 @ 1.00 · 02 @ 13.00 · 03 @ 27.25 · 04 @ 36.25 · 05 @ 54.25 · 06 @ 63.50 · 07 @ 82.50 · 08 @
+    96.50 · 09 @ 109.71). In motion: Io holds through the 01→02 cut; the light creeps down the limb mesa ~1 s before
+    the plain comes up. Render cost: 02 ≈ 366 frames (≈ 40 min at 64 spp); 01 unchanged (+ Io, a 0.8° sphere).
 
 ## Next
 Finding 1 (Io + two shadows in 02): verified, in TREATMENT as C2 and in 02's row (user 2026-10-05).

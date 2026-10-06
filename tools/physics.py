@@ -335,6 +335,14 @@ def lapse(fr, e_end, h):
                 turn=360.0 * h / P_ORB_EU, dur=dur)
 
 
+def lapse02_start(fr, e_end, t_in=1.0, t_set=10.5, tr=1.5):
+    """Hours (as `lapse`) at 02's first frame (Sprint 4.0b): its clock ramps ×1 → the transit rate over 0–`tr` s
+    (smoothstep rate) and joins the constant clock that puts Io's centre on the top limb at `t_in` and on the horizon
+    at `t_set`. 01 is lit at this sky (real time: its 12 s move it by 0.003 h), so 01 → 02 is one shot."""
+    rate = lapse(fr, e_end, 0.0)['dur'] / (t_set - t_in)
+    return rate * (tr / 2 - t_in) - tr / 2 / 3600.0          # the ramp starts from real time (1 s/s)
+
+
 # ---------------------------------------------------------------- Blender local frame (the libs copied from Io)
 # The scene frame at the site (SITE): +Y = toward Jupiter along the ground (azimuth 0), +X = right of it as you face
 # Jupiter, +Z = up. At Conamara Jupiter is about due west, so +X ≈ north and Jupiter's pole lies near horizontal:

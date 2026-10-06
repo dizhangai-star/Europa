@@ -7,7 +7,7 @@ import { config, clipIds, loadClip } from '../../../_kit/lib/film.mjs';
 
 export const HEAD = { black: 1.0, fade: 0.5 };               // s: black (sound first), then 01 fades up
 export const JOINTS = {                                      // the joint after each clip; d in frames (24 fps)
-  '02-neighbour': { kind: 'dissolve', d: 30 },              // time dissolve: Io set → dawn 1.18 h later, Jupiter in both
+  '02-neighbour': { kind: 'dissolve', d: 24 },              // 02's tail lands on 03's frame and dawn: only the probe and astronaut fade in (ends on 03's frost burst, 1.0 s)
   '05-lid': { kind: 'dissolve', d: 18 },                    // the same cutaway, 34 m in both; counters cross in place
   '06-descent': { kind: 'dissolve', d: 24 },                // the same lamp: in the ice (06) → its glow from below (07)
 };

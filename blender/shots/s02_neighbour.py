@@ -15,8 +15,11 @@ Head (4.0b, user 2026-10-06: the 01 → 02 joint): the first frame is 01's next 
 window, the setting at 10.5 s and the caption are unchanged).
 Tail (4.0b, the 02 → 03 joint): after Io sets, `--tt0`–`--tt1` s, the camera zooms back out 75 → 35 mm, turns to
 03's azimuth and tilt and cranes down to 03's spot (3 m right, eye 0.4 m) while the clock runs on to 03's dawn (Io
-set + 1.18 h: the Sun rises behind the camera and lights the ice) and stops at real time. From `--tt1` on, every
-frame is 03's first frame without the probe and the astronaut: the 30-frame dissolve brings in only them. Jupiter
+set + 1.18 h: the Sun rises behind the camera and lights the ice) and stops at real time. Round the sunrise the
+clock slows to ~×580 for `--rise-s` s (Sun `--rise-a` → `--rise-b` °: from the limb mesa's top catching the light to
+the knoll's plain lit, measured in the 4.0b animatic), so the light creeps down the mesa. From `--tt1` on, every
+frame is 03's first frame without the probe and the astronaut: the 24-frame dissolve brings in only them (it ends on
+03's frost burst at 1.0 s). Jupiter
 (clouds, own shadow), the stars and the light are the same in both, so the disc doesn't move through the dissolve.
 The ground is built about 03's spot (03's `Shifted` ground), so the two tessellations match there.
 
@@ -26,6 +29,7 @@ Options: --lens MM  --foot DEG (ice below the horizon at the frame's foot)  --e-
 physics.LAPSE_E_END)  --t-in --t-set (s: Io's centre on the top limb / on the horizon)  --grs DEG (GRS from the
 central meridian at Io's entry)  --ev EV  --mblur SHUTTER  --taps N  --star-gain --star-density --nseg-deg
 --tr S (clock ramp)  --z1 S (head zoom end)  --tt0 --tt1 S (tail)  --after H (03's dawn)  --cam3 X,Y  --eye3 M
+--rise-a --rise-b DEG (Sun altitudes of the slow window)  --rise-s S (its length)
 """
 import math
 import os
@@ -60,7 +64,7 @@ END = A.frames / FPS                           # the clip's length (s)
 TR = float(A.opt('tr', 1.5))                   # clock ramp ×1 → ×512 over 0–TR s
 Z1 = float(A.opt('z1', 2.6))                   # head zoom 35 → 75 mm over 0–Z1 s
 TT0 = float(A.opt('tt0', 10.8))                # tail: Io set 10.5 s
-TT1 = float(A.opt('tt1', END - 30 / FPS))      # … to the dissolve (timeline.mjs JOINTS['02-neighbour'].d = 30)
+TT1 = float(A.opt('tt1', END - 24 / FPS))      # … to the dissolve (timeline.mjs JOINTS['02-neighbour'].d = 24)
 AFTER = float(A.opt('after', 1.18))            # 03's dawn, h after Io set (s03_probe --after)
 
 # 01's last state (s01_horizon defaults: heading 6°, tilt 4°, 35 mm, −3.5 EV; push 0.3 m/s toward 6°, 12 s clip,
@@ -77,6 +81,27 @@ R1 = 1.0 / 3600.0                              # h per s: real time
 RATE = DUR / (T_SET - T_IN)                    # h per clip second (×512)
 H_SET = DUR                                    # hours at T_SET (Io on the horizon)
 H3 = DUR + AFTER                               # 03's sky
+H0 = P.lapse02_start(FR, E_END, T_IN, T_SET, TR)   # our first frame's sky (s01_horizon's sky too: one shot across the cut)
+RISE_A, RISE_B = float(A.opt('rise-a', -1.1)), float(A.opt('rise-b', -0.3))
+RISE_S = float(A.opt('rise-s', 1.2))
+
+
+def sun_alt(h):
+    return P.alt_az(P.sun_local(P.lapse(FR, E_END, h)['elong']))[0]
+
+
+def h_at_alt(alt, lo, hi):                     # the Sun rises monotonically over the tail
+    for _ in range(60):
+        m = (lo + hi) / 2
+        lo, hi = (m, hi) if sun_alt(m) < alt else (lo, m)
+    return (lo + hi) / 2
+
+
+HA, HB = h_at_alt(RISE_A, DUR, H3), h_at_alt(RISE_B, DUR, H3)
+R_RISE = (HB - HA) / RISE_S
+_rem = TT1 - TT0 - RISE_S                      # the rest of the tail, shared by the hours each side covers
+TA = TT0 + _rem * (HA - RATE * (TT0 - T_IN)) / (HA - RATE * (TT0 - T_IN) + H3 - HB)
+TB = TA + RISE_S
 
 
 def _int_s(x):                                 # ∫₀ˣ smoothstep
@@ -101,8 +126,12 @@ def clock(t):
         return RATE * (TR - T_IN) - R1 * (TR - t) - (RATE - R1) * TR * (0.5 - _int_s(x)), rate
     if t <= TT0:
         return RATE * (t - T_IN), RATE
-    if t < TT1:                                # on to 03's dawn, landing at real time
-        return _hermite5(RATE * (TT0 - T_IN), RATE, H3, R1, TT1 - TT0, (t - TT0) / (TT1 - TT0))
+    if t < TA:                                 # on toward the sunrise …
+        return _hermite5(RATE * (TT0 - T_IN), RATE, HA, R_RISE, TA - TT0, (t - TT0) / (TA - TT0))
+    if t < TB:                                 # … slow through it (the light creeps down the limb mesa) …
+        return HA + R_RISE * (t - TA), R_RISE
+    if t < TT1:                                # … on to 03's dawn, landing at real time
+        return _hermite5(HB, R_RISE, H3, R1, TT1 - TB, (t - TB) / (TT1 - TB))
     return H3, R1                              # 03's first frame (its sky is held over its 9 s)
 
 
@@ -180,7 +209,8 @@ cam3 = Vector((0.0, 0.0, gz(Vector((0.0, 0.0, 0.0))) + EYE3))
 cam_loc = cam3                                 # far bodies are built about it (k-scaled: 3 m moves nothing)
 
 # ---------------------------------------------------------------- sky: Sun, turning stars, Jupiter (spinning), Io
-s0 = P.lapse(FR, E_END, hours(0.0))
+assert abs(hours(0.0) - H0) < 1e-12
+s0 = P.lapse(FR, E_END, H0)
 u_j, _, r_eq, _, pole = P.jupiter_local()
 sun = sky.sun(sc, s0['elong'])
 sun.rotation_mode = 'QUATERNION'
