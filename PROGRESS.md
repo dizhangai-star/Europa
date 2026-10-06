@@ -1,6 +1,11 @@
 # Europa · 木卫二 · 深渊: progress
 
-## State (2026-10-06)
+## State (2026-10-07)
+**Sprint 4.0d (04→05 tilt into the ice) built 2026-10-07, branch `sprint-4.0d-tilt`, waiting for the user's look:**
+after the caption 04 tilts down (physics.TILT45, up to 15°/s): the red arch and the stars slide up and out over the
+black ice, the frame goes black at clock 19.03 s; a 12-frame dissolve on black; 05 opens 3 s early, 5 m up in black ice,
+coming down at 04's screen speed into the lamp's glow and settling on its locked first frame. 04 18.58 → 19.92 s, 05 10 →
+13 s, film **121.96 s**. Joint clip `out/04-05-tilt-joint.mp4`. See the 4.0d section below. Next: 4.0e.
 **Sprint 4.0c (03→04 whip) done 2026-10-07, branch `sprint-4.0c-whip` (PR):** 03 holds on Ganymede to 9 s, then whips
 down toward Jupiter (20 frames, accelerating to 143°/s; user: half v2's speed); the cut falls at the peak as the tripod
 and the lit ground smear into frame; 04 opens on a smeared Jupiter that snaps and settles onto its locked frame in 14
@@ -783,6 +788,29 @@ dissolve near black on the downward motion).
 - **User (2026-10-07):** the probe on its tripod shows in 03's last 3 whip frames (234–236, 0.12 s: az −9°, sheave
   27° up, on the whip's path from Ganymede to Jupiter; the cut was put there to hide in bright smear) → **keep** (the
   camera leaves the probe for Jupiter). Not moving the cut earlier (black sky again) or bending the path round it.
+
+**Sprint 4.0d (04→05 tilt into the ice) 2026-10-07, branch `sprint-4.0d-tilt`.**
+- **`physics.TILT45` + `tilt04(t)` / `tilt04_dur(top0)` / `tilt05(tau)`** (film picks, one row in `physics.py`): 04's
+  pitch speed rises ∝ t² from the caption's end (clock 17.4 s) over 1.5 s to 15°/s and holds; its frame top (12.63°)
+  passes 3.2° (the limb mesa's top: the last stars and the arch leave) at 19.03 s; 04 ends 6 frames later (clock 19.333 s,
+  was 18; clip 19.92 s), so the **12-frame dissolve is centred on the black**. 05 opens **3 s** before its old 0 s,
+  **5 m higher** (tested: the lamp's glow is all but gone 4 m above the start, black at 6 m), moving down at 04's screen
+  speed (15°/s × 50/35 × 4 m / cos 12° = 1.53 m/s), a cubic Hermite (peak 2.23 m/s) onto its start pose, at rest on the
+  old first frame. Before 05's 0 s: real time, the puck still seated.
+- `s04_sunfall.py` `--tilt 0` / `s05_lid.py` `--tilt 0` restore the locked shots. 04: one camera key past the end
+  (motion blur). 05: motion blur only in the head (shutter 0.5, keyed to 0 from its 0 s: the locked 10 s unchanged),
+  one key before frame 1. 05's caption + 3 s; `counter05` takes clip seconds (clock = − head); new clip field
+  **`counter_in`** (`tools/overlay.mjs`, default 0): 05's clock readout fades in at 3 s, as the descent lands (it popped
+  up over the black dissolve). `tools/timeline.mjs`: `'04-sunfall': dissolve 12`.
+- **The ice at the camera's foot is black** (honest: starlight and the arch only; Jupiter's night side dark; the stars
+  are camera-only in the scene): in 04 the "tilt into the ice" reads as the arch and the stars sliding up and out over
+  the black ground; the ice itself is first seen in 05.
+- Animatics (Cycles 25 %, 16 spp): 04 0.5 s/frame (4.1 min, 478 frames), 05 2.5 s/frame (13.3 min, 312 frames).
+  `node compile.mjs --animatic --silent` → **121.96 s** (01 @ 1.00 · 02 @ 13.00 · 03 @ 27.25 · 04 @ 37.08 · 05 @ 56.50 ·
+  06 @ 68.75 · 07 @ 87.75 · 08 @ 101.75 · 09 @ 114.96). Joint clip `out/04-05-tilt-joint.mp4` (film 53.5–61 s), sheet
+  `frames/04-05-tilt-joint.png` (every 10 frames from 55 s); Cycles check `frames/04-05-tilt-check.png` (50 %, 32 spp:
+  04 at 18.75 · 19.4 s, 05 at 1.25 · 2.25 s).
+- Render cost: 04 +32 frames (≈ +4 min), 05 +72 frames (≈ +1 h at 60 s/frame; the dark early head is cheaper).
 
 ## Next
 Finding 1 (Io + two shadows in 02): verified, in TREATMENT as C2 and in 02's row (user 2026-10-05).
