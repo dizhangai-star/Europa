@@ -15,7 +15,7 @@ slab's Boolean stays static (a moving cutter would re-bore 1.3 M vertices a fram
     node render.mjs 07-breakthrough --animatic --engine cycles --pct 25 --samples 16
     node preview.mjs 07-breakthrough 2.5 6.5 12 --pct 50
 Options: --lens MM  --camaz DEG (the camera's azimuth about the hole)  --r0 M --z0 M --el0 DEG (start pose)
-         --side M --up M --el1 DEG (end pose beside the port)  --move T0,T1  --lampaz DEG (port azimuth off the
+         --side M --back M --up M --reach M --el1 DEG (end pose behind/beside the probe)  --move T0,T1  --lampaz DEG (port azimuth off the
          line of sight, away)  --ev EV --ev1 EV --evt T0,T1 --ev2 EV --evt2 T0,T1 --motesr M  --shutter S  --fstop F  --motes 0
          --gbounces N  --vbounces N  --icevol 0 (random-walk ice: blotchy glow)  --sss M  --hide A,B
 """
@@ -47,10 +47,12 @@ R0 = float(A.opt('r0', 2.2))                                      # start: dista
 Z0 = float(A.opt('z0', -2.0))                                     # ceiling at the hole = 0), gaze at the hole
 EL0, EL1 = math.radians(float(A.opt('el0', 40.0))), math.radians(float(A.opt('el1', -3.0)))   # gaze up (+) / level
 # the port faces away from the lens (2.4 finding 1: at it, the window blows the frame out), LAMPAZ off the line of
-# sight, so its beam lights the ceiling behind the hole; the end pose sits beside the port (SIDE m off the axis, 90°
-# round from it, UP m above it) looking out along the beam: the grains near the lens are in its flank
+# sight, so its beam lights the ceiling behind the hole; the end pose sits behind and beside the probe (BACK m behind
+# the port, SIDE m to the camera's side of it, UP m above it) looking at a point REACH m out along the beam: the probe's
+# head and lit flank in the frame (user 2026-10-06), the window turned away, the grains in the beam ahead
 LAMPAZ = float(A.opt('lampaz', 40.0))
-SIDE, UP = float(A.opt('side', 0.7)), float(A.opt('up', 0.25))
+SIDE, UP = float(A.opt('side', 1.0)), float(A.opt('up', 0.25))
+BACK, REACH = float(A.opt('back', 1.6)), float(A.opt('reach', 3.0))
 MOVE = tuple(float(x) for x in A.opt('move', '6.5,12.5').split(','))   # 8–13 left 7–9 s dark (3.7 animatic)
 EV0, EV1, EV2 = float(A.opt('ev', 0.0)), float(A.opt('ev1', 4.0)), float(A.opt('ev2', 5.0))
 EVT = tuple(float(x) for x in A.opt('evt', '3.5,8.0').split(','))
@@ -124,8 +126,12 @@ MC = float(A.opt('motesr', 1.2))                                  # the grains' 
 PORT_Z = 0.5                                                      # the port above the nose (cryobot PORT_Z_FRAC)
 S_LOC = Vector((R0 * math.cos(CAMAZ), R0 * math.sin(CAMAZ), Z0))
 S_YAW = CAMAZ + math.pi
-E_LOC = Vector((SIDE * math.cos(PORT - math.pi / 2), SIDE * math.sin(PORT - math.pi / 2), -F7['stop'] + PORT_Z + UP))
-E_YAW = PORT
+PDIR = Vector((math.cos(PORT), math.sin(PORT), 0.0))
+SDIR = Vector((math.cos(PORT + math.pi / 2), math.sin(PORT + math.pi / 2), 0.0))   # the camera's side (nearer S_LOC)
+PORT_W = Vector((0.0, 0.0, -F7['stop'] + PORT_Z))
+E_LOC = PORT_W + SDIR * SIDE - PDIR * BACK + Vector((0.0, 0.0, UP))
+E_TGT = PORT_W + PDIR * REACH
+E_YAW = math.atan2(E_TGT.y - E_LOC.y, E_TGT.x - E_LOC.x)
 if A.opt('motes', '1') != '0':                                    # a cloud round the beam's flank ahead of the lens
     gaze = Vector((math.cos(E_YAW), math.sin(E_YAW), 0.0))
     ocean.motes(sc, P, tuple(E_LOC + gaze * (MC + 0.35)), MC, oc)

@@ -1,9 +1,9 @@
 # Europa · 木卫二 · 深渊: progress
 
 ## State (2026-10-06)
-**Sprint 3.7 (shot 07, breakthrough) in progress (branch `sprint-3.7-shot07`): physics (`tube07` 351 m, `drop07`),
-the tube board (black from below; user: black well), `s07_breakthrough.py` + animatic v2 done; waiting on the user's
-answers (questions at the end of the 3.7 section), then the 3-still Cycles check + full-res timing → lock.**
+**Sprint 3.7 (shot 07, breakthrough) done 2026-10-06, 07 locked by the user (not rendered; branch
+`sprint-3.7-shot07`): physics (`tube07` 351 m, `drop07`), the tube board (black from below; user: black well), volume
+base ice, `s07_breakthrough.py`, animatic v3, Cycles check, ≈ 3.5–4 h at 64 spp. Next: 3.8 = shot 08 (abyss).**
 **Sprint 3.6 (shot 06, descent) done 2026-10-06, 06 locked by the user (not rendered; branch `sprint-3.6-shot06`).
 The phone draft built and rendered as written; added an end exposure ride (+5 → +2 EV, 12–16 s), shutter 1.0 (the
 user: soften the bands' flicker) and right-aligned counter columns. Next: 3.7 = shot 07 (breakthrough), now with the
@@ -593,8 +593,7 @@ break → tube → level**; the tube's look decided on a board (clear vs ⚠ mus
 - **Animatic** (Cycles 25 %/16 spp, 1.8 s/frame, 10.7 min): `out/07-breakthrough-animatic.mp4`. v1 (move 8–13 s) left
   7–9 s near-black (the probe below the frame, the hole unlit); **v2: move 6.5–12.5 s** (the camera follows it down):
   ~1 s darkish at 7 s, a dark frame at ~10 s as the camera passes the probe's top, snow from 11 s.
-- **Not done yet**: the 3-still Cycles check at 50 % (2.5 · 5.5 · 12 s) and a **full-res 64 spp timing** (the volume
-  slab with 64 volume bounces is new: unknown cost); no caption/sound check against the animatic.
+- (Captions/sound not checked against the animatic: Sprint 4, as for every shot.)
 
 **Questions for the user (Sprint 3.7, after the animatic):**
 1. Timing: the glow holds ~2–3.5 s with the head showing through the last cm (nothing moves: ×50 → ×1). Keep (the
@@ -605,11 +604,21 @@ break → tube → level**; the tube's look decided on a board (clear vs ⚠ mus
    below")?
 4. The volume ice (clean glow; slab absorbs as water: slightly bluer). OK?
 
+**User's answers (2026-10-06):** 1. the hold kept. 2. the well's moment is enough. 3. **the probe in the last frame.**
+4. volume ice OK.
+→ End pose moved **behind and beside the probe** (`--back 1.6 --side 1.0 --up 0.25`, looking at a point `--reach 3` m
+out along the beam; the side is the one nearer the start pose, so the crane no longer crosses round the probe: v2's dark
+frame at ~10 s is gone): the head and the port's flank silhouetted against its own beam at the right of the frame,
+snow in the beam ahead. Animatic **v3** (10.9 min) reads continuously. **Cycles check** (`node preview.mjs
+07-breakthrough 2.5 5.5 13 --pct 50 --samples 64`, 16 s/still): clean glow with the head, the probe motion-blurred
+against the lit terraces, the end frame. **Full res 64 spp: glow 54 s/frame, end 32 s/frame → ≈ 3.5–4 h** before the
+ladder (Sprint 5 A/B: 32 volume bounces / fewer samples on the glow). **07 locked.**
+
 ## Next
 Finding 1 (Io + two shadows in 02): verified, in TREATMENT as C2 and in 02's row (user 2026-10-05).
 01's framing test done (2.0, the turn); the ground done (2.1); the cryobot done (2.2); the shell interior done (2.3,
 approved: puck release in 05, porosity 0.2 %); the under-ice ocean done (2.4, approved: melt ceiling, frazil ⚠ only if
-07 wants it; particles and 08's sink speed open for those shots). Sprint 2 builds are complete → Sprint 3, shots one per session: **01 locked (3.1); 02 locked (3.2); 03 locked (3.3); 04 locked (3.4); 05 locked (3.5); 06 locked (3.6); 07 drafted (3.7: animatic v2 + questions; Cycles check + full-res timing next)**. Asset hunt by the user in parallel
+07 wants it; particles and 08's sink speed open for those shots). Sprint 2 builds are complete → Sprint 3, shots one per session: **01 locked (3.1); 02 locked (3.2); 03 locked (3.3); 04 locked (3.4); 05 locked (3.5); 06 locked (3.6); 07 locked (3.7); next 08 (3.8)**. Asset hunt by the user in parallel
 (REFERENCES.md "Wanted": W1 Mixamo kneel/stand, W2–W3 ice sounds and hydrophone).
 
 ## Sprints (plan, 2026-10-04)
@@ -628,6 +637,12 @@ approved: puck release in 05, porosity 0.2 %); the under-ice ocean done (2.4, ap
 5. Batch render (overnight, resume) → 4K compile, srt, poster; then the 9:16 climax cut (own portrait cameras).
 
 ## Decisions (locked)
+- 07 locked (user 2026-10-06, Sprint 3.7): `s07_breakthrough.py` as checked: in the water, 24 mm, f/4; hold on the
+  hole (gaze 40° up), crane down 6.5–12.5 s to behind/beside the probe looking out along its beam; clock ×2,890 → real
+  time by 3.4 s, break 3.5 s, the 0.134 g drop stops 7 m down at 9.0 s (`drop07`); the glow hold kept; the tube a black
+  well (light pipe, `tube07` 351 m; no tail lamp, no mush); port 40° off the line of sight, away; EV 0 → +4 → +5;
+  motes ahead of the end pose; **base ice = scattering volume** (`ocean.ice_volume_mat`, slab absorbs as water);
+  probe in the last frame. Renders in the Sprint 5 batch (≈ 3.5–4 h at 64 spp before the ladder).
 - 06 locked (user 2026-10-06, Sprint 3.6): `s06_descent.py` as checked: cutaway 35 mm, the camera fixed to the probe
   (top → head over 1–17 s); depth in ln z, ×2,890 → ×27 M → ×2,890, 34 m → 19,980 m (day 2.1 → 1,043.4) in 20 s,
   the slow ~5 s landing kept; treadmill (106 wraps), **shutter 1.0**; EV +3 → +5 by depth (0.3–3 km), then → +2 by
