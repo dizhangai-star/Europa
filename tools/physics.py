@@ -1070,6 +1070,71 @@ def nose07(s):
     return -drop07(lapse07(f['t_brk'], s))[0]
 
 
+# 08 (Sprint 3.8, user 2026-10-06): the abyss. The probe hangs where 07's brake stopped it (fit07 'stop' below the
+# base); at `rel` s the brake lets go and it falls free: the tether pays out from the probe's own spool (it lies still
+# in the water behind it, no drag), so the fall is drop07's without the brake: 0.89 m/s², terminal 4.5 m/s (on Earth
+# the same probe would reach ~12 m/s). Real time first, then the clock eases ×1 → ×`rate` over up0 → up1 s (07's
+# ease mirrored), so the lamp (`lamp_seen`: a blue point by ~40 m, gone by ~100 m) goes out under the caption.
+SHOT08 = dict(dur=14.0, rel=1.0, up0=2.5, up1=7.0, rate=3.0)
+_FIT08 = {}
+
+
+def _rate08(s):
+    c = SHOT08
+    return math.exp(math.log(c['rate']) * _ss(c['up0'], c['up1'], s))
+
+
+def lapse08(a, b, n=None):
+    """08: real seconds between clip seconds a and b."""
+    n = n or max(40, 2 * int(abs(b - a) * 60))
+    h = (b - a) / n
+    return h / 3 * sum((1 if i in (0, n) else 4 if i % 2 else 2) * _rate08(a + i * h) for i in range(n + 1))
+
+
+def drop08(t):
+    """08: the free fall, t real s after the brake lets go: (m fallen, speed m/s). drop07's forces, no brake."""
+    if 'path' not in _FIT08:
+        drop07(0.0)
+        m, w, vt = (_FIT07['drop'][k] for k in ('m', 'w', 'vt'))
+        k = w / vt ** 2
+        dt, x, v, path = 0.002, 0.0, 0.0, [(0.0, 0.0)]
+        for _ in range(int(120 / dt)):
+            v += (w - k * v * v) / m * dt
+            x += v * dt
+            path.append((x, v))
+        _FIT08['path'] = path
+    if t <= 0:
+        return 0.0, 0.0
+    p = _FIT08['path']
+    u = min(t / 0.002, len(p) - 1.001)
+    i = int(u)
+    return p[i][0] + (p[i + 1][0] - p[i][0]) * (u - i), p[i][1]
+
+
+def fit08():
+    """08: start (nose m below the base, 07's stop), t0 (real s since the breakthrough at clip 0 = 07's end), real (real s
+    over the clip), end (nose m below the base at the end), v_end (m/s)."""
+    if 'fit' not in _FIT08:
+        c, f7 = SHOT08, fit07()
+        x, v = drop08(lapse08(c['rel'], c['dur']))
+        _FIT08['fit'] = dict(start=f7['stop'], t0=lapse07(f7['t_brk'], SHOT07['dur']), real=lapse08(0.0, c['dur']),
+                             end=f7['stop'] + x, v_end=v)
+    return _FIT08['fit']
+
+
+def nose08(s):
+    """08: clip second → the nose's height above the base (m; negative: below it)."""
+    f = fit08()
+    return -(f['start'] + (drop08(lapse08(SHOT08['rel'], s))[0] if s > SHOT08['rel'] else 0.0))
+
+
+def counter08(s):
+    """08's readout (tools/overlay.mjs): real seconds since the head broke through, the nose's depth below the surface
+    (m), the pressure there (bar: the ice overhead + the water column below the base)."""
+    d = -nose08(s)
+    return fit08()['t0'] + lapse08(0.0, s), ICE_H[1] * 1000 + d, (ocean(ICE_H[1])[0] * 1e5 + RHO_SEA * g_at() * d) / 1e5
+
+
 def corona(r):
     """Corona radiance relative to the Sun's mean disc radiance at r solar radii (Baumbach)."""
     return 1e-6 * sum(a * r ** -n for a, n in CORONA) / LIMB_DARK
@@ -1400,6 +1465,14 @@ elif __name__ == '__main__':
                  f'{d7["a0"]:.2f} m/s² (terminal {d7["vt"]:.1f} m/s); brake {TETHER_BRAKE:g} m/s² from {c7["free"]:g} m '
                  f'→ stops {f7["stop"]:.1f} m below the base {f7["t_real_stop"]:.1f} s (real) after the break = clip '
                  f'{f7["t_stop"]:.1f} s; peak {max(p[2] for p in d7["path"]):.2f} m/s'))
+    c8, f8 = SHOT08, fit08()
+    seen8 = ', '.join(f'{s:g} s {-nose08(s):.0f} m (blue {lamp_seen(-nose08(s))[2][1]:+.0f} EV)' for s in (4, 7, 10, 12, 14))
+    rows.append(('08: the fall (drop08, brake off)', f'held {f8["start"]:.1f} m below the base, brake off at {c8["rel"]:g} '
+                 f's, free fall (spool on the probe: no tether drag) → {f8["end"]:.0f} m at {c8["dur"]:g} s, '
+                 f'{f8["v_end"]:.2f} m/s; clock ×1 → ×{c8["rate"]:g} over {c8["up0"]:g}–{c8["up1"]:g} s '
+                 f'({f8["real"]:.1f} s real); nose (lamp vs 5 m): {seen8}'))
+    rows.append(('08: counter (counter08)', ' → '.join('+{:.0f} s {:,.0f} m {:.1f} bar'.format(*counter08(s))
+                                                     for s in (0, c8['dur']))))
     rows.append(('Lamp in pure water (e-fold distance)', ', '.join(f'{wl} nm {1 / a:.0f} m' for wl, a in A_WATER.items())
                  + ': red gone within metres, blue reaches ~100 m (before 1/r²)'))
     rows.append(('Ice base: current, scallops, terraces', f'current {OCEAN_U * 100:g} cm/s (film pick) → melt scallops '

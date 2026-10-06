@@ -27,6 +27,9 @@ const READOUT = {
     // right-aligned at each column's right edge (the widest values: +1,043 d · 19,980 m · −173 °C · 242 bar)
     f: [[46, 0, '+', ' d', 0, 1, 'right'], [108, 0, '', ' m', 0, 1, 'right'], [164, 0, '', ' °C', 0, 0, 'right'],
       [214, 0, '', ' bar', 0, 0, 'right']] },
+  counter08: { zh: '破冰后', en: 'SINCE THE BREAKTHROUGH',
+    // real seconds since the head broke through · the nose's depth below the surface · pressure (+42 s · 20,130 m · 243.7 bar)
+    f: [[24, 0, '+', ' s', 0, 0, 'right'], [88, 0, '', ' m', 0, 1, 'right'], [160, 1, '', ' bar', 0, 0, 'right']] },
 };
 const vals = C.counter ? JSON.parse(execFileSync('python3', ['-c',
   `import sys, json; sys.path.insert(0, ${JSON.stringify(rel('tools'))}); import physics as P; ` +
