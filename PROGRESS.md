@@ -1,6 +1,9 @@
 # Europa · 木卫二 · 深渊: progress
 
 ## State (2026-10-06)
+**Sprint 4.0 (whole-film animatic) in progress 2026-10-06, branch `sprint-4.0-animatic`.** Hard-cut baseline 117.0 s;
+edit-level joints in → `out/europa-animatic.mp4` **113.2 s** (2,717 frames). Next: **4.0b = shot 02's new head + tail** (new
+session), then 4.0c (03→04 whip), 4.0d (04→05 tilt into the ice). See the 4.0 section below.
 **Sprint 3.9 (09, title card) done 2026-10-06, 09 locked by the user (branch `sprint-3.9-title`): kicker dropped
 (title block re-centred, EUROPA at y 153 on the 640×360 grid), English readout ends "… IN 20 HOURS ON THE ICE" (= 地表),
 held 1 s longer (both gone by 5.5 s, clip 6 → 7 s; film 116 s). No Blender: `out/09-title-animatic.mp4` is the real
@@ -648,6 +651,33 @@ time → ×3** (gone under the caption; real time alone ends at 54 m on a faint 
 
 **User's answers (2026-10-06):** all three as drafted (composition from the left edge, gone at ~11 s, EV +4 fixed).
 **08 locked.**
+
+**Sprint 4.0 (whole-film animatic) 2026-10-06, branch `sprint-4.0-animatic`.** User at the start: hard cuts everywhere
+would read as short videos strung together → **three blocks, smooth joints inside them**: surface 01–04 · ice 05–06 ·
+ocean 07–08 (+ the card). **Mix level** (user): edit-level joints where the pictures already meet, shot-level ones
+(new heads/tails on locked shots, each with an animatic + Cycles stills) for 01→02 (02 opens at 01's end framing and
+zooms 35 → 75 mm while the clock ramps ×1 → ×512), 03→04 (whip from Ganymede to Jupiter, cut in the blur) and
+**04→05: tilt down into the ice** (user's pick over a dip to black: after the caption 04 tilts from the black disc to
+the ice at its foot, red arch and starlight only; 05 opens descending through the milky ice to its start pose; 0.5 s
+dissolve near black on the downward motion).
+- **Baseline** (`node compile.mjs --animatic --silent`, 51 s): hard cuts, 117.0 s. Joint sheet
+  `frames/europa-animatic-joints.png` (last/first frame of each joint): 01 → 02 the same disc and mesa (zoom match
+  works); **03 opens with Jupiter in frame behind the probe**; 06's lamp and 07's glow sit within ~1/6 frame of each
+  other; 07 ends beside the probe, 08 opens above it, both held 7 m down.
+- **Edit-level joints** (`tools/timeline.mjs`): dissolves 02→03 30 f (time dissolve, dawn 1.18 h after Io set), 05→06
+  18 f (the same cutaway at 34 m; counters cross in place), 06→07 24 f (the same lamp from the other side); **`TRIM_IN`**
+  (new, frames cut off a clip's head with its overlay; layout `start` stays the clip's own t = 0, `in` = first shown
+  frame, compile asserts both): 08 −19 f → 07→08 cut on the action 0.2 s before the brake lets go. Film **113.2 s**
+  (01 @ 1.00 · 02 @ 13.00 · 03 @ 23.75 · 04 @ 32.75 · 05 @ 50.75 · 06 @ 60.00 · 07 @ 79.00 · 08 @ 93.00 · 09 @ 106.21).
+- **Finding: the 02→03 dissolve shows two Jupiters** (02's 75 mm disc centred, 03's 35 mm disc at the right).
+  Proposal: 02's tail zooms back out 75 → 35 mm and turns so the disc lands where it sits in 03, then the dissolve
+  changes only the ground (night → dawn) round a Jupiter that doesn't move (the film's one fixed thing). Shot-level,
+  in 02 with the 01→02 head.
+- **User (2026-10-06):** 02→03 → **02's tail zooms back out and aligns Jupiter** with 03's (proposal above); shot-level
+  joints **one per session**: **4.0b** = 02 (head: 01's end framing → 75 mm with the clock ramp; tail: 75 → 35 mm onto
+  03's disc position; dissolve kept), **4.0c** = 03→04 whip (03 tail + 04 head), **4.0d** = 04→05 tilt into the ice
+  (04 tail + 05 head). Each: script → that shot's animatic → joint frames → Cycles stills of the new head/tail →
+  recompile → user. Then 4.0e: whole film v3, trims (05 into 06? 08 → 10 s?), captions/counters, QC → merge; 4.1 score.
 
 ## Next
 Finding 1 (Io + two shadows in 02): verified, in TREATMENT as C2 and in 02's row (user 2026-10-05).
