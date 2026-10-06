@@ -780,6 +780,9 @@ dissolve near black on the downward motion).
   02 @ 13.00 · 03 @ 27.25 · 04 @ 37.08 · 05 @ 55.67 · 06 @ 64.92 · 07 @ 83.92 · 08 @ 97.92 · 09 @ 111.13); joint clip
   `out/03-04-whip-joint.mp4`; Cycles check `frames/03-04-whip-check.png` (03 at 9.67 · 9.79 s, 04 at 0 · 0.08 s): smear
   → smear, Jupiter in the same place across the cut.
+- **User (2026-10-07):** the probe on its tripod shows in 03's last 3 whip frames (234–236, 0.12 s: az −9°, sheave
+  27° up, on the whip's path from Ganymede to Jupiter; the cut was put there to hide in bright smear) → **keep** (the
+  camera leaves the probe for Jupiter). Not moving the cut earlier (black sky again) or bending the path round it.
 
 ## Next
 Finding 1 (Io + two shadows in 02): verified, in TREATMENT as C2 and in 02's row (user 2026-10-05).
