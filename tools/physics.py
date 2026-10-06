@@ -1187,7 +1187,8 @@ def nose07(s):
 # in the water behind it, no drag), so the fall is drop07's without the brake: 0.89 m/s², terminal 4.5 m/s (on Earth
 # the same probe would reach ~12 m/s). Real time first, then the clock eases ×1 → ×`rate` over up0 → up1 s (07's
 # ease mirrored), so the lamp (`lamp_seen`: a blue point by ~40 m, gone by ~100 m) goes out under the caption.
-SHOT08 = dict(dur=14.0, rel=1.0, up0=2.5, up1=7.0, rate=3.0)
+# dur 14 → 12 s (Sprint 4.0e, user 2026-10-07): the light is gone by ~11 s; 1 s of black, then the title card.
+SHOT08 = dict(dur=12.0, rel=1.0, up0=2.5, up1=7.0, rate=3.0)
 _FIT08 = {}
 
 
@@ -1587,7 +1588,7 @@ elif __name__ == '__main__':
                  f'→ stops {f7["stop"]:.1f} m below the base {f7["t_real_stop"]:.1f} s (real) after the break = clip '
                  f'{f7["t_stop"]:.1f} s; peak {max(p[2] for p in d7["path"]):.2f} m/s'))
     c8, f8 = SHOT08, fit08()
-    seen8 = ', '.join(f'{s:g} s {-nose08(s):.0f} m (blue {lamp_seen(-nose08(s))[2][1]:+.0f} EV)' for s in (4, 7, 10, 12, 14))
+    seen8 = ', '.join(f'{s:g} s {-nose08(s):.0f} m (blue {lamp_seen(-nose08(s))[2][1]:+.0f} EV)' for s in (4, 7, 10, 11, 12))
     rows.append(('08: the fall (drop08, brake off)', f'held {f8["start"]:.1f} m below the base, brake off at {c8["rel"]:g} '
                  f's, free fall (spool on the probe: no tether drag) → {f8["end"]:.0f} m at {c8["dur"]:g} s, '
                  f'{f8["v_end"]:.2f} m/s; clock ×1 → ×{c8["rate"]:g} over {c8["up0"]:g}–{c8["up1"]:g} s '

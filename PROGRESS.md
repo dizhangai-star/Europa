@@ -1,6 +1,10 @@
 # Europa · 木卫二 · 深渊: progress
 
 ## State (2026-10-07)
+**Sprint 4.0e (whole film v3) 2026-10-07, branch `sprint-4.0e-film`, waiting for the user's look:** 08 → 12 s (user:
+the light out by ~11 s, 1 s of black, then the card; caption 7.0–11.6 s), 05→06 kept; counters swap inside the 05→06
+dissolve (new `counter_out`) and 08's fades before the card. `out/europa-animatic.mp4` **119.96 s**. QC: layout =
+compile, captions clear of the cuts. Next: user sign-off → merge; then 4.1 score. See the 4.0e section below.
 **Sprint 4.0d (04→05 tilt into the ice) done 2026-10-07, approved by the user, branch `sprint-4.0d-tilt` (PR):**
 after the caption 04 tilts down (physics.TILT45, up to 15°/s): the red arch and the stars slide up and out over the
 black ice, the frame goes black at clock 19.03 s; a 12-frame dissolve on black; 05 opens 3 s early, 5 m up in black ice,
@@ -813,6 +817,26 @@ dissolve near black on the downward motion).
 - Render cost: 04 +32 frames (≈ +4 min), 05 +72 frames (≈ +1 h at 60 s/frame; the dark early head is cheaper).
 - **User (2026-10-07): approved as built** (black ice at the foot, 05's 3 s / 5 m head, the render cost).
 
+**Sprint 4.0e (whole film v3: trims, captions/counters, QC) 2026-10-07, branch `sprint-4.0e-film`.**
+- **Review** of `out/europa-animatic.mp4` (121.96 s): 1-fps contact sheet + per-second motion (frame difference) and
+  luma of the picture area. Slow/dark stretches: 03's tilt through the star sky (film 32.6–37.0 s; stars and Ganymede
+  are sub-threshold specks at 25 %), 04's night under the caption (50–57 s, the thin red arch), **08's tail** (the
+  point's peak luma ≈ black from ~10.5 s clip; ~4 s of black under the caption before the card) and 06's slow landing
+  (84–87 s, kept as locked). The 05→06 dissolve read as one move, but **its two counters overlapped** (05's
+  `+5.8 h 33.9 m` printed over 06's `+2 d 34 m −173 °C 0 bar`, different columns).
+- **User (2026-10-07): 08 → 12 s; 05→06 kept as is.**
+  - `physics.SHOT08` dur 14 → 12 (`s08_abyss.py` asserts it): 103 m at 12 s (25.9 s real; blue −12 EV at 11 s, −13 at
+    12 s); counter08 ends +36 s 20,103 m 243.3 bar. Caption 7.0 → 11.6 s (4.6 s; ~1 s over black). 08 animatic
+    re-rendered (Cycles 25 %, 16 spp, 0.3 s/frame, 1.7 min).
+  - New clip field **`counter_out`** (`tools/overlay.mjs`: the readout is gone at that clip second, 0.25 s fade):
+    05 `counter_out` 12.5 (gone 6 frames into the 18-frame dissolve), 06 `counter_in` 0.5 (in by 0.75 s, the dissolve's
+    end): the readouts swap inside the dissolve instead of overlapping. 08 `counter_out` 12 (no pop at the cut to the card).
+- `node compile.mjs --animatic --silent` → **119.96 s**, 2,879 frames (01 @ 1.00 · 02 @ 13.00 · 03 @ 27.25 · 04 @ 37.08 ·
+  05 @ 56.50 · 06 @ 68.75 · 07 @ 87.75 · 08 @ 101.75 · 09 @ 112.96). Captions (film s): EUROPA 9.20–12.60 · IO 19.50–24.40
+  · SUN 48.67–55.07 · NO WAY BACK 64.50–68.90 · NO SUNLIGHT 95.75–101.15 · 100 KM 107.96–112.56; none crosses a cut; 05's
+  ends 0.15 s into its dissolve (faded by then). Layout = compile (asserted).
+- Render cost: 08 −48 frames (≈ −6 min).
+
 ## Next
 Finding 1 (Io + two shadows in 02): verified, in TREATMENT as C2 and in 02's row (user 2026-10-05).
 01's framing test done (2.0, the turn); the ground done (2.1); the cryobot done (2.2); the shell interior done (2.3,
@@ -836,6 +860,8 @@ approved: puck release in 05, porosity 0.2 %); the under-ice ocean done (2.4, ap
 5. Batch render (overnight, resume) → 4K compile, srt, poster; then the 9:16 climax cut (own portrait cameras).
 
 ## Decisions (locked)
+- Whole film v3 (user 2026-10-07, Sprint 4.0e): 08 → 12 s; 05→06 unchanged; readouts never overlap (`counter_out`).
+  Film 119.96 s.
 - 04→05 tilt (user 2026-10-07, Sprint 4.0d): `physics.TILT45`: 04 tilts down from the caption's end (clock 17.4 s, up
   to 15°/s) into the black ice, ends 6 frames after its frame goes black (clip 19.92 s); 12-frame dissolve centred on
   the black; 05 opens 3 s early, 5 m up, coming down at 04's screen speed into the lamp's glow (clip 13 s, motion blur
@@ -845,7 +871,8 @@ approved: puck release in 05, porosity 0.2 %); the under-ice ocean done (2.4, ap
   18.58 s (clock from 0.58 s). Continuity A: 04 as locked, no tripod or astronaut in its frame.
 - 08 locked (user 2026-10-06, Sprint 3.8): `s08_abyss.py` as checked: camera locked 1.2 m off the hole's axis,
   0.6 m under the base, 35 mm f/4, looking down the tether (gaze at 60 m on the axis); held 7.0 m down, brake off at
-  1 s, free fall (`drop08`, terminal 4.5 m/s), clock ×1 → ×3 over 2.5–7 s → 130 m at 14 s; EV +4 fixed; the light a
+  1 s, free fall (`drop08`, terminal 4.5 m/s), clock ×1 → ×3 over 2.5–7 s → 130 m at 14 s (**4.0e, user 2026-10-07: 12 s, 103 m,
+  caption 7.0–11.6 s**); EV +4 fixed; the light a
   blue point from ~6 s, gone ~11 s; counter `破冰后 · SINCE THE BREAKTHROUGH` s · m · bar. Renders in the Sprint 5 batch
   (≈ 40–50 min at 64 spp; the black tail one frame repeated).
 - 07 locked (user 2026-10-06, Sprint 3.7): `s07_breakthrough.py` as checked: in the water, 24 mm, f/4; hold on the
