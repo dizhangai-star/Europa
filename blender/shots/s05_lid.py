@@ -17,11 +17,15 @@ descent d(t); the camera is in the ice too, so it moves up by d(t) plus its own 
 axis, aim 3.5 → 1.6 m (drop-frame heights: the puck sits at 2.92–2.99 m), level, 13° to the right of the cut's normal,
 eased over MOVE s. Start: the probe's top, the puck in the open column, the bead line above; end: the frozen-in puck
 in the upper third, the probe's top near the bottom, its glow from below.
+Sprint 4.0d: the clip opens with the end of the tilt from 04 (physics.TILT45): `head` s before the clock's 0 s the camera
+is `rise` m higher, in black ice, coming down at 04's screen speed and settling onto the start pose (a cubic Hermite);
+the lamp's glow comes up into the frame. Before 0 s real time (the puck still seated).
 
     node render.mjs 05-lid --animatic --engine cycles --pct 25 --samples 16
     node preview.mjs 05-lid 0.5 5 9.5 --pct 50
 Options: --lens MM  --ev EV --ev1 EV --adapt T0,T1 (exposure ride)  --el0 --el1 DEG (looking down)  --nocore 1  --live-bore 1 (per-frame Booleans: drops a band at 2.17 s)  --move T0,T1  --d0 M --d1 M (camera distance)  --aim0 Z --aim1 Z  --side DEG
          --lampaz DEG (port azimuth, −40: partly toward the camera)  --fstop F  --vbounces N  --hide A,B
+         --tilt 0 (no descending head: the locked 10 s)  --mblur SHUTTER (the head's frames only; 0.5)
 """
 import math
 import os
@@ -52,7 +56,13 @@ D0, D1 = float(A.opt('d0', 4.0)), float(A.opt('d1', 2.6))
 AIM0, AIM1 = float(A.opt('aim0', 3.05)), float(A.opt('aim1', 3.1))
 EL0, EL1 = math.radians(float(A.opt('el0', 12.0))), math.radians(float(A.opt('el1', 4.0)))   # looking down
 SIDE = math.radians(float(A.opt('side', 13.0)))
-assert abs(A.frames / FPS - C5['dur']) < 1e-6 or A.opt('stills'), f'clip is {A.frames / FPS} s, SHOT05 says {C5["dur"]}'
+TILT = int(A.opt('tilt', 1))
+T45 = P.TILT45
+HEAD = T45['head'] if TILT else 0.0                        # s of descent in front of the clock's 0 s
+assert abs(A.frames / FPS - C5['dur'] - HEAD) < 1e-6 or A.opt('stills'), \
+    f'clip is {A.frames / FPS} s, SHOT05 + head says {C5["dur"] + HEAD}'
+assert not TILT or (LENS == T45['lens05'] and D0 == T45['d05'] and abs(math.degrees(EL0) - T45['el05']) < 1e-9), \
+    'TILT45 ≠ 05\'s start pose'
 
 
 def smoothstep(a, b, x):
@@ -60,7 +70,7 @@ def smoothstep(a, b, x):
     return u * u * (3 - 2 * u)
 
 
-def descent(t):                                            # m the probe has sunk since the drop
+def descent(t):                                            # m the probe has sunk since the drop (< 0 before it: real time)
     return F5['v'] * P.lapse05(t)
 
 
@@ -70,6 +80,9 @@ sc.cycles.volume_bounces = int(A.opt('vbounces', 128))
 sc.cycles.max_bounces = max(sc.cycles.max_bounces, sc.cycles.volume_bounces + 8)
 sc.render.fps = FPS
 sc.frame_start, sc.frame_end = 1, A.frames
+SHUTTER = float(A.opt('mblur', 0.5)) if TILT else 0.0      # the head moves ~2 m/s: blur its frames (the locked 10 s
+if SHUTTER > 0:                                            # stay sharp: shutter keyed to 0 from the clock's 0 s)
+    sc.render.use_motion_blur = True
 
 w = bpy.data.worlds.new('Black')
 w.use_nodes = True
@@ -93,32 +106,45 @@ cam.data.clip_end = 200.0
 
 log, shut_at = [], None
 for f in range(1, A.frames + 1):
-    t = (f - 1) / FPS
+    t = (f - 1) / FPS - HEAD                               # the clock's second (< 0: the head, real time)
     d = descent(t)
     sh['root'].location.z = DEPTH + d
     sh['root'].keyframe_insert('location', index=2, frame=f)
-    puck.location.z = F5['z0'] + d
+    puck.location.z = F5['z0'] + max(d, 0.0)               # seated in the probe's top until 0 s
     puck.keyframe_insert('location', index=2, frame=f)
     k = smoothstep(*MOVE, t)
     dist, aim = D0 + (D1 - D0) * k, AIM0 + (AIM1 - AIM0) * k
-    tgt = Vector((0.0, 0.0, aim + d))                      # drop-frame height → world
+    up = P.tilt05(t)[0] if TILT else 0.0                   # the head: m above the start pose
+    tgt = Vector((0.0, 0.0, aim + max(d, 0.0) + up))       # drop-frame height → world
     el = EL0 + (EL1 - EL0) * k
     h = dist * math.cos(el)
     cam.location = tgt + Vector((h * math.sin(SIDE), -h * math.cos(SIDE), dist * math.sin(el)))
     cam.rotation_euler = (tgt - cam.location).to_track_quat('-Z', 'Y').to_euler()
-    cam.data.dof.focus_distance = (Vector((0.0, 0.0, F5['z0'] + P.CRYO_PUCK[1] / 2 + d)) - cam.location).length
+    cam.data.dof.focus_distance = (Vector((0.0, 0.0, F5['z0'] + P.CRYO_PUCK[1] / 2 + max(d, 0.0) + up))
+                                   - cam.location).length   # (the head: the same distance, level with the camera's aim)
     cam.keyframe_insert('location', frame=f)
     cam.keyframe_insert('rotation_euler', frame=f)
     cam.data.dof.keyframe_insert('focus_distance', frame=f)
     gap = sh['front_z'] - (F5['z0'] + P.CRYO_PUCK[1] + d)  # front above the puck's top (world)
     sc.view_settings.exposure = EV0 + (EV1 - EV0) * smoothstep(*ADAPT, t)   # the eye follows the fading light
     sc.view_settings.keyframe_insert('exposure', frame=f)
+    if SHUTTER > 0:
+        sc.render.motion_blur_shutter = SHUTTER if t < 0 else 0.0
+        sc.keyframe_insert('render.motion_blur_shutter', frame=f)
     if shut_at is None and gap <= 0:
         shut_at = t
-    if f % 24 == 1 or f == sc.frame_end:
+    if (f - 1) % 24 == 0 or f == sc.frame_end:
         log.append(f'{t:4.1f}s ×{P._rate05(t, F5["L"]):5.0f} +{P.lapse05(t) / 3600:4.2f} h  sunk {d:4.2f} m  '
-                   f'front {gap:+.2f} m over the puck  cam {dist:4.1f} m aim {aim:4.2f}')
+                   f'front {gap:+.2f} m over the puck  cam {dist:4.1f} m aim {aim:4.2f} +{up:.2f} m')
 
+if TILT:                                                   # one key before the start: motion blur samples ±½ frame
+    t, u = -HEAD - 1.0 / FPS, P.tilt05(-HEAD - 1.0 / FPS)[0]
+    tgt = Vector((0.0, 0.0, AIM0 + u))
+    h = D0 * math.cos(EL0)
+    cam.location = tgt + Vector((h * math.sin(SIDE), -h * math.cos(SIDE), D0 * math.sin(EL0)))
+    cam.keyframe_insert('location', frame=0)
+    print(f'NOTE 05 head: {HEAD:g} s, from +{T45["rise"]:g} m at {P.tilt05(-HEAD)[1]:.2f} m/s (peak '
+          f'{max(P.tilt05(-HEAD + k / FPS)[1] for k in range(int(HEAD * FPS))):.2f} m/s), shutter {SHUTTER:g} in the head')
 print(f'NOTE 05: {LENS:.0f} mm, EV {EV0:+g} → {EV1:+g} ({ADAPT[0]:g}–{ADAPT[1]:g} s); ×{F5["r"]:,.0f} from {C5["up1"]} s; front {F5["open_m"]:.2f} m above the '
       f'probe top, reaches the puck at {shut_at:.2f} s (SHOT05 {C5["shut"]} s); sunk {D_END:.2f} m by '
       f'{C5["dur"]:g} s\n  ' + '\n  '.join(log))

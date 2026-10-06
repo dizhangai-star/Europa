@@ -20,12 +20,15 @@ own copy of the Sun (light linking) shadowed by the scaled Europa (jupiter.europ
 
 Sprint 4.0c: the clip opens with the end of the whip from 03 (physics.WHIP34: `inn` frames decelerating onto the
 locked aim); the clock's 0 s (03's dawn) is the first locked frame, HEAD s into the clip; before it, real time.
+Sprint 4.0d: after the caption the camera tilts down into the ice at its foot (physics.TILT45: speed ∝ t² from the
+caption's end, then held); with only starlight and the red arch the ice is black, so the stars and the arch slide up
+and out over the rising horizon and the frame goes black; the clip ends half a dissolve after (05 opens descending).
 
     node render.mjs 04-sunfall --animatic --engine cycles --pct 25 --samples 16
     node preview.mjs 04-sunfall 0.5 4 9 11.5 17 --pct 50
 Options: --lens MM  --top DEG (frame top above Jupiter's top limb)  --day EV  --night EV  --adapt T0,T1 (s)
          --arc A --haze H --focus K --tail F --haze-from DEG --arc-from DEG (ring)  --corona 0|1 (off)  --flashes N (0) --flash-t0 S  --star-mag V (brightest)
-         --star-density D  --glare S  --mblur SHUTTER  --nseg-deg  --grs DEG  --whip 0 (no whip head; clip back to 18 s)
+         --star-density D  --glare S  --mblur SHUTTER  --nseg-deg  --grs DEG  --whip 0 (no whip head)  --tilt 0 (no tilt tail; with --whip 0: the locked 18 s)
 """
 import math
 import os
@@ -63,8 +66,7 @@ ASPECT = shot.RES[1] / shot.RES[0]
 WHIP = int(A.opt('whip', 1))
 N_HEAD = P.WHIP34['inn'] if WHIP else 0
 HEAD = N_HEAD / FPS                                        # s of whip in front of the clock's 0 s
-assert abs(A.frames / FPS - C4['dur'] - HEAD) < 1e-6 or A.opt('stills'), \
-    f'clip is {A.frames / FPS} s, SHOT04 + head says {C4["dur"] + HEAD}'
+TILT = int(A.opt('tilt', 1))
 
 
 def hours(t):                                              # clip second → hours since Io entered the disc in 02
@@ -126,6 +128,10 @@ HAZE_FROM, ARC_FROM = float(A.opt('haze-from', 0.05)), float(A.opt('arc-from', 1
 
 # ---------------------------------------------------------------- camera: locked, Jupiter's top limb TOP° under the frame top
 PITCH = J_EL + r_eq + TOP - VFOV / 2
+DUR, T_BLACK = P.tilt04_dur(PITCH + VFOV / 2) if TILT else (C4['dur'], None)   # clock s (the tilt tail: physics.TILT45)
+assert abs(A.frames / FPS - DUR - HEAD) < 1e-6 or A.opt('stills'), \
+    f'clip is {A.frames / FPS} s, SHOT04 + head + tail says {DUR + HEAD}'
+assert not TILT or LENS == P.TILT45['lens04'], 'TILT45 ≠ 04\'s lens'
 d = Vector((0.0, math.cos(math.radians(PITCH)), math.sin(math.radians(PITCH))))
 cam = rig.camera(sc, cam_loc, cam_loc + d * 1000, lens=LENS, fstop=8.0)
 if WHIP:
@@ -173,8 +179,9 @@ q_prev, log, sun_in = None, [], None
 top_el = PITCH + VFOV / 2
 for f in range(sc.frame_start, sc.frame_end + 1):
     t = (f - 1) / FPS - HEAD                               # the clock's second (< 0: the whip, real time)
-    if f <= N_HEAD + 1:
-        az_, el_, _ = P.whip34(TAU0 + (f - 1) / FPS, ASPECT) if WHIP else (0.0, PITCH, 0.0)
+    if f <= N_HEAD + 1 or (TILT and t >= P.TILT45['t0'] - 1.0 / FPS):
+        az_, el_, _ = P.whip34(TAU0 + (f - 1) / FPS, ASPECT) if WHIP and f <= N_HEAD + 1 else (0.0, PITCH, 0.0)
+        el_ -= P.tilt04(t)[0] if TILT else 0.0
         cam.rotation_euler = (math.radians(90.0 + el_), 0.0, -math.radians(az_))
         cam.keyframe_insert('rotation_euler', frame=f)
         if WHIP and SHUTTER > 0:                            # whip frames: a full-frame smear (physics.WHIP34)
@@ -224,6 +231,11 @@ for f in range(sc.frame_start, sc.frame_end + 1):
         log.append(f'{t:4.1f}s ×{rate:6.0f} Sun {el:5.1f}° az {az:+6.1f} sep {sep:+.3f} vis {100 * vis:3.0f}% '
                    f'Jupiter {100 * P.lit_fraction(e):5.2f}% lit')
 
+if TILT:                                                   # one key past the end: motion blur samples ±½ frame
+    cam.rotation_euler = (math.radians(90.0 + PITCH - P.tilt04(DUR)[0]), 0.0, 0.0)
+    cam.keyframe_insert('rotation_euler', frame=sc.frame_end + 1)
+    print(f'NOTE 04 tilt: from {P.TILT45["t0"]:g} s (clock), frame top passes {P.TILT45["black04"]:g}° at {T_BLACK:.2f} s, '
+          f'ends {DUR:.3f} s (clip {DUR + HEAD:.3f} s), pitch {PITCH - P.tilt04(DUR - 1 / FPS)[0]:.1f}° at the last frame')
 if WHIP:
     print('NOTE 04 whip: ' + ', '.join('f%d el %.1f° %.0f°/s' % (k + 1, *P.whip34(TAU0 + k / FPS, ASPECT)[1:])
                                        for k in range(0, N_HEAD + 1, 3)) + f'; locked from frame {N_HEAD + 1}')

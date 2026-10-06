@@ -873,6 +873,53 @@ def whip34(tau, aspect):
     return c['a3'] + (c['a4'] - c['a3']) * q, c['e3'] + (c['e4'] - c['e3']) * q, v
 
 
+# 04 → 05 tilt into the ice (Sprint 4.0d, user 2026-10-06: after the caption 04 tilts down from the black disc to the
+# ice at its foot, with only starlight and the red arch, so the frame goes black; 05 opens descending through the ice
+# onto its start pose; a short dissolve near black on the downward motion; film picks). 04: from `t0` (its clock s: the
+# caption's end) the pitch speed rises ∝ t² over `up` s to `w` deg/s and holds; 04 ends `dis`/2 frames after its frame
+# top passes `black04` deg (the limb mesa's top, 2.9°: the last stars leave), so the dissolve is centred there. 05 opens
+# `head` s before its old first frame, `rise` m higher (the lamp's glow is all but gone 4 m above the start, black at
+# 6 m: the glow comes up into the frame), moving down at 04's screen speed (w × lens04/lens05 × d05 / cos el05: the
+# camera's distance and look-down at 05's start), then a cubic Hermite onto its start pose (at rest on the old 0 s).
+TILT45 = dict(t0=17.4, up=1.5, w=15.0, black04=3.2, dis=12, lens04=50.0, lens05=35.0, d05=4.0, el05=12.0, head=3.0,
+              rise=5.0, fps=24)
+
+
+def tilt04(t):
+    """04's tail: (deg the pitch has dropped below the locked aim, its speed deg/s) at 04's clock second t."""
+    c = TILT45
+    s = t - c['t0']
+    if s <= 0:
+        return 0.0, 0.0
+    if s <= c['up']:
+        y = s / c['up']
+        return c['w'] * c['up'] / 3 * y ** 3, c['w'] * y * y
+    return c['w'] * c['up'] / 3 + c['w'] * (s - c['up']), c['w']
+
+
+def tilt04_dur(top0):
+    """04's clock length with the tilt (whole frames), its locked frame top at top0 deg: the frame top passes black04,
+    then dis/2 frames. Returns (dur s, the clock s of the passing)."""
+    c = TILT45
+    tb = _bisect(lambda t: tilt04(t)[0], top0 - c['black04'], lo=c['t0'], hi=c['t0'] + 10.0)
+    return (round(tb * c['fps']) + c['dis'] // 2 + 1) / c['fps'], tb
+
+
+def tilt05(tau):
+    """05's head: (m the camera is above its start pose, its downward speed m/s) at 05's clock second tau (−head … 0)."""
+    c = TILT45
+    H, R = c['head'], c['rise']
+    if tau >= 0:
+        return 0.0, 0.0
+    v0 = math.radians(c['w']) * c['lens04'] / c['lens05'] * c['d05'] / math.cos(math.radians(c['el05']))
+    if tau < -H:                                               # before the head: straight on at v0 (motion-blur key)
+        return R + v0 * (-H - tau), v0
+    u = (tau + H) / H
+    z = R * (2 * u ** 3 - 3 * u ** 2 + 1) - v0 * H * (u ** 3 - 2 * u ** 2 + u)
+    dz = R * (6 * u ** 2 - 6 * u) - v0 * H * (3 * u ** 2 - 4 * u + 1)
+    return z, -dz / H
+
+
 # 05 (film picks, Sprint 3.5, user 2026-10-05): the first relay puck is dropped just under the regolith (30 m), then
 # one every CRYO_PUCK_KM. The camera stays in the ice with the puck while the probe sinks away. Real time at 0 s (the
 # puck has just left the probe's open top); the log-rate eases up over up0 → up1 s to a steady rate r, held to the
@@ -918,8 +965,9 @@ def lapse05(s):
 
 
 def counter05(s):
-    """05's clock (tools/overlay.mjs): hours since the puck's drop, the probe's nose depth (m)."""
-    sec = lapse05(s)
+    """05's clock (tools/overlay.mjs): clip second (the tilt head TILT45 first: its clock's 0 s at `head` s) → hours
+    since the puck's drop, the probe's nose depth (m)."""
+    sec = lapse05(max(0.0, s - TILT45['head']))
     return sec / 3600, CRYO_PUCK_FIRST * 1000 + fit05()['v'] * sec
 
 
@@ -1442,6 +1490,15 @@ elif __name__ == '__main__':
                  f'{R_SUN_DEG:.3f}° = {px_across(R_SUN_DEG, 50):.1f} px at 50 mm; the Sun\'s centre is '
                  f'{-sun_limb_sep(fit04()["e2"]):.3f}° behind the limb at second contact, '
                  f'{-sun_limb_sep(lapse04_elong(SHOT04["dur"])):.3f}° at the clip\'s end'))
+    t45, (_, e04) = TILT45, whip34_ends(804 / 1920)[1]
+    top04 = e04 + deg(math.atan(18.0 * 804 / 1920 / t45['lens04']))
+    d4, tb4 = tilt04_dur(top04)
+    v05 = [tilt05(-t45['head'] + k / 24) for k in range(int(t45['head'] * 24) + 1)]
+    rows.append(('04 → 05: tilt into the ice (TILT45, film picks)', f'04 tilts down from {t45["t0"]:g} s (clock) at up to '
+                 f'{t45["w"]:g}°/s; its frame top ({top04:.2f}°) passes {t45["black04"]:g}° at {tb4:.2f} s; 04 = '
+                 f'{d4:.3f} s of clock ({SHOT04["dur"]:g} locked); {t45["dis"]}-frame dissolve; 05 opens {t45["head"]:g} s '
+                 f'early, {t45["rise"]:g} m up, at {v05[0][1]:.2f} m/s (peak {max(v[1] for v in v05):.2f}), at rest on its '
+                 f'old first frame'))
     rows.append(('Radiation at the surface', f'{DOSE_SV_DAY} Sv/day: a ~50 %-lethal dose ({LD50_SV} Sv) in '
                  f'{LD50_SV / DOSE_SV_DAY * 24:.0f} h'))
     # ------------------------------------------------ down
