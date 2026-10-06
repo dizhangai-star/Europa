@@ -1,7 +1,7 @@
 # Europa · 木卫二 · 深渊: progress
 
 ## State (2026-10-07)
-**Sprint 4.0d (04→05 tilt into the ice) built 2026-10-07, branch `sprint-4.0d-tilt`, waiting for the user's look:**
+**Sprint 4.0d (04→05 tilt into the ice) done 2026-10-07, approved by the user, branch `sprint-4.0d-tilt` (PR):**
 after the caption 04 tilts down (physics.TILT45, up to 15°/s): the red arch and the stars slide up and out over the
 black ice, the frame goes black at clock 19.03 s; a 12-frame dissolve on black; 05 opens 3 s early, 5 m up in black ice,
 coming down at 04's screen speed into the lamp's glow and settling on its locked first frame. 04 18.58 → 19.92 s, 05 10 →
@@ -811,6 +811,7 @@ dissolve near black on the downward motion).
   `frames/04-05-tilt-joint.png` (every 10 frames from 55 s); Cycles check `frames/04-05-tilt-check.png` (50 %, 32 spp:
   04 at 18.75 · 19.4 s, 05 at 1.25 · 2.25 s).
 - Render cost: 04 +32 frames (≈ +4 min), 05 +72 frames (≈ +1 h at 60 s/frame; the dark early head is cheaper).
+- **User (2026-10-07): approved as built** (black ice at the foot, 05's 3 s / 5 m head, the render cost).
 
 ## Next
 Finding 1 (Io + two shadows in 02): verified, in TREATMENT as C2 and in 02's row (user 2026-10-05).
@@ -835,6 +836,10 @@ approved: puck release in 05, porosity 0.2 %); the under-ice ocean done (2.4, ap
 5. Batch render (overnight, resume) → 4K compile, srt, poster; then the 9:16 climax cut (own portrait cameras).
 
 ## Decisions (locked)
+- 04→05 tilt (user 2026-10-07, Sprint 4.0d): `physics.TILT45`: 04 tilts down from the caption's end (clock 17.4 s, up
+  to 15°/s) into the black ice, ends 6 frames after its frame goes black (clip 19.92 s); 12-frame dissolve centred on
+  the black; 05 opens 3 s early, 5 m up, coming down at 04's screen speed into the lamp's glow (clip 13 s, motion blur
+  in the head only); 05's counter fades in at 3 s (`counter_in`). Film 121.96 s.
 - 03→04 whip (user 2026-10-07, Sprint 4.0c): `physics.WHIP34` out 20 / inn 14, speed ∝ t² then ∝ (time left)⁴, peak
   143°/s, cut at the peak ~41° down the path (tripod and lit ground smearing in), whip shutter 1.0; 03 = 9.83 s, 04 =
   18.58 s (clock from 0.58 s). Continuity A: 04 as locked, no tripod or astronaut in its frame.
