@@ -9,7 +9,8 @@ the head reaches the ice's sublimation point: the vapour (physics: 1.6 g/s at ~4
 blows the loose frost out of a ring round the nose; every flake flies its own vacuum parabola at 0.134 g and lands
 (vent.frost). The vapour's own grain lobe (vent.lobe, `--lobe 1`) is off: physics puts it 4–8 stops under the lit
 plain and the A/B showed noise only. The camera tilts up past the tripod head to Ganymede, 58° up, 0.23° (7.7 px),
-74 % lit (9 s clip: tilt 3.0–8.0 s, 1 s hold).
+74 % lit (9 s clip: tilt 3.0–8.0 s, 1 s hold). Sprint 4.0c: then the whip to Jupiter (physics.WHIP34: 8 frames
+accelerating down toward 04's aim; the cut to 04 falls at the peak speed, in the black sky above the horizon).
 
     node render.mjs 03-probe --animatic                     (Workbench: motion)
     node render.mjs 03-probe --animatic --engine cycles --pct 25 --samples 16
@@ -17,6 +18,7 @@ plain and the A/B showed noise only. The camera tilts up past the tripod head to
 Options: --cam X,Y (m on 01/02's ground)  --after H  --fire S  --lens MM  --eye M  --el0 DEG  --el1 DEG (default: Ganymede − 2.5°)  --t0 --t1 (tilt, s)
          --ev0 --ev1 --ev-lo --ev-hi (exposure ride by tilt elevation)  --probe-az --probe-d  --astro-az --astro-d
          --lean DEG --lean0 --lean1 (s)  --lobe 0|1  --mblur SHUTTER  --star-gain --star-density --nseg-deg --proxy 1
+         --whip 0 (no whip tail: the clock and camera as locked in 3.3; set the clip back to 9 s)
 """
 import math
 import os
@@ -163,6 +165,13 @@ def smooth(e0, e1, x):
     return t * t * (3 - 2 * t)
 
 
+ASPECT = shot.RES[1] / shot.RES[0]
+WHIP = int(A.opt('whip', 1))
+T_HOLD = 9.0 - 1.0 / FPS                                 # 03's last held frame = whip time 0
+if WHIP:
+    (wa, we), _ = P.whip34_ends(ASPECT)
+    assert abs(wa - AZ) < 1e-6 and abs(we - EL1) < 1e-6 and LENS == P.WHIP34['lens03'], 'whip path ≠ 03\'s end aim'
+    assert A.frames == round(9.0 * FPS) + P.WHIP34['out'] or A.opt('stills'), f'clip is {A.frames} frames, 9 s + whip'
 cam = rig.camera(sc, cam_loc, cam_loc + Vector((0.0, 1.0, 0.0)), lens=LENS, fstop=8.0)
 cam.data.dof.use_dof = True
 cam.data.dof.focus_distance = PD
@@ -171,18 +180,31 @@ bpy.context.preferences.edit.keyframe_new_interpolation_type = 'LINEAR'
 rows = []
 for f in range(sc.frame_start, sc.frame_end + 1):
     t = (f - 1) / FPS
-    el = EL0 + (EL1 - EL0) * ease((t - T0) / (T1 - T0))
-    cam.rotation_euler = (math.radians(90.0 + el), 0.0, -math.radians(AZ))
+    el, az = EL0 + (EL1 - EL0) * ease((t - T0) / (T1 - T0)), AZ
+    if WHIP and t > T_HOLD + 1e-6:
+        az, el, _ = P.whip34(t - T_HOLD, ASPECT)
+    cam.rotation_euler = (math.radians(90.0 + el), 0.0, -math.radians(az))
     sc.view_settings.exposure = EV0 + (EV1 - EV0) * smooth(EV_LO, EV_HI, el)
     cam.keyframe_insert('rotation_euler', frame=f)
     sc.view_settings.keyframe_insert('exposure', frame=f)
+    if WHIP and SHUTTER > 0:                                # whip frames: a full-frame smear (physics.WHIP34)
+        sc.render.motion_blur_shutter = P.WHIP34['shutter'] if t > T_HOLD + 1e-6 else SHUTTER
+        sc.keyframe_insert('render.motion_blur_shutter', frame=f)
     rows.append((t, el))
+
+if WHIP:                                                  # one key past the end: motion blur samples ±½ frame
+    az, el, _ = P.whip34((sc.frame_end - 1 + 1) / FPS - T_HOLD, ASPECT)   # (the last frame was half-sharp without it)
+    cam.rotation_euler = (math.radians(90.0 + el), 0.0, -math.radians(az))
+    cam.keyframe_insert('rotation_euler', frame=sc.frame_end + 1)
 
 g = P.g_at()
 fast = np.argsort(-vel[:, 2])[:5]
 apex = [(t0[i] + vel[i, 2] / g, p0[i, 2] + vel[i, 2] ** 2 / (2 * g) - cam_loc.z) for i in fast]
 dur_fl = t1 - t0
 pk = max(abs(rows[k + 1][1] - rows[k][1]) for k in range(len(rows) - 1)) * FPS
+wl = [P.whip34(t - T_HOLD, ASPECT) for t, _ in rows if t > T_HOLD + 1e-6]
+print(f'NOTE 03 whip: {len(wl)} frames, last aim az {wl[-1][0]:+.1f}° el {wl[-1][1]:.1f}° at {wl[-1][2]:.0f}°/s'
+      if wl else 'NOTE 03: no whip')
 print(f'NOTE 03: {LENS:.0f} mm (hfov {HFOV:.1f}°, vfov {VFOV:.1f}°), eye {EYE} m, az {AZ:+.1f}°; tilt {EL0:.1f}° → '
       f'{EL1:.1f}° over {T0}–{T1} s (peak {pk:.1f}°/s); EV {EV0} → {EV1} between {EV_LO}° and {EV_HI}° up\n'
       f'  sky {AFTER} h after Io set: Sun {S["elong"]:+.1f}°, Jupiter {100 * P.lit_fraction(S["elong"]):.0f} % lit; '

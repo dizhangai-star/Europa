@@ -817,6 +817,62 @@ def lapse04_elong(s):
     return fit04()['e1'] - lapse04(s) / 3600 * SUN_RATE
 
 
+# 03 → 04 whip (Sprint 4.0c, user 2026-10-06: whip from Ganymede to Jupiter, cut in the blur; film picks). 03 holds on
+# Ganymede to its old end (9 s), then accelerates for `out` frames (speed ∝ t^acc: it leaves the hold smoothly); the cut
+# falls at the peak; 04 opens `inn` frames before its old first frame and settles onto it (speed ∝ (time left)^dec: a
+# snap, then a soft landing). One path in (az, el) from 03's end aim (Ganymede's azimuth, `under03` deg under it) to
+# 04's (Jupiter's top limb `top04` deg under the frame top at 50 mm); the peak *screen* speed is the same on both sides
+# of the cut (angular speed × focal length). v1 (out 8, inn 12, smooth S both sides, 147°/s) cut in the black sky: 0.6 s
+# of black, read as a dip, not a whip; now the cut falls ~41° down the path (peak 278°/s), with the lit ground and Jupiter's limb
+# streaking into 03's frame. Whip frames use `shutter` (a full-frame smear; the shots' 0.5 elsewhere).
+# Whip time tau: 0 = 03's last held frame, frame k after it at k/24; 04's old first frame at (out + inn + 1)/24.
+WHIP34 = dict(out=10, inn=7, acc=2, dec=4, shutter=1.0, lens03=35.0, lens04=50.0, under03=2.5, top04=3.0, fps=24)
+_W34 = {}
+
+
+def whip34_ends(aspect, sensor=36.0):
+    """((az, el) of 03's end aim, (az, el) of 04's), deg; aspect = frame height / width."""
+    w, fr = WHIP34, site(*SITE[1:])
+    d = lapse(fr, LAPSE_E_END[1], 0.0)['dur']
+    s = lapse(fr, LAPSE_E_END[1], d + DAWN_03)
+    g_el, g_az = alt_az(ganymede_seen(s['dlt'], s['elong'], fr)[0])
+    u, _, r_eq, _, _ = jupiter_local(fr)
+    vfov04 = 2 * deg(math.atan(sensor / 2 * aspect / w['lens04']))
+    return (g_az, g_el - w['under03']), (0.0, alt_az(u)[0] + r_eq + w['top04'] - vfov04 / 2)
+
+
+def whip34(tau, aspect):
+    """03 → 04 whip: the camera's (az, el) deg at whip time tau (s), and its angular speed (deg/s)."""
+    w = WHIP34
+    if aspect not in _W34:
+        (a3, e3), (a4, e4) = whip34_ends(aspect)
+        p = [i / 400 for i in range(401)]
+        s = [0.0]
+        for i in range(400):                                   # arc length along the straight (az, el) line
+            em = math.radians(e3 + (e4 - e3) * (p[i] + p[i + 1]) / 2)
+            s.append(s[-1] + math.hypot(math.cos(em) * (a4 - a3), e4 - e3) / 400)
+        D3, D4 = (w['out'] + 0.5) / w['fps'], (w['inn'] + 0.5) / w['fps']
+        k, m, n = w['lens03'] / w['lens04'], w['acc'], w['dec']
+        w3 = s[-1] / (D3 / (m + 1) + k * D4 / (n + 1))
+        _W34[aspect] = dict(a3=a3, e3=e3, a4=a4, e4=e4, p=p, s=s, D3=D3, D4=D4, w3=w3, w4=k * w3,
+                            cut=w3 * D3 / (m + 1), te=(w['out'] + w['inn'] + 1) / w['fps'])
+    c, m, n = _W34[aspect], w['acc'], w['dec']
+    th = c['s'][-1]
+    if tau <= 0:
+        a, v = 0.0, 0.0
+    elif tau <= c['D3']:
+        y = tau / c['D3']
+        a, v = c['w3'] * c['D3'] * y ** (m + 1) / (m + 1), c['w3'] * y ** m
+    elif tau < c['te']:
+        x = (c['te'] - tau) / c['D4']
+        a, v = th - c['w4'] * c['D4'] * x ** (n + 1) / (n + 1), c['w4'] * x ** n
+    else:
+        a, v = th, 0.0
+    i = max(0, min(399, next((j for j in range(401) if c['s'][j] >= a), 400) - 1))
+    q = c['p'][i] + (c['p'][i + 1] - c['p'][i]) * (a - c['s'][i]) / max(c['s'][i + 1] - c['s'][i], 1e-12)
+    return c['a3'] + (c['a4'] - c['a3']) * q, c['e3'] + (c['e4'] - c['e3']) * q, v
+
+
 # 05 (film picks, Sprint 3.5, user 2026-10-05): the first relay puck is dropped just under the regolith (30 m), then
 # one every CRYO_PUCK_KM. The camera stays in the ice with the puck while the probe sinks away. Real time at 0 s (the
 # puck has just left the probe's open top); the log-rate eases up over up0 → up1 s to a steady rate r, held to the
