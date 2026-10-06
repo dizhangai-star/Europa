@@ -2,8 +2,8 @@
 
 ## State (2026-10-06)
 **Sprint 4.0 (whole-film animatic) in progress 2026-10-06, branch `sprint-4.0-animatic`.** Hard-cut baseline 117.0 s;
-edit-level joints in → `out/europa-animatic.mp4` **113.2 s** (2,717 frames). Shot-level joints (01→02 zoom, 03→04
-whip, 04→05 tilt into the ice) not started. See the 4.0 section below.
+edit-level joints in → `out/europa-animatic.mp4` **113.2 s** (2,717 frames). Next: **4.0b = shot 02's new head + tail** (new
+session), then 4.0c (03→04 whip), 4.0d (04→05 tilt into the ice). See the 4.0 section below.
 **Sprint 3.9 (09, title card) done 2026-10-06, 09 locked by the user (branch `sprint-3.9-title`): kicker dropped
 (title block re-centred, EUROPA at y 153 on the 640×360 grid), English readout ends "… IN 20 HOURS ON THE ICE" (= 地表),
 held 1 s longer (both gone by 5.5 s, clip 6 → 7 s; film 116 s). No Blender: `out/09-title-animatic.mp4` is the real
@@ -673,6 +673,11 @@ dissolve near black on the downward motion).
   Proposal: 02's tail zooms back out 75 → 35 mm and turns so the disc lands where it sits in 03, then the dissolve
   changes only the ground (night → dawn) round a Jupiter that doesn't move (the film's one fixed thing). Shot-level,
   in 02 with the 01→02 head.
+- **User (2026-10-06):** 02→03 → **02's tail zooms back out and aligns Jupiter** with 03's (proposal above); shot-level
+  joints **one per session**: **4.0b** = 02 (head: 01's end framing → 75 mm with the clock ramp; tail: 75 → 35 mm onto
+  03's disc position; dissolve kept), **4.0c** = 03→04 whip (03 tail + 04 head), **4.0d** = 04→05 tilt into the ice
+  (04 tail + 05 head). Each: script → that shot's animatic → joint frames → Cycles stills of the new head/tail →
+  recompile → user. Then 4.0e: whole film v3, trims (05 into 06? 08 → 10 s?), captions/counters, QC → merge; 4.1 score.
 
 ## Next
 Finding 1 (Io + two shadows in 02): verified, in TREATMENT as C2 and in 02's row (user 2026-10-05).
