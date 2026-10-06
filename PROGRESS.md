@@ -2,7 +2,7 @@
 
 ## State (2026-10-06)
 **Sprint 3.7 (shot 07, breakthrough) done 2026-10-06, 07 locked by the user (not rendered; branch
-`sprint-3.7-shot07`): physics (`tube07` 351 m, `drop07`), the tube board (black from below; user: black well), volume
+`sprint-3.7-shot07`, merged, PR #16): physics (`tube07` 351 m, `drop07`), the tube board (black from below; user: black well), volume
 base ice, `s07_breakthrough.py`, animatic v3, Cycles check, ≈ 3.5–4 h at 64 spp. Next: 3.8 = shot 08 (abyss).**
 **Sprint 3.6 (shot 06, descent) done 2026-10-06, 06 locked by the user (not rendered; branch `sprint-3.6-shot06`).
 The phone draft built and rendered as written; added an end exposure ride (+5 → +2 EV, 12–16 s), shutter 1.0 (the
