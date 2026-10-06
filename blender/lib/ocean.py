@@ -136,6 +136,37 @@ def ice_mat(P, name='BaseIce'):
     return _mat(name, build)
 
 
+def ice_volume_mat(P, name='BaseIceVol'):
+    """The base ice as a scattering volume behind a transparent surface (07: lit from inside). Ice → water reflects
+    7e-5 head-on, so the surface may vanish; then every scatter point sees the lamp directly (next-event estimation),
+    where a random walk only finds it by long walks that exit next to the lamp (07's glow: blotches at 256 spp).
+    σs' = BASE_SIGMA_P with g = 0 (similarity). The ocean box overlaps the slab and its water adds inside, so the ice's
+    own absorption is set to what is left after the water's (≥ 0: R/G/B then absorb as water, slightly more than ice;
+    printed)."""
+    ai, aw = P.ice_rgb(), P.water_rgb()
+    rest = tuple(max(0.0, i - w) for i, w in zip(ai, aw))
+
+    def build(g):
+        s = g.add('ShaderNodeVolumeScatter')
+        g.set(s, 'Color', (1.0, 1.0, 1.0))
+        g.set(s, 'Density', max(P.BASE_SIGMA_P - P.SEA_SCATTER * (1 - P.SEA_G), 0.0))
+        g.set(s, 'Anisotropy', 0.0)
+        vol = g.o(s, 0)
+        if max(rest) > 0:
+            ab = g.add('ShaderNodeVolumeAbsorption')
+            g.set(ab, 'Color', tuple(1.0 - x / max(rest) for x in rest))
+            g.set(ab, 'Density', max(rest))
+            add = g.add('ShaderNodeAddShader')
+            g.link(s, 0, add, 0)
+            g.link(ab, 0, add, 1)
+            vol = g.o(add, 0)
+        g.output(g.o(g.add('ShaderNodeBsdfTransparent'), 0), vol)
+    print('NOTE ocean.ice_volume_mat: absorption in the slab R/G/B ' +
+          ' / '.join(f'{max(i, w):.4f}' for i, w in zip(ai, aw)) + ' /m (ice alone ' +
+          ' / '.join(f'{i:.4f}' for i in ai) + ')')
+    return _mat(name, build)
+
+
 def water_mat(P, scatter=None):
     def build(g):
         a = P.water_rgb()
@@ -196,8 +227,10 @@ def _cutter(sc, r, z0, z1, n=48):
     return ob
 
 
-def build(sc, P, kind='melt', half=60.0, deep=400.0, n=801, seed=21, hole=True, scatter=None, platelets=True):
-    """The base ice (slab), the exit hole, the water below. kind 'melt' | 'freeze' (⚠ model, with platelets)."""
+def build(sc, P, kind='melt', half=60.0, deep=400.0, n=801, seed=21, hole=True, scatter=None, platelets=True,
+          hole_r=None):
+    """The base ice (slab), the exit hole, the water below. kind 'melt' | 'freeze' (⚠ model, with platelets).
+    hole_r: the bore's radius (default the head's + 2 mm; 07 uses physics.bore_wide)."""
     xs = _axis(half, n)
     X, Y = np.meshgrid(xs, xs, indexing='ij')
     z0 = float(height(P, np.zeros(1), np.zeros(1), kind, seed)[0])
@@ -205,7 +238,7 @@ def build(sc, P, kind='melt', half=60.0, deep=400.0, n=801, seed=21, hole=True, 
     ztop = float(H.max()) + 3.0
     v, f = _slab(H, xs, xs, ztop)
     ice = _mesh(sc, 'BaseIce', v, f, mats=[ice_mat(P)], smooth_=True)
-    hole_r = P.CRYO_D / 2 + 0.002
+    hole_r = hole_r or P.CRYO_D / 2 + 0.002
     cut = None
     if hole:
         cut = _cutter(sc, hole_r, float(H.min()) - 1.0, ztop + 1.0)
@@ -227,6 +260,92 @@ def build(sc, P, kind='melt', half=60.0, deep=400.0, n=801, seed=21, hole=True, 
           f'{P.scallop_len():.2f} m, base-ice albedo {tuple(round(a, 2) for a in P.base_ice()[0])}, water '
           f'{deep:g} m deep')
     return oc
+
+
+# ---------------------------------------------------------------- 07: the water tube above the exit hole
+def _revolve(sc, name, poly, mats, mat_idx, nseg=64):
+    """Closed solid of revolution: poly = closed [(r, z), …] in the half-plane (r = 0 on the axis allowed), mat_idx[k]
+    the material of the segment poly[k] → poly[k + 1]. Outward normals."""
+    verts, faces, fmat = [], [], []
+    for r, z in poly:
+        for j in range(nseg):
+            a = 2 * math.pi * j / nseg
+            verts.append((r * math.cos(a), r * math.sin(a), z))
+    m = len(poly)
+    for i in range(m):
+        i1 = (i + 1) % m
+        for j in range(nseg):
+            j1 = (j + 1) % nseg
+            faces.append((i * nseg + j, i * nseg + j1, i1 * nseg + j1, i1 * nseg + j))
+            fmat.append(mat_idx[i])
+    me = bpy.data.meshes.new(name)
+    me.from_pydata(verts, [], faces)
+    for mt in mats:
+        me.materials.append(mt)
+    me.polygons.foreach_set('material_index', fmat)
+    import bmesh
+    bm = bmesh.new()
+    bm.from_mesh(me)
+    bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=1e-6)
+    bmesh.ops.dissolve_degenerate(bm, edges=bm.edges, dist=1e-7)
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    bm.to_mesh(me)
+    bm.free()
+    for p in me.polygons:
+        p.use_smooth = True
+    ob = bpy.data.objects.new(name, me)
+    sc.collection.objects.link(ob)
+    return ob
+
+
+def tube(sc, P, oc, prof, mush=None, nseg=64):
+    """The open water tube above the exit hole at the breakthrough (physics.tube07: prof [(height above the base m,
+    open radius m)], ending at r = 0). It starts inside the slab's hole where the ocean box ends (ztop − 0.5, a hair
+    inside the bore) and climbs through the clear deep ice, which is not built: outside the tube is black and
+    absorbing, as ice there is. The wall is glass at N_WATER / N_ICE (light within physics.tir_half() of the axis stays
+    in), the water is pure melt (absorption only), the bottom cap transparent (it meets the ocean box's water).
+    mush = (thickness m, σs 1/m, g): ⚠ a scattering skin just inside the wall (the skeletal layer of refreezing ice)."""
+    z0 = oc['ztop'] - 0.5
+    r0 = oc['hole_r'] - 0.001
+    side = [(min(r, r0), max(z, 0.0)) for z, r in prof]
+    side = [(r0, z0)] + [(r, z) for r, z in side if z > z0]
+    a = P.water_rgb()
+    amax = max(a)
+
+    def water(g):
+        ab = g.add('ShaderNodeVolumeAbsorption')
+        g.set(ab, 'Color', tuple(1.0 - x / amax for x in a))
+        g.set(ab, 'Density', amax)
+        g.output(g.o(g.add('ShaderNodeBsdfGlass', IOR=P.N_WATER / P.N_ICE, Roughness=0.0), 0), g.o(ab, 0))
+
+    def cap(g):
+        ab = g.add('ShaderNodeVolumeAbsorption')
+        g.set(ab, 'Color', tuple(1.0 - x / amax for x in a))
+        g.set(ab, 'Density', amax)
+        g.output(g.o(g.add('ShaderNodeBsdfTransparent'), 0), g.o(ab, 0))
+    m_w, m_c = _mat('TubeWater', water), _mat('TubeCap', cap)
+    poly = [(0.0, z0)] + side
+    if poly[-1][0] > 0:
+        poly.append((0.0, poly[-1][1]))
+    idx = [1] + [0] * (len(poly) - 1)                     # segment 0: the bottom cap; the rest wall (+ the tip)
+    ob = _revolve(sc, 'WaterTube', poly, [m_w, m_c], idx, nseg)
+    out = dict(tube=ob, z0=z0, length=prof[-1][0])
+    if mush:
+        t, sig, gg = mush
+
+        def skin(g):
+            s = g.add('ShaderNodeVolumeScatter')
+            g.set(s, 'Color', (1.0, 1.0, 1.0))
+            g.set(s, 'Density', sig)
+            g.set(s, 'Anisotropy', gg)
+            g.output(g.o(g.add('ShaderNodeBsdfTransparent'), 0), g.o(s, 0))
+        outer = [(max(r - 0.0005, 0.0), z) for r, z in side if r > t + 0.001]
+        inner = [(r - t, z) for r, z in reversed(outer)]
+        out['mush'] = _revolve(sc, 'TubeMush', outer + inner, [_mat('TubeMush', skin)],
+                               [0] * (len(outer) + len(inner)), nseg)
+    print(f'NOTE ocean.tube: {prof[-1][0]:.0f} m, radius {r0:.3f} m at the slab → 0' +
+          (f', ⚠ mush {mush[0] * 100:g} cm σs {mush[1]:g}/m' if mush else ''))
+    return out
 
 
 # ---------------------------------------------------------------- what drifts in the water

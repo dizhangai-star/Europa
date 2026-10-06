@@ -940,6 +940,136 @@ def counter06(s):
     return days_to(z), z, t - 273.15, RHO_ICE * g_at() * z / 1e5
 
 
+# 07 (Sprint 3.7): the breakthrough. Near the base the ice is within a few K of its melting point, so the probe's side
+# heat (1 − CRYO_ETA of its power) no longer goes into warming cold walls but melts them: the bore widens (`bore_wide`,
+# an upper bound: all of it melts) and, with a wider hole and walls at the melt point, the hole behind the probe stays
+# open for weeks. At the moment the head breaks through, the hole is water from the ocean up to where it has just
+# frozen shut (`tube07`): a tapering water tube in the ice, lit only by what the lamp sends into its mouth. Water
+# (n 1.333) in ice (1.311) is an optical fibre: rays within `tir_half()` of its axis are trapped by total internal
+# reflection. Once through, the probe falls out of the widened bore under 0.134 g (buoyancy and drag in the sea water,
+# `drop07`) until its tether brake stops it.
+CRYO_MASS = 500.0               # kg (film pick: RTG/fission core + copper head in 0.147 m³ ≈ 3,400 kg/m³)
+CRYO_CD = 0.9                   # axial drag coefficient of a blunt 3 m × 0.25 m cylinder
+TETHER_BRAKE = 1.0              # m/s², the tether spool's brake (film pick)
+SHOT07 = dict(dur=14.0, dn0=0.3, dn1=3.4, brk=3.5, free=4.0)   # rate ×2,890 → ×1 over dn0–dn1 s; nose breaks at brk;
+                                                               # brake engages `free` m below the base
+MUSH = (0.01, 2.0, 0.85)        # ⚠ the tube's wall: a skeletal brine-ice layer (m thick, σs 1/m, g), film pick: a hole
+                                # refreezing near the melting point grows dendrites and rejects brine at its wall (as
+                                # sea ice's skeletal layer); tentative, only if the board needs it
+_FIT07 = {}
+
+
+def bore_wide(z_km, h_ice=ICE_H[1], p_kw=CRYO_P[2]):
+    """The bore's radius (m) if the side heat (1 − CRYO_ETA) all melts the walls (upper bound; walls near the melt)."""
+    v = cryo_speed(p_kw, h_ice, z_km)
+    t, tb = shell_T(z_km, h_ice)
+    q = 185.0 * (tb - t) + 7.037 / 2 * (tb ** 2 - t ** 2) + L_ICE
+    a = CRYO_D / 2
+    return math.sqrt(a * a + (1 - CRYO_ETA) * p_kw * 1000 / v / (RHO_ICE * math.pi * q))
+
+
+def tir_half():
+    """Half-angle (deg) about the tube's axis inside which light is trapped (water core, ice wall)."""
+    return 90.0 - math.degrees(math.asin(N_ICE / N_WATER))
+
+
+def tube07(a=None, n=10):
+    """The water tube at the moment of breakthrough (nose at the base, 10 kW). a = bore radius (default bore_wide at
+    the base). Returns dict(a, top_km, length m, prof=[(height above the base m, open radius m)])."""
+    key = a
+    if key not in _FIT07:
+        h = ICE_H[1]
+        a_ = a or bore_wide(h - 0.01)
+        T = days_to(h * 1000)
+
+        def frac(z):                                             # age of the hole at z / its closing time
+            hrs, prof = refreeze(z, h, a=a_)
+            return (T - days_to(z * 1000)) * 24 / hrs, prof
+        lo, hi = h - 1.0, h - 0.01                               # shut at lo, open at hi
+        for _ in range(n):
+            m = (lo + hi) / 2
+            lo, hi = (m, hi) if frac(m)[0] >= 1 else (lo, m)
+        top = (lo + hi) / 2
+        L = (h - top) * 1000
+        prof = [(0.0, a_)]
+        for u in (0.3, 0.55, 0.75, 0.88, 0.95, 0.985):          # heights as fractions of the length, base up
+            z = h - u * L / 1000
+            f, pr = frac(z)
+            r = a_
+            for fi, ri in pr:
+                if fi <= f:
+                    r = ri
+            prof.append((u * L, min(r, a_)))
+        prof.append((L, 0.0))
+        _FIT07[key] = dict(a=a_, top_km=top, length=L, prof=prof)
+    return _FIT07[key]
+
+
+def _rate07(s):
+    c = SHOT07
+    return math.exp(math.log(fit06()['r']) * (1 - _ss(c['dn0'], c['dn1'], s)))
+
+
+def lapse07(a, b, n=None):
+    """07: real seconds between clip seconds a and b."""
+    n = n or max(40, 2 * int(abs(b - a) * 60))
+    h = (b - a) / n
+    return h / 3 * sum((1 if i in (0, n) else 4 if i % 2 else 2) * _rate07(a + i * h) for i in range(n + 1))
+
+
+def drop07(t):
+    """07: the probe's fall after the breakthrough, t real s after it: (nose m below the base, speed m/s, phase).
+    0.134 g, buoyancy in sea water, quadratic axial drag, added mass 10 % of the displaced water; the brake
+    (TETHER_BRAKE) engages SHOT07['free'] m below the base and holds it where it stops."""
+    if 'drop' not in _FIT07:
+        V = math.pi * (CRYO_D / 2) ** 2 * CRYO_LEN
+        m = CRYO_MASS + 0.1 * RHO_SEA * V
+        w = (CRYO_MASS - RHO_SEA * V) * g_at()
+        k = 0.5 * RHO_SEA * CRYO_CD * math.pi * (CRYO_D / 2) ** 2
+        dt, x, v, tt, braking, path = 0.002, 0.0, 0.0, 0.0, False, [(0.0, 0.0, 0.0)]
+        while True:
+            braking = braking or x >= SHOT07['free']
+            acc = -TETHER_BRAKE if braking else (w - k * v * v) / m
+            v = v + acc * dt
+            if v <= 0 and braking:
+                path.append((tt + dt, x, 0.0))
+                break
+            x += v * dt
+            tt += dt
+            path.append((tt, x, v))
+        _FIT07['drop'] = dict(path=path, w=w, m=m, vt=math.sqrt(w / k), a0=w / m)
+    path = _FIT07['drop']['path']
+    if t <= 0:
+        return 0.0, 0.0, 'held'
+    if t >= path[-1][0]:
+        return path[-1][1], 0.0, 'stopped'
+    i = min(int(t / 0.002), len(path) - 2)
+    return path[i][1], path[i][2], 'braking' if path[i][1] >= SHOT07['free'] else 'falling'
+
+
+def fit07():
+    """07: the clock and the probe. Returns v (m/s melting at the base), d0 (nose m above the base at 0 s), t_brk,
+    t_stop (clip s when the brake has stopped it), stop (nose m below the base), real (real s over the clip)."""
+    if 'fit' not in _FIT07:
+        c, h = SHOT07, ICE_H[1]
+        v = cryo_speed(CRYO_P[2], h, h - 0.001)
+        d0 = v * lapse07(0.0, c['brk'])
+        drop07(0.0)
+        t_end = _FIT07['drop']['path'][-1][0]
+        t_stop = _bisect(lambda s: lapse07(c['brk'], s), t_end, lo=c['brk'], hi=c['dur'] + 30)
+        _FIT07['fit'] = dict(v=v, d0=d0, t_brk=c['brk'], t_stop=t_stop, stop=_FIT07['drop']['path'][-1][1],
+                             real=lapse07(0.0, c['dur']), t_real_stop=t_end)
+    return _FIT07['fit']
+
+
+def nose07(s):
+    """07: clip second → the nose's height above the base (m; negative below it, in the water)."""
+    f = fit07()
+    if s <= f['t_brk']:
+        return f['v'] * lapse07(s, f['t_brk'])
+    return -drop07(lapse07(f['t_brk'], s))[0]
+
+
 def corona(r):
     """Corona radiance relative to the Sun's mean disc radiance at r solar radii (Baumbach)."""
     return 1e-6 * sum(a * r ** -n for a, n in CORONA) / LIMB_DARK
@@ -1249,6 +1379,27 @@ elif __name__ == '__main__':
         rows.append((f'06: the open column, {z:g} km down', f'the hole stays open {hrs / 24:.0f} days behind the probe = '
                      f'{hrs * cryo_speed(CRYO_P[2], h, z) * 3600:,.0f} m of water above it (conduction only; warm ice '
                      f'near its melting point barely freezes it)'))
+    a7, c7 = bore_wide(h - 0.01), SHOT07
+    t_lo, t_hi = tube07(CRYO_D / 2), tube07()
+    rows.append(('07: the bore near the base (side heat melts the walls)', f'radius {CRYO_D / 2:.3f} m (the head) → '
+                 f'up to {a7:.3f} m ({1 - CRYO_ETA:.0%} of {CRYO_P[2]:g} kW into walls at −{273.15 - shell_T(19.75, h)[0]:.0f} … '
+                 f'−{273.15 - shell_T(h - 0.01, h)[0]:.0f} °C: upper bound); the probe falls free of it'))
+    rows.append(('07: the water tube at breakthrough (tube07)', f'open from the base up to {t_hi["top_km"]:.3f} km = '
+                 f'{t_hi["length"]:.0f} m of water (bore {t_hi["a"]:.3f} m; {t_lo["length"]:.0f} m if the bore stayed '
+                 f'{CRYO_D / 2:.3f} m), narrowing to a point: radius ' + ', '.join(f'{r * 100:.0f} cm at {z:.0f} m'
+                                                                               for z, r in t_hi['prof'])))
+    rows.append(('07: the tube is an optical fibre', f'water {N_WATER} in ice {N_ICE}: rays within {tir_half():.1f}° of '
+                 f'its axis are totally reflected; blue e-fold in the melt water {1 / water_rgb()[2]:.0f} m (pure, no '
+                 f'particles); ⚠ wall mush {MUSH[0] * 100:g} cm, σs {MUSH[1]:g}/m, g {MUSH[2]} (film pick) would leak '
+                 f'it'))
+    f7, d7 = fit07(), _FIT07['drop']
+    rows.append(('07: clock (fit07)', f'×{fit06()["r"]:,.0f} (06\'s end) → real time over {c7["dn0"]:g}–{c7["dn1"]:g} s; '
+                 f'the nose starts {f7["d0"] * 100:.0f} cm above the base (≈ {f7["d0"] / f7["v"] / 3600:.1f} h of '
+                 f'melting) and breaks through at {c7["brk"]:g} s; {f7["real"] / 60:.0f} min real in {c7["dur"]:g} s'))
+    rows.append(('07: the drop (drop07, 0.134 g)', f'{CRYO_MASS:g} kg, weight in water {d7["w"]:.0f} N → starts at '
+                 f'{d7["a0"]:.2f} m/s² (terminal {d7["vt"]:.1f} m/s); brake {TETHER_BRAKE:g} m/s² from {c7["free"]:g} m '
+                 f'→ stops {f7["stop"]:.1f} m below the base {f7["t_real_stop"]:.1f} s (real) after the break = clip '
+                 f'{f7["t_stop"]:.1f} s; peak {max(p[2] for p in d7["path"]):.2f} m/s'))
     rows.append(('Lamp in pure water (e-fold distance)', ', '.join(f'{wl} nm {1 / a:.0f} m' for wl, a in A_WATER.items())
                  + ': red gone within metres, blue reaches ~100 m (before 1/r²)'))
     rows.append(('Ice base: current, scallops, terraces', f'current {OCEAN_U * 100:g} cm/s (film pick) → melt scallops '
