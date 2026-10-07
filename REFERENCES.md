@@ -40,7 +40,7 @@ Who fetches: **user** = needs a login (Mixamo, Freesound downloads) or a choice 
 |---|---|---|---|---|---|
 | W1 | Mixamo clip(s): astronaut crouching/kneeling at the probe, then standing to watch it sink (in place, FBX, without skin, 30 fps; start/end poses that join Breathing Idle) | 03 | mixamo.com ("kneel", "crouch", "stand up") | ✅ closed: 03 locked on Breathing Idle (Sprint 3.3) | — |
 | W2 | Ice sounds: lake/sea ice cracking and "singing" (deep booms, pew-pew), recorded | 05–06 | Freesound, CC0 first | ✅ closed: recorded cracks, Freesound 146419 (user-downloaded 2026-10-07; the synth "pew" read as 80s/90s electronics) | — |
-| W3 | Under-ice hydrophone ambience | 07–08 | Freesound, CC0 first | ✅ closed: synthesized (`audio/music.mjs` water/hum/bubbles, user 2026-10-07) | — |
+| W3 | Under-ice hydrophone ambience | 07–08 | Freesound, CC0 first | ✅ closed: synthesized (`audio/music.mjs` water rumble + probe hum, user 2026-10-07; synth bubbles dropped in v2) | — |
 | W4 | Cryobot model | 03, 05–08 | searched 2026-10-05: asset index, Blend Swap ("cryobot", "melt probe", "ice probe", "europa lander"), NASA 3D Resources, Sketchfab: **none exists** | ✅ closed: code-built (`blender/lib/cryobot.py`, Sprint 2.2) | — |
 | W5 | USGS Europa global mosaic (Galileo SSI + Voyager) + Galileo Conamara close-ups (PIA photojournal) | 01–04 ground colour and block shapes | astrogeology.usgs.gov, photojournal.jpl.nasa.gov | ✅ done 0.4 (above) | high |
 | W6 | Close-up frost/ice PBR textures | 01, 03 foreground | Poly Haven, ambientCG (CC0) | Claude | medium |

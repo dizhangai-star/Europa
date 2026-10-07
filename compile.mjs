@@ -5,7 +5,8 @@
 //   --animatic: out/<id>-animatic.mp4 → out/europa-animatic.mp4 (EEVEE / Workbench drafts; 09 is the real card)
 // Joints: tools/timeline.mjs (Sprint 4.0: dissolves overlap real frames; TRIM_IN cuts frames off a clip's head, its
 // overlay with it; the film = Σ clips − trims − dissolves + head).
-// Sound: audio/build/film.wav (the film's exact length) → one gain to −16 LUFS + a −2 dB peak limiter (not
+// Sound: audio/build/film.wav (the film's exact length) → one gain to −16 LUFS + a −2 dB peak limiter at 4× (192 kHz:
+// it catches the intersample peaks, Sprint 4.1: at 48 kHz the AAC came out at −0.9 dBTP) (not
 // loudnorm: the eclipse's near-silence gives a loudness range it would answer by switching to dynamic mode and
 // lifting the silence). Clip start times (film seconds) → out/timeline.json, subtitles → out/europa.srt.
 // Delivery (user 2026-10-03): the film is 3840×2160 — clips upscaled lanczos and kept 4:4:4 through joints and
@@ -104,7 +105,7 @@ if (!A.has('silent') && fs.existsSync(path.join(root, 'audio/music.mjs'))) {
   const m = JSON.parse(e.slice(e.lastIndexOf('{'), e.lastIndexOf('}') + 1)), gain = -16 - +m.input_i;
   const tmpA = path.join(path.dirname(out), `.a-${path.basename(out)}`);
   execFileSync('ffmpeg', ['-y', '-v', 'error', '-i', out, '-i', wav, '-map', '0:v', '-map', '1:a', '-c:v', 'copy',
-    '-af', `volume=${gain.toFixed(2)}dB,alimiter=limit=${(10 ** (-2 / 20)).toFixed(4)}:attack=2:release=60:level=0,aresample=48000`,
+    '-af', `volume=${gain.toFixed(2)}dB,aresample=192000,alimiter=limit=${(10 ** (-2 / 20)).toFixed(4)}:attack=2:release=60:level=0,aresample=48000`,
     '-c:a', 'aac', '-b:a', '192k', '-t', dur.toFixed(3), '-movflags', '+faststart', tmpA], { stdio: 'inherit' });
   fs.renameSync(tmpA, out);
   console.log(`sound: ${m.input_i} LUFS ${gain >= 0 ? '+' : ''}${gain.toFixed(1)} dB → −16, limited at −2 dB → ${path.relative(root, out)}`);

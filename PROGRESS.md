@@ -1,7 +1,7 @@
 # Europa · 木卫二 · 深渊: progress
 
 ## State (2026-10-07)
-**Sprint 4.1 (score + sound, synth) 2026-10-07, branch `sprint-4.1-score`, waiting for the user's listen:** user: synth
+**Sprint 4.1 (score + sound) done 2026-10-07, approved by the user, branch `sprint-4.1-score` (PR #24):** user: synth
 only (no ice/hydrophone recordings; W1–W3 closed), CC0 + CC-BY allowed if recordings come later, the physics arc.
 `audio/music.mjs` (engine from Io's: syn, takes, helmet; seed 20261007) + `physics.py --sound` (cue times in clip s:
 02 Io in/set/eclipse, 04 contact/gone/tilt/black, 05 shut, 06 depth marks, 07 break/brake/stop, 08 release/blue/gone +
@@ -16,8 +16,10 @@ TP −1.2 dBTP, silence 47.7–52.3 s (contact → heartbeat) and 114.95–116.2
 cracks** (Andrew5DMII, Freesound 146419, CC-BY 3.0, user-downloaded to `_assets/audio/ice/`; 24 onsets measured, its
 16–22 Hz "booms" unusable): a random take per crack, size → playback rate (bigger = slower, lower), big ones + a ×0.3
 copy for the body; creaks in 05/07 → small crack clusters; synth bubbles dropped; the synth crack stays as the fallback.
-Animatic −16.4 LUFS, TP −0.9 dBTP. Open: the brake's synth metal groan (07, 1:34–1:37) and the hum (B clip) — user.
-Next: user listens → fixes → PR.
+The brake's synth metal groan and the probe hum kept (user: "good enough"); no extra melt/jet layer under 05–07 (user).
+compile's limiter now runs at 4× (192 kHz): the AAC's true peak −0.9 → −1.7 dBTP. Animatic −16.4 LUFS.
+**Credit due at delivery: Andrew5DMII (Freesound 146419, CC-BY 3.0) on the end card / srt.** Next: merge; then
+Sprint 5 (batch render).
 **Sprint 4.0e (whole film v3) 2026-10-07, branch `sprint-4.0e-film`, waiting for the user's look:** 08 → 12 s (user:
 the light out by ~11 s, 1 s of black, then the card; caption 7.0–11.6 s), 05→06 kept; counters swap inside the 05→06
 dissolve (new `counter_out`) and 08's fades before the card. `out/europa-animatic.mp4` **122.75 s**. QC: layout =
@@ -879,7 +881,7 @@ dissolve near black on the downward motion).
 Finding 1 (Io + two shadows in 02): verified, in TREATMENT as C2 and in 02's row (user 2026-10-05).
 01's framing test done (2.0, the turn); the ground done (2.1); the cryobot done (2.2); the shell interior done (2.3,
 approved: puck release in 05, porosity 0.2 %); the under-ice ocean done (2.4, approved: melt ceiling, frazil ⚠ only if
-07 wants it; particles and 08's sink speed open for those shots). Sprint 2 builds are complete → Sprint 3, shots one per session: **01 locked (3.1); 02 locked (3.2); 03 locked (3.3); 04 locked (3.4); 05 locked (3.5); 06 locked (3.6); 07 locked (3.7); 08 locked (3.8); 09 locked (3.9, the card); next Sprint 4 (whole-film animatic)**. W1–W3 closed (Sprint 4.1: 03 kept Breathing Idle; ice sounds and hydrophone synthesized, user 2026-10-07).
+07 wants it; particles and 08's sink speed open for those shots). Sprint 2 builds are complete → Sprint 3, shots one per session: **01 locked (3.1); 02 locked (3.2); 03 locked (3.3); 04 locked (3.4); 05 locked (3.5); 06 locked (3.6); 07 locked (3.7); 08 locked (3.8); 09 locked (3.9, the card); next Sprint 4 (whole-film animatic)**. W1–W3 closed (Sprint 4.1: 03 kept Breathing Idle; ice cracks recorded (Freesound 146419), water and hum synthesized, user 2026-10-07).
 
 ## Sprints (plan, 2026-10-04)
 0. Treatment, physics, scaffold. 0.1 ✅ brainstorm + repo · 0.2 physics rows + `TREATMENT.md` (clip list, beat sheet
