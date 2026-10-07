@@ -1,6 +1,53 @@
 # Europa · 木卫二 · 深渊: progress
 
 ## State (2026-10-07)
+**Sprint 5.0 (cost ladder) done 2026-10-07, branch `sprint-5.0-ladder`: nothing passes, every clip renders at 64 spp.**
+`tools/ab.mjs` (new): full-res stills per variant, one Blender run each at `--persist 1` (as the batch), seconds per
+still, PSNR vs the reference (whole + centre 960×402), **mean luma** of both, zooms ref | variant | |diff|×8
+(`frames/ab/<id>-fNNNN.png`), report `frames/ab/<id>.md`. `shot.run` now sets persistent data before stills too and
+prints `STILL f s`. Bar: ≥ ~48 dB and no visible change.
+
+| clip | 32 spp vs 64 (dB, whole / inner) | verdict | s/frame at 64 (measured) | frames | time |
+|---|---|---|---|---|---|
+| 01 | mesa 43.4/40.4 · 45.8 · 55.2/49.5 | 64 | 6.2 | 288 | 30 min |
+| 02 | disc 53.2/50.9 · 53.3 · tail 45.1/44.9 | 64 (32 only on the disc: −6 min) | 5.8 | 366 | 35 min |
+| 08 | head 41.7/39.4 · 42.5 · fall 57.7 · 59.4 | 64 (32 after 2 s: −10 min) | 6.5 | 348 | 40 min |
+| 04 | 48.4 · day 40.5/44.0 · 40.8 · 49.3 · 54.2 | 64 | 5.9 | 478 | 47 min |
+| 03 | ground 42.6 · 42.2 · 41.8 · sky 54.7 · 74.0 | 64, motion blur kept | ground ~30, sky ~4 | 236 | 1.1 h |
+| 07 | 44.1 · 44.1 · 49.4 · end 43.8/41.5 | 64 | 40 | 336 | 3.7 h |
+| 06 | milky 38.2 · **28.6** · clear 44.9/40.6 | 64; vbounces 64 = same picture (54–66 dB), no faster | milky ~100, clear ~10 | 480 | 6.7 h |
+| 05 | 40.0 · 37.5 · 38.6 · 31.9/30.8 | 64 | **80** (est. was 60) | 312 | 6.9 h |
+| **all** | | | | 2,844 | **≈ 21 h** |
+
+- 06 at 32 spp: whole frames brighten/darken (f145 mean luma 103.7 → 110.9; the neighbours 107.0/106.2 at 64): motion
+  blur's time sampling (shutter 1.0, bands crossing the glow) is short, and the denoiser can't hide a level shift.
+- 03 is far cheaper than estimated (2.6–3.9 h → 1.1 h): once the tilt leaves the ground it's ~4 s/frame. Motion blur
+  off only matches before the burst (54.9/49.5 dB at 0.5 s): −6 min, not worth it.
+- 08's black tail can't be frozen: the last blue speck is still there and moving at 14.4 s (YMAX 31).
+- Measured s/frame now in each clip as `spf` (batch.mjs sorts by spf × frames: 01 · 02 · 08 · 04 · 03 · 07 · 06 · 05).
+Next: **5.1** (batch.mjs + the 09 credit line).
+
+**Sprint 5 planned 2026-10-07 (user), branch `sprint-5.0-ladder`; next: 5.0.** User: ① cost ladder first; ② a small
+credit line on the 09 card (Andrew5DMII, Freesound 146419, CC BY 3.0) + an srt cue; ③ render **cheapest clip first**;
+④ the 9:16 cut → Sprint 6; renders started by the user any time (day or night) with the commands below. Budget before
+the ladder ≈ 20–23 h at 64 spp (01 288 fr ≈ 40 min · 02 366 ≈ 40 min · 03 236 ≈ 2.6–3.9 h · 04 478 ≈ 50–55 min ·
+05 312 ≈ 4.5–5 h · 06 480 ≈ 6.5–7 h · 07 336 ≈ 3.5–4 h · 08 348 ≈ 1 h · 09 card); disk 224 GB free.
+- **5.0 ladder** (previews only): full-res A/B, PSNR whole + inner crop + side-by-side zoom (Io: 32 vs 64 spp = 54 dB;
+  reject < ~48 dB or a visible change). 06: 32 spp, volume bounces 128 → 64 (milky ~4 s, 6 s; clear 19.5 s) · 05: same
+  (0.5 · 5 · 9 s) · 07: 32 spp (2 · 3.6 s · end) · 03: 32 spp, motion blur only on frost/whip frames (1.2 · 5 · 9.5 s) ·
+  01/02/04/08: 32 spp (02's test = Io's eclipse rim); 08 black tail `freeze` from ~13.6 s (04's tail moves: no freeze).
+  05/06 at 32 spp also a 24-frame slice (`--start/--end`) for flicker. Results → `clips/*.js` (`samples`, `freeze`),
+  re-timed s/frame → new budget table (+ a file batch can sort by).
+- **5.1** `batch.mjs` from `../../childhood-desktop/batch.mjs` (per clip: `samples`, `--freeze`, `--persist 1`,
+  `--resume 1`; 09 via `tools/card.mjs`; encode as `render.mjs`; order = cheapest first; `--dry`), `FRAME n t` in
+  `shot.run`; 09 credit line (`tools/card.mjs` third line, mono ~4.5 px, dim, with the readout's fades; before/after
+  still for the user) + srt cue; test `batch.mjs 08 --until` → resume.
+- **5.2 render** (user runs, any time; rerun = resume): `node batch.mjs --dry` · `node batch.mjs` · `node batch.mjs
+  --until 18:00` · `node batch.mjs 08 02` · `node render.mjs 08-abyss --resume --keep --silent` · `cat
+  out/batch-report.md`. No previews while the GPU renders. After each batch: frame counts = animatic, 3-frame strips vs
+  the animatic, 4 fps flicker look.
+- **5.3 deliver**: `node compile.mjs` (4K, score, srt), `check.mjs`, loudness, joints, poster (candidates: 02 Io on the
+  disc · 04 red arch · 07 breakthrough), REFERENCES/PROGRESS/root CLAUDE.md, merge on the user's sign-off.
 **Sprint 4.1 (score + sound) done 2026-10-07, approved by the user, branch `sprint-4.1-score` (PR #24):** user: synth
 only (no ice/hydrophone recordings; W1–W3 closed), CC0 + CC-BY allowed if recordings come later, the physics arc.
 `audio/music.mjs` (engine from Io's: syn, takes, helmet; seed 20261007) + `physics.py --sound` (cue times in clip s:
@@ -896,9 +943,13 @@ approved: puck release in 05, porosity 0.2 %); the under-ice ocean done (2.4, ap
    Astronaut and Mixamo idle reused from `../../_assets`.
 3. Shots: action + animatic + 3-still Cycles check → locked, one shot per session.
 4. Whole-film animatic (2.39:1) + joints + captions/counter; score + sound cut to it.
-5. Batch render (overnight, resume) → 4K compile, srt, poster; then the 9:16 climax cut (own portrait cameras).
+5. Batch render (resume) → 4K compile, srt, poster (re-planned 2026-10-07: 5.0 ladder · 5.1 batch + 09 credit ·
+   5.2 renders, started by the user, cheapest clip first · 5.3 deliver; see State).
+6. The 9:16 climax cut (02 + 04, own portrait cameras) (user 2026-10-07: split out of 5).
 
 ## Decisions (locked)
+- Samples (Sprint 5.0, 2026-10-07): **64 spp for every clip**; 32 spp failed the full-res A/B on all eight (`tools/ab.mjs`,
+  table in State); motion blur kept everywhere. Batch order = cheapest first by measured `spf`.
 - Sound (user 2026-10-07, Sprint 4.1): ice sounds and hydrophone synthesized, then (v2, same day) the cracks recorded (Freesound 146419, CC-BY: credit); recorded sounds, if
   ever, CC0 or CC-BY (credited); the physics arc (vacuum → helmet only; the ice and then the water carry sound; out with
   the light; one held note under the title). Music in Io's synth family (A on the surface, D under the ice).
@@ -980,6 +1031,9 @@ approved: puck release in 05, porosity 0.2 %); the under-ice ocean done (2.4, ap
   so the climax shots get their own portrait cameras/renders (planned in the treatment, rendered last).
 
 ## Notes / lessons
+- A/B a sample cut on mean luma as well as PSNR: with motion blur (06's shutter 1.0) 32 spp shifted whole frames by up
+  to 7 levels, a flicker the denoiser can't hide. And test every distinct part of a clip: 08 passed at 57–59 dB in the
+  fall, failed at 39–42 in its head (07's lamp-lit pose).
 - Cycles animatics need persistent data: without it every frame re-syncs the whole ground (04: 40 s → 0.5 s/frame).
 - A planet lit from behind (eclipse) at night exposure showed its own far side bounced onto the night face through a
   smooth-shaded sphere (~5e-5): make far bodies invisible to diffuse/glossy rays when nothing real lights them.

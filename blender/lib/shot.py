@@ -117,6 +117,8 @@ def run(sc, A, tag=None):
     engine(sc, A)
     gpus = rig.enable_gpu() if A.engine == 'cycles' else A.engine
     out, stills = A.opt('out'), A.opt('stills')
+    if A.opt('persist'):                      # keep the synced scene between frames (static grounds aren't re-sent)
+        sc.render.use_persistent_data = True  # (before the stills too: tools/ab.mjs times stills as the batch renders)
     if stills:
         d = os.path.abspath(A.opt('stills-dir', 'frames'))
         os.makedirs(d, exist_ok=True)
@@ -124,10 +126,10 @@ def run(sc, A, tag=None):
         for f in (int(x) for x in stills.split(',')):
             sc.frame_set(f)
             sc.render.filepath = os.path.join(d, f'{A.opt("id", tag)}-f{f:04d}.png')
+            t1 = time.time()
             bpy.ops.render.render(write_still=True, scene=sc.name)
+            print(f'STILL {f} {time.time() - t1:.1f}')
         print(f'SHOT {tag}: stills {stills} in {time.time() - t:.1f}s')
-    if A.opt('persist'):                      # keep the synced scene between frames (static grounds aren't re-sent)
-        sc.render.use_persistent_data = True
     if A.opt('start'):                        # A/B tests: a slice of the clip
         sc.frame_start = int(A.opt('start'))
         sc.frame_end = int(A.opt('end', sc.frame_end))
