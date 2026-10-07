@@ -1,6 +1,23 @@
 # Europa · 木卫二 · 深渊: progress
 
 ## State (2026-10-07)
+**Sprint 4.1 (score + sound, synth) 2026-10-07, branch `sprint-4.1-score`, waiting for the user's listen:** user: synth
+only (no ice/hydrophone recordings; W1–W3 closed), CC0 + CC-BY allowed if recordings come later, the physics arc.
+`audio/music.mjs` (engine from Io's: syn, takes, helmet; seed 20261007) + `physics.py --sound` (cue times in clip s:
+02 Io in/set/eclipse, 04 contact/gone/tilt/black, 05 shut, 06 depth marks, 07 break/brake/stop, 08 release/blue/gone +
+the fall for the hum's 1/r). Surface = vacuum: breath (Io's recorded takes, 9) + music in A (Io's chords quoted: Am9 on
+EUROPA, the diamond glints as Io enters, A add9 under "WE STOOD THERE"); music dead at first contact, one heartbeat
+(clip 15.2), back with the tilt into the ice as a D sub swell. Ice/water bus: probe hum on D2 (muffled when the front
+shuts, receding at 1/r in 08), cracks, 06's crackle until the brittle lid ends (3 km) then silence, the break
+(a crack slowed into a boom, the rush), the tether brake's groan + clank; all out with the light
+(08 gone 13.59 s); 09 one held D4. Directed cues in the clips' `sfx`. `out/europa-animatic.mp4` 122.75 s: −16.7 LUFS,
+TP −1.2 dBTP, silence 47.7–52.3 s (contact → heartbeat) and 114.95–116.2 s (black before the card) as intended.
+**v2 (user 2026-10-07): the synth cracks' sine "pew" read as 80s/90s electronics ("biu biu") → recorded lake-ice
+cracks** (Andrew5DMII, Freesound 146419, CC-BY 3.0, user-downloaded to `_assets/audio/ice/`; 24 onsets measured, its
+16–22 Hz "booms" unusable): a random take per crack, size → playback rate (bigger = slower, lower), big ones + a ×0.3
+copy for the body; creaks in 05/07 → small crack clusters; synth bubbles dropped; the synth crack stays as the fallback.
+Animatic −16.4 LUFS, TP −0.9 dBTP. Open: the brake's synth metal groan (07, 1:34–1:37) and the hum (B clip) — user.
+Next: user listens → fixes → PR.
 **Sprint 4.0e (whole film v3) 2026-10-07, branch `sprint-4.0e-film`, waiting for the user's look:** 08 → 12 s (user:
 the light out by ~11 s, 1 s of black, then the card; caption 7.0–11.6 s), 05→06 kept; counters swap inside the 05→06
 dissolve (new `counter_out`) and 08's fades before the card. `out/europa-animatic.mp4` **122.75 s**. QC: layout =
@@ -862,8 +879,7 @@ dissolve near black on the downward motion).
 Finding 1 (Io + two shadows in 02): verified, in TREATMENT as C2 and in 02's row (user 2026-10-05).
 01's framing test done (2.0, the turn); the ground done (2.1); the cryobot done (2.2); the shell interior done (2.3,
 approved: puck release in 05, porosity 0.2 %); the under-ice ocean done (2.4, approved: melt ceiling, frazil ⚠ only if
-07 wants it; particles and 08's sink speed open for those shots). Sprint 2 builds are complete → Sprint 3, shots one per session: **01 locked (3.1); 02 locked (3.2); 03 locked (3.3); 04 locked (3.4); 05 locked (3.5); 06 locked (3.6); 07 locked (3.7); 08 locked (3.8); 09 locked (3.9, the card); next Sprint 4 (whole-film animatic)**. Asset hunt by the user in parallel
-(REFERENCES.md "Wanted": W1 Mixamo kneel/stand, W2–W3 ice sounds and hydrophone).
+07 wants it; particles and 08's sink speed open for those shots). Sprint 2 builds are complete → Sprint 3, shots one per session: **01 locked (3.1); 02 locked (3.2); 03 locked (3.3); 04 locked (3.4); 05 locked (3.5); 06 locked (3.6); 07 locked (3.7); 08 locked (3.8); 09 locked (3.9, the card); next Sprint 4 (whole-film animatic)**. W1–W3 closed (Sprint 4.1: 03 kept Breathing Idle; ice sounds and hydrophone synthesized, user 2026-10-07).
 
 ## Sprints (plan, 2026-10-04)
 0. Treatment, physics, scaffold. 0.1 ✅ brainstorm + repo · 0.2 physics rows + `TREATMENT.md` (clip list, beat sheet
@@ -881,6 +897,9 @@ approved: puck release in 05, porosity 0.2 %); the under-ice ocean done (2.4, ap
 5. Batch render (overnight, resume) → 4K compile, srt, poster; then the 9:16 climax cut (own portrait cameras).
 
 ## Decisions (locked)
+- Sound (user 2026-10-07, Sprint 4.1): ice sounds and hydrophone synthesized, then (v2, same day) the cracks recorded (Freesound 146419, CC-BY: credit); recorded sounds, if
+  ever, CC0 or CC-BY (credited); the physics arc (vacuum → helmet only; the ice and then the water carry sound; out with
+  the light; one held note under the title). Music in Io's synth family (A on the surface, D under the ice).
 - Whole film v3 (user 2026-10-07, Sprint 4.0e): 08 → 12 s; 05→06 unchanged; readouts never overlap (`counter_out`);
   no probe/tripod/astronaut/frost in 03's whip frames (hidden from frame 217; replaces 4.0c's "keep").
 - 07→08 (user 2026-10-07, Sprint 4.0e): `physics.SEAM78`: 08 opens on 07's end pose, 12-frame dissolve, crane up +

@@ -1288,8 +1288,52 @@ def card(h_ice=ICE_H[1]):
             'base_bar': round(p_base), 'floor_bar': round(p_floor), 'lethal_h': round(LD50_SV / DOSE_SV_DAY * 24)}
 
 
+# Sound (Sprint 4.1): the physical events the score is cut to, in each clip's own seconds (its t = 0 as the layout
+# places it; heads from the joints included). Directed cues (breaths, the frost burst's moment) sit in the clips' `sfx`.
+PICTURE = (1920, 804)          # px, = blender/lib/shot.RES (04's frame height sets where the tilt goes black)
+LAMP_GONE_EV = -12.5           # EV vs the lamp seen at 5 m: below it a channel is lost in 08's black at its fixed +4 EV
+                               # (film pick, matched to the picture: blue point ~7 s, gone ~11 s on 08's clock)
+
+
+def sound():
+    """Sound cue times in clip seconds (audio/music.mjs reads `python3 tools/physics.py --sound`)."""
+    import inspect
+    a2 = inspect.signature(lapse02_start).parameters
+    t_in, t_set = a2['t_in'].default, a2['t_set'].default            # = s02's --t-in / --t-set defaults
+    fr = site(*SITE[1:])
+    dur02 = lapse(fr, LAPSE_E_END[1], 0.0)['dur']
+    ecl = [round(t_in + h / dur02 * (t_set - t_in), 3) for h in eclipse_span(fr, LAPSE_E_END[1])]
+    h4 = WHIP34['inn'] / WHIP34['fps']
+    asp = PICTURE[1] / PICTURE[0]
+    top0 = whip34_ends(asp)[1][1] + deg(math.atan(18.0 * asp / WHIP34['lens04']))
+    _, black = tilt04_dur(top0)
+    h5 = TILT45['head']
+    marks = {f'{z:g}': round(_bisect(z06, z, lo=0.0, hi=SHOT06['dur']), 3)
+             for z in (100.0, 1000.0, BRITTLE_KM * 1000, 10000.0)}
+    h8 = SEAM78['head']
+    ev = lambda d, ch: lamp_seen(d)[ch][1]
+    d_blue = _bisect(lambda d: -ev(d, 1), -LAMP_GONE_EV, lo=5.0, hi=500.0)     # green lost: only blue left
+    d_gone = _bisect(lambda d: -ev(d, 2), -LAMP_GONE_EV, lo=5.0, hi=500.0)     # blue lost
+    at08 = lambda d: round(h8 + _bisect(lambda s: -nose08(s), d, lo=SHOT08['rel'], hi=SHOT08['dur']), 3)
+    f7 = fit07()
+    path = _FIT07['drop']['path']
+    t_eng = next(t for t, x, _ in path if x >= SHOT07['free'])                  # real s after the break
+    eng = _bisect(lambda s: lapse07(f7['t_brk'], s), t_eng, lo=f7['t_brk'], hi=SHOT07['dur'])
+    fall = [[round(h8 + s / 4, 3), round(-nose08(s / 4), 2)] for s in range(int(SHOT08['dur'] * 4) + 1)]
+    return {'02': {'in': t_in, 'set': t_set, 'eclipse': ecl},
+            '04': {'head': round(h4, 4), 'contact': round(h4 + SHOT04['contact'], 3), 'gone': round(h4 + SHOT04['gone'], 3),
+                   'tilt': round(h4 + TILT45['t0'], 3), 'black': round(h4 + black, 3)},
+            '05': {'head': h5, 'shut': h5 + SHOT05['shut']},
+            '06': {'marks': marks, 'slow': SHOT06['dn0'], 'land': SHOT06['dn1']},
+            '07': {'break': f7['t_brk'], 'brake': round(eng, 3), 'stop': round(f7['t_stop'], 3)},
+            '08': {'head': h8, 'release': h8 + SHOT08['rel'], 'blue': at08(d_blue), 'gone': at08(d_gone),
+                   'fall': fall}}                  # [clip s, nose m below the base] every 0.25 s of 08's clock
+
+
 if __name__ == '__main__' and '--card' in sys.argv:
     print(json.dumps(card()))
+elif __name__ == '__main__' and '--sound' in sys.argv:
+    print(json.dumps(sound()))
 elif __name__ == '__main__':
     rows = []
     d_sub = A_EU - R_EU

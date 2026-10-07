@@ -6,5 +6,5 @@ window.CLIP = {
   counter: 'counter05',         // physics.counter05: hours since the drop · depth of the probe's nose
   counter_in: 3,                // the clock fades in as the descent lands (physics.TILT45.head), not over the black dissolve
   counter_out: 12.5,            // gone 6 frames into the 18-frame dissolve to 06 (Sprint 4.0e): 06's readout fades in after it, never on top
-  sfx: [],
+  sfx: [[4.2, 'crack', { size: 0.35, pan: 0.3 }], [6.6, 'cluster', { d: 1.6, k: 4 }], [10.4, 'crack', { size: 0.6, pan: -0.4 }], [11.8, 'crack', { size: 0.25, pan: 0.5 }]],   // Sprint 4.1: the brittle lid flexing with the tide
 };
