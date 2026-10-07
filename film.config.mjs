@@ -11,7 +11,6 @@ export default {
   samples: 64,          // Cycles samples per frame (+ OIDN denoise); render.mjs --samples overrides
   blackGround: true,    // black sky, the eclipse, the black ocean: check.mjs reports black frames without failing
   soundtrack: 'none',   // no narration; a film-local score (audio/music.mjs, Sprint 4) is laid on the compiled film
-  // caps (drawn by tools/overlay.mjs) + srt-only cues (`srt: [[a, b, text]]`: 09's sound credit, drawn on the card itself)
-  subtitles: (A) => [...(A.caps || []).map(([a, b, en, zh]) => [a, b, `${en}\n${zh}`]), ...(A.srt || [])],
+  subtitles: (A) => (A.caps || []).map(([a, b, en, zh]) => [a, b, `${en}\n${zh}`]),
   narration: null,
 };

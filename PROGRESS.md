@@ -16,12 +16,10 @@
   frames 10.4 s; 5.0 measured 13 · 9), `batch.mjs 8 --until 17:43` → resumed at frame 17, stopped at 33/348; no
   truncated frame, no errors; PSNR frame-to-frame across the seam 16→17 32.8 dB between its neighbours' 34.1 / 31.9
   (moving camera; no jump). Frames ≈ 1.5 MB → ≈ 4.3 GB for the film. `batch.mjs 09` → `out/09-title.mp4` (168 fr, 4 s).
-- **09 credit (user's 5.0 plan ②)**: `tools/card.mjs` `CREDIT`, a third line 14 units under the readout, JetBrains
-  Mono 4.5 px, `#6c7076` at 0.8 × the readout's fades (1.1–5.5 s): `Ice cracks: "Frozen Lake Ice and Water Sounds
-  Shotgun Ice Cracking" by Andrew5DMII · freesound.org/s/146419 · CC BY 3.0` (title, author, source, licence).
-  `--no-credit` for the before still; `frames/09-credit-before-after.png`, `frames/09-credit-4k-zoom.png`.
-  srt: clips may carry srt-only cues (`srt: [[a, b, text]]`, not drawn by the overlay); `film.config.mjs` subtitles =
-  caps + srt; 09's cue 1.1–5.5 s, same words on two lines.
+- **09 credit: dropped (user 2026-10-07)**, replacing 5.0 plan ②: no credit on the card or in the srt; every credit
+  (ice cracks CC BY 3.0, astronaut CC BY 4.0, Jupiter map, NASA/USGS, CC0 sounds) goes in the **YouTube description**,
+  ready to paste in REFERENCES.md "Credits for the YouTube description". A credit line was tried on the card (`card.mjs`
+  third line + an srt-only cue) and reverted; 09 is as locked in 3.9, `out/09-title.mp4` redrawn.
 - 5.2 commands: `node batch.mjs --dry` · `node batch.mjs` · `node batch.mjs --until 08:00` · `node batch.mjs 08 02` ·
   `cat out/batch-report.md`. Rerun = resume. No previews while it renders.
 
@@ -972,6 +970,7 @@ approved: puck release in 05, porosity 0.2 %); the under-ice ocean done (2.4, ap
 6. The 9:16 climax cut (02 + 04, own portrait cameras) (user 2026-10-07: split out of 5).
 
 ## Decisions (locked)
+- Credits (user 2026-10-07, Sprint 5.1): none in the film (card, srt); all in the YouTube description (REFERENCES.md).
 - Samples (Sprint 5.0, 2026-10-07): **64 spp for every clip**; 32 spp failed the full-res A/B on all eight (`tools/ab.mjs`,
   table in State); motion blur kept everywhere. Batch order = cheapest first by measured `spf`.
 - Sound (user 2026-10-07, Sprint 4.1): ice sounds and hydrophone synthesized, then (v2, same day) the cracks recorded (Freesound 146419, CC-BY: credit); recorded sounds, if
