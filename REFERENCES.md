@@ -6,11 +6,22 @@ which shot uses it.
 ## Reused from Io (already in `../../_assets/`)
 | asset | licence | path | used in |
 |---|---|---|---|
-| Jupiter 14K map (Björn Jónsson, Cassini + Juno) | credit; private non-commercial | `textures/jupiter/jupiter_map_css_plus_juno_bj.png` | 01–04 |
-| Astronaut, NASA EMU, rigged (Blend Swap #12622, jgilhutton) | CC-BY 4.0: credit in the end card | `models/astronaut-emu-12622/emu_clean.blend` | 03 |
+| Jupiter 14K map (Björn Jónsson, Cassini + Juno) | credit (YouTube description); private non-commercial | `textures/jupiter/jupiter_map_css_plus_juno_bj.png` | 01–04 |
+| Astronaut, NASA EMU, rigged (Blend Swap #12622, jgilhutton) | CC-BY 4.0: credit in the YouTube description | `models/astronaut-emu-12622/emu_clean.blend` | 03 |
 | Mixamo "Breathing Idle" | Mixamo terms | `mocap/Breathing Idle.fbx` | 03 |
 | Breaths (Freesound 387620, 682884), heartbeat (332819) | CC0 | `audio/breath/` | 01–04 |
-| Ice cracks: Andrew5DMII, "Frozen Lake Ice and Water Sounds Shotgun Ice Cracking" (Freesound 146419) | CC-BY 3.0: credit in the end card / srt | `audio/ice/` | 05–08 |
+| Ice cracks: Andrew5DMII, "Frozen Lake Ice and Water Sounds Shotgun Ice Cracking" (Freesound 146419) | CC-BY 3.0: credit in the YouTube description | `audio/ice/` | 05–08 |
+
+## Credits for the YouTube description (user 2026-10-07: not on the card, not in the srt)
+Paste under the film's description:
+```
+Credits
+Jupiter map: Björn Jónsson; NASA/JPL-Caltech/SSI/SwRI/MSSS/ASI/INAF/JIRAM (via The Planetary Society)
+Astronaut model: "NASA EMU suit" by jgilhutton (Juan Ignacio), Blend Swap #12622 (CC BY 4.0) https://blendswap.com/blend/12622
+Ice cracks: "Frozen Lake Ice and Water Sounds Shotgun Ice Cracking" by Andrew5DMII (CC BY 3.0) https://freesound.org/s/146419/
+Europa maps and close-ups: NASA / JPL / USGS (public domain)
+Breaths and heartbeat: Freesound 387620, 682884, 332819 (CC0)
+```
 
 ## Downloaded for Europa (0.4, 2026-10-04)
 All public domain (NASA / USGS). Index ids `europa-usgs-mosaic-500m`, `europa-galileo-closeups`; previews in

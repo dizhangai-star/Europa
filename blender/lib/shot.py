@@ -141,11 +141,22 @@ def run(sc, A, tag=None):
         end, F = sc.frame_end, int(A.opt('freeze', 0))
         if F:
             sc.frame_end = F - 1
+        done, last = [], [time.time()]
+
+        def wrote(scene, *_):                 # one line per saved frame (batch.mjs: progress, s/frame, ETA)
+            now = time.time()
+            done.append(now - last[0])
+            print(f'FRAME {scene.frame_current} {now - last[0]:.1f}s', flush=True)
+            last[0] = now
+        bpy.app.handlers.render_write.append(wrote)
         t = time.time()
-        bpy.ops.render.render(animation=True, scene=sc.name)
+        try:
+            bpy.ops.render.render(animation=True, scene=sc.name)
+        finally:
+            bpy.app.handlers.render_write.remove(wrote)
         dt = time.time() - t
-        n = sc.frame_end - sc.frame_start + 1
-        print(f'SHOT {tag}: {n} frames in {dt:.0f}s = {dt / n:.1f}s/frame on {gpus}')
+        n = max(len(done), 1)                 # frames rendered now (a resume skips the ones on disk)
+        print(f'SHOT {tag}: {len(done)} frames in {dt:.0f}s = {dt / n:.1f}s/frame on {gpus}')
         if F:
             sc.frame_end = end
             freeze(sc, F, out)

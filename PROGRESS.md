@@ -1,6 +1,28 @@
 # Europa · 木卫二 · 深渊: progress
 
 ## State (2026-10-07)
+**Sprint 5.1 (batch + 09 credit) done 2026-10-07, branch `sprint-5.1-batch`. Next: 5.2, the user starts the renders.**
+- `batch.mjs` (from childhood-desktop's, film-local): default = every clip without `out/<id>.mp4`, **cheapest first by
+  `spf` × frames** (09 card · 01 · 02 · 08 · 04 · 03 · 07 · 06 · 05); ids given (`08 2`, NN or bare numbers) render in
+  that order. Per clip as `render.mjs`: `samples` (else 64), `freeze`, `--persist 1`, `--resume 1`, the letterbox pad,
+  4:4:4 masters; 09 via `tools/card.mjs` (compile redraws it at 4K). Truncated PNGs (no IEND) deleted on start; a
+  failed clip is logged and the batch goes on; `--until HH:MM` stops launching and kills the running Blender then;
+  `caffeinate -is`; progress every 24 frames with s/frame and the clip's finish time; `out/batch-report.md` after
+  every clip, `logs/batch-<stamp>.log` full output; frames kept (`--clean` deletes). `--dry` = the plan with
+  estimated hours and finish times (`out/batch-report-dry.md`): **≈ 21 h from now** (01 ≈ 30 min … 05 ≈ 6.9 h).
+- `shot.run`: a `FRAME n t` line per saved frame (`render_write` handler); `SHOT` now counts only frames rendered in
+  this run (a resume skips the ones on disk).
+- Test (real 08 settings, frames kept for 5.2): `batch.mjs 08 --until 17:40` → stopped at 16/348 in 3.1 min (head
+  frames 10.4 s; 5.0 measured 13 · 9), `batch.mjs 8 --until 17:43` → resumed at frame 17, stopped at 33/348; no
+  truncated frame, no errors; PSNR frame-to-frame across the seam 16→17 32.8 dB between its neighbours' 34.1 / 31.9
+  (moving camera; no jump). Frames ≈ 1.5 MB → ≈ 4.3 GB for the film. `batch.mjs 09` → `out/09-title.mp4` (168 fr, 4 s).
+- **09 credit: dropped (user 2026-10-07)**, replacing 5.0 plan ②: no credit on the card or in the srt; every credit
+  (ice cracks CC BY 3.0, astronaut CC BY 4.0, Jupiter map, NASA/USGS, CC0 sounds) goes in the **YouTube description**,
+  ready to paste in REFERENCES.md "Credits for the YouTube description". A credit line was tried on the card (`card.mjs`
+  third line + an srt-only cue) and reverted; 09 is as locked in 3.9, `out/09-title.mp4` redrawn.
+- 5.2 commands: `node batch.mjs --dry` · `node batch.mjs` · `node batch.mjs --until 08:00` · `node batch.mjs 08 02` ·
+  `cat out/batch-report.md`. Rerun = resume. No previews while it renders.
+
 **Sprint 5.0 (cost ladder) done 2026-10-07, branch `sprint-5.0-ladder`: nothing passes, every clip renders at 64 spp.**
 `tools/ab.mjs` (new): full-res stills per variant, one Blender run each at `--persist 1` (as the batch), seconds per
 still, PSNR vs the reference (whole + centre 960×402), **mean luma** of both, zooms ref | variant | |diff|×8
@@ -25,7 +47,7 @@ prints `STILL f s`. Bar: ≥ ~48 dB and no visible change.
   off only matches before the burst (54.9/49.5 dB at 0.5 s): −6 min, not worth it.
 - 08's black tail can't be frozen: the last blue speck is still there and moving at 14.4 s (YMAX 31).
 - Measured s/frame now in each clip as `spf` (batch.mjs sorts by spf × frames: 01 · 02 · 08 · 04 · 03 · 07 · 06 · 05).
-Next: **5.1** (batch.mjs + the 09 credit line).
+Next: **5.1** (batch.mjs + the 09 credit line): done, see above.
 
 **Sprint 5 planned 2026-10-07 (user), branch `sprint-5.0-ladder`; next: 5.0.** User: ① cost ladder first; ② a small
 credit line on the 09 card (Andrew5DMII, Freesound 146419, CC BY 3.0) + an srt cue; ③ render **cheapest clip first**;
@@ -928,7 +950,7 @@ dissolve near black on the downward motion).
 Finding 1 (Io + two shadows in 02): verified, in TREATMENT as C2 and in 02's row (user 2026-10-05).
 01's framing test done (2.0, the turn); the ground done (2.1); the cryobot done (2.2); the shell interior done (2.3,
 approved: puck release in 05, porosity 0.2 %); the under-ice ocean done (2.4, approved: melt ceiling, frazil ⚠ only if
-07 wants it; particles and 08's sink speed open for those shots). Sprint 2 builds are complete → Sprint 3, shots one per session: **01 locked (3.1); 02 locked (3.2); 03 locked (3.3); 04 locked (3.4); 05 locked (3.5); 06 locked (3.6); 07 locked (3.7); 08 locked (3.8); 09 locked (3.9, the card); next Sprint 4 (whole-film animatic)**. W1–W3 closed (Sprint 4.1: 03 kept Breathing Idle; ice cracks recorded (Freesound 146419), water and hum synthesized, user 2026-10-07).
+07 wants it; particles and 08's sink speed open for those shots). Sprint 2 builds are complete → Sprint 3, shots one per session: **01 locked (3.1); 02 locked (3.2); 03 locked (3.3); 04 locked (3.4); 05 locked (3.5); 06 locked (3.6); 07 locked (3.7); 08 locked (3.8); 09 locked (3.9, the card); Sprint 4 done; Sprint 5.0 ladder + 5.1 batch done; next 5.2 renders (user)**. W1–W3 closed (Sprint 4.1: 03 kept Breathing Idle; ice cracks recorded (Freesound 146419), water and hum synthesized, user 2026-10-07).
 
 ## Sprints (plan, 2026-10-04)
 0. Treatment, physics, scaffold. 0.1 ✅ brainstorm + repo · 0.2 physics rows + `TREATMENT.md` (clip list, beat sheet
@@ -948,6 +970,7 @@ approved: puck release in 05, porosity 0.2 %); the under-ice ocean done (2.4, ap
 6. The 9:16 climax cut (02 + 04, own portrait cameras) (user 2026-10-07: split out of 5).
 
 ## Decisions (locked)
+- Credits (user 2026-10-07, Sprint 5.1): none in the film (card, srt); all in the YouTube description (REFERENCES.md).
 - Samples (Sprint 5.0, 2026-10-07): **64 spp for every clip**; 32 spp failed the full-res A/B on all eight (`tools/ab.mjs`,
   table in State); motion blur kept everywhere. Batch order = cheapest first by measured `spf`.
 - Sound (user 2026-10-07, Sprint 4.1): ice sounds and hydrophone synthesized, then (v2, same day) the cracks recorded (Freesound 146419, CC-BY: credit); recorded sounds, if
