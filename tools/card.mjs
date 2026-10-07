@@ -1,7 +1,7 @@
 // Film-local title card (09; copied from Io's 06, Sprint 0.3): text on black, drawn in headless Chrome with 巨物's title type (Cinzel 600 caps tracked,
 // 中文 Noto Serif SC spaced, a two-line physics readout in JetBrains Mono) so the series' cards match. No Blender:
 // the card is all type, and the same canvas route carries the captions + counter at compile (tools/overlay.mjs).
-// Usage: node tools/card.mjs <id> [--variant europa|io] [--out out/<id>.mp4] [--stills t1,t2,… (→ frames/<id>-tNN.png)]
+// Usage: node tools/card.mjs <id> [--variant europa|io] [--out out/<id>.mp4] [--stills t1,t2,… (→ frames/<id>-tNN.png)] [--no-credit]
 //   Numbers come from `python3 tools/physics.py --card`. Frames are full 1920×1080 (black bars are black anyway).
 //   Logical units are 巨物's 640×360 overlay grid, drawn ×3.
 import { execFileSync, spawn } from 'node:child_process';
@@ -10,7 +10,7 @@ import { createRequire } from 'node:module';
 import { loadClip, rel, config, argv, chrome, kitRoot } from '../../../_kit/lib/film.mjs';
 
 const puppeteer = createRequire(`${kitRoot}/package.json`)('puppeteer-core');
-const A = argv(undefined, ['4k']);
+const A = argv(undefined, ['4k', 'no-credit']);
 const K = A.has('4k') ? 2 : 1, W = 1920 * K, H = 1080 * K;   // --4k: the same layout drawn ×6 for the 4K delivery (sharp type)
 const [id] = A.positional();
 const C = loadClip(id);
@@ -25,13 +25,16 @@ const LINES = [
   `冰下的海，地球海洋的 ${P.oceans} 倍  ·  海底 ${P.floor_bar.toLocaleString('en')} 巴  ·  地表辐射 ${P.lethal_h} 小时致死`,
   `${P.oceans}× EARTH'S OCEANS · ${P.floor_bar.toLocaleString('en')} BAR AT THE SEA FLOOR · A LETHAL DOSE IN ${P.lethal_h} HOURS ON THE ICE`,   // 'on the ice' = 地表 (user 3.9)
 ];
+// Sprint 5.1 (user): the CC BY 3.0 credit for the recorded ice cracks (audio/music.mjs), small and dim under the readout,
+// with the readout's fades; the same words go into the srt (clips/09-title.js `srt`)
+const CREDIT = 'Ice cracks: "Frozen Lake Ice and Water Sounds Shotgun Ice Cracking" by Andrew5DMII · freesound.org/s/146419 · CC BY 3.0';
 const T = { title: [0.4, 5.5, 0.8, 1.6], lines: [1.1, 5.5, 0.8, 1.6] };   // [in, out, fade in, fade out] s: black 0–0.4, both gone by 5.5, black tail; slow 1.6 s fade out (user 2026-10-03: the end was too quick; 3.9: held 1 s longer, clip 7 s)
 
 const page_ = `<!doctype html><meta charset="utf-8">
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=JetBrains+Mono:wght@400&family=Noto+Serif+SC:wght@400&display=block" rel="stylesheet">
 <style>html,body{margin:0;background:#000}</style><canvas id="cv" width="${W}" height="${H}"></canvas>
 <script>
-const S = ${JSON.stringify({ TITLE, LINES, T })};
+const S = ${JSON.stringify({ TITLE, LINES, CREDIT: A.has('no-credit') ? '' : CREDIT, T })};
 const EN = '"Cinzel", serif', ZH = '"Noto Serif SC", serif', MONO = '"JetBrains Mono", "Noto Serif SC", monospace';
 const x = document.getElementById('cv').getContext('2d');
 const ss = (a, b, t) => { const u = Math.min(1, Math.max(0, (t - a) / (b - a))); return u * u * (3 - 2 * u); };
@@ -53,6 +56,7 @@ window.renderAt = (t) => {
   text(M.zh, 320, y + M.enPx * 0.5 + 12, '400 ' + M.zhPx + 'px ' + ZH, '#d8d0bf', a, M.zhSp);
   text(S.LINES[0], 320, 210 + dy, '400 6px ' + MONO, '#b9b2a2', b, 1);
   text(S.LINES[1], 320, 219 + dy, '400 6px ' + MONO, '#8a8f96', b * 0.9, 1);
+  if (S.CREDIT) text(S.CREDIT, 320, 233 + dy, '400 4.5px ' + MONO, '#6c7076', b * 0.8, 0.5);
 };
 window.ready = (async () => {
   const fonts = ['600 30px "Cinzel"', '400 13px "Noto Serif SC"', '400 6px "JetBrains Mono"'];
@@ -77,7 +81,7 @@ const shot = (t) => page.evaluate((tt) => { window.renderAt(tt); return document
 const stills = A.opt('stills');
 if (stills) {
   for (const t of stills.split(',').map(Number)) {
-    const f = rel(`frames/${id}-t${t.toFixed(2)}.png`);
+    const f = rel(`frames/${id}-t${t.toFixed(2)}${A.has('no-credit') ? '-nocredit' : ''}${K > 1 ? '-4k' : ''}.png`);
     fs.writeFileSync(f, Buffer.from(await shot(t), 'base64'));
     console.log(`CARD ${id} ${variant}: ${f.replace(rel(''), '')}`);
   }
