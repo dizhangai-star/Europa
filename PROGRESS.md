@@ -1,6 +1,21 @@
 # Europa · 木卫二 · 深渊: progress
 
 ## State (2026-10-09)
+**Sprint 6 (Shorts, 9:16) started 2026-10-09 (user), after Io's analytics: 3.4K impressions, CTR 2.4 %, 41 % viewed, 50 %
+on phones, pushing stopped after day 3.** User decisions: **square in portrait** (an 804×804 square of the render, the
+disc whole, lanczos → 1080×1080 at y 360 on 1080×1920; hook above, captions below), English only, no new renders
+(picture from `frames/`), −14 LUFS. Part 1 here (3 Shorts + a reuse guide for Io); Part 2 = a new Sprint 6 in `../Io`.
+- **6.0 done 2026-10-09, signed off by the user** (branch `sprint-6.0-shorts`): `node shorts.mjs <id> [--stills
+  t1,t2,…]` (picture from `frames/<clip>/`, crop x a number or eased keys; sound cut from `audio/build/film.wav` at
+  `out/timeline.json` times, fades 0.2 / 1 s, one gain to −14 LUFS + −1.5 dB limiter at 4×; ebur128 check printed) ·
+  `tools/short-overlay.mjs` (from overlay.mjs; hook + wrapped captions, `\n` forces a break; caption `{…}` = a Python
+  f-string in physics.py's namespace) · `tools/shorts-lib.mjs` (LAYOUT, loader) · `shorts/S1.js`. **S1 "Sunset on
+  Europa"** = 04 1.00–17.98 s (ends where TILT45 starts: later the ring is cut by the tilt), x 960, 17.0 s,
+  `out/shorts/S1.mp4` 4.2 MB, −14.0 LUFS, TP −1.5; source sound −33 LUFS → +19 dB (user: OK); loop ring → lit disc OK.
+  No "COMPUTED COSMOS" tag (the Shorts UI covers the bottom and shows the channel anyway).
+- Next: **6.1** S2 "Io and Europa's shadow" (01's tail + 02) · 6.2 S3 through the ice (05→08, edit list first) · 6.3
+  `SHORTS.md` + `SHORTS-REUSE.md` (Io's source = `out/io.mp4`, picture 3840×1608 between 276 px bars) + merge.
+
 **DONE 2026-10-09: *Europa · 木卫二 · 深渊* delivered, Sprint 5.3 (branch `sprint-5.3-deliver`), signed off by the
 user, merged.** `out/europa.mp4` · `out/europa.srt` · `out/poster.png` (= candidate b, 02 at 6.5 s, Io + shadow on
 the disc; user's pick). User 2026-10-09: film accepted as is; **`frames/` (≈ 4.3 GB) kept until Sprint 6's 9:16 cut is
