@@ -1,6 +1,26 @@
 # Europa · 木卫二 · 深渊: progress
 
-## State (2026-10-07)
+## State (2026-10-09)
+**DONE 2026-10-09: *Europa · 木卫二 · 深渊* delivered, Sprint 5.3 (branch `sprint-5.3-deliver`), signed off by the
+user, merged.** `out/europa.mp4` · `out/europa.srt` · `out/poster.png` (= candidate b, 02 at 6.5 s, Io + shadow on
+the disc; user's pick). User 2026-10-09: film accepted as is; **`frames/` (≈ 4.3 GB) kept until Sprint 6's 9:16 cut is
+done**; Sprint 6 (9:16) stays planned, start on the user's word. REFERENCES "Delivered" + root CLAUDE.md entry added.
+- **5.2 renders done** (user, 2026-10-07 → 10-09): all 8 clips, frame counts = animatics (2,844). Measured s/frame:
+  01 5.1 · 02 4.5 · 08 6.3 · 04 5.4 · 03 15.5 · 07 ≈ 44 then 26.8 · 06 ≈ 100 milky → 13.8 clear · 05 84.7.
+  Three Metal **GPU out-of-memory** crashes (07 at f258, 06 at f339, 05 three times at frame 0 right after 06's crash,
+  then fine on a fresh start); every one resumed cleanly. QC: per-frame mean luma of every clip vs its animatic; the
+  only spikes (06 f74/75, f342) are in the animatic too (06's designed time-lapse flicker); no seam jump.
+- `node compile.mjs` → `out/europa.mp4` 3840×2160, 24 fps, **122.75 s**, 157 MB, h264 yuv420p + AAC 48 k (2:41 min);
+  starts as the animatic (01 @ 1.00 · 02 @ 13.00 · 03 @ 27.25 · 04 @ 37.08 · 05 @ 56.50 · 06 @ 68.75 · 07 @ 87.75 ·
+  08 @ 101.25 · 09 @ 115.75); `out/europa.srt` 6 cues (as Sprint 4.0).
+- `check.mjs`: **−16.4 LUFS, TP −1.7 dBTP**; silence 47.7 + 4.6 s (04: music dead at first contact, intended); black
+  0–1.13 (head), 6.96–7.63 (01's dark pan mesa → disc, same in the animatic), 32.46–37.00 (03's tail + whip), 50.04–57.63
+  (04 after the Sun is gone + tilt), 108.92–end (08's black + card): all intended. Only FAIL "duration −2.75 s" = the
+  kit's end-to-end layout (no head, no dissolves), as in Io.
+- Joints in the final film (−2 f / mid / +1 f after each): all as designed.
+- Poster candidates (render frame ×2 lanczos, letterboxed, no caption) in `out/poster-candidates/`: a 04 17.5 s red
+  ring · b 02 6.5 s Io + shadow (chosen) · c 04 12.5 s arch over the ice · d 07 3 s breakthrough.
+
 **Sprint 5.1 (batch + 09 credit) done 2026-10-07, branch `sprint-5.1-batch`. Next: 5.2, the user starts the renders.**
 - `batch.mjs` (from childhood-desktop's, film-local): default = every clip without `out/<id>.mp4`, **cheapest first by
   `spf` × frames** (09 card · 01 · 02 · 08 · 04 · 03 · 07 · 06 · 05); ids given (`08 2`, NN or bare numbers) render in

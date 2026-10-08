@@ -3,6 +3,11 @@
 Every downloaded file: URL, author, licence, local path (shared library `../../_assets/`, index in its `index.json`),
 which shot uses it.
 
+## Delivered (Sprint 5.3, 2026-10-09)
+`out/europa.mp4` (3840×2160, 24 fps, 122.75 s, −16.4 LUFS), `out/europa.srt` (6 cues, EN + 中文), `out/poster.png`
+(02 at 6.5 s, Io and its shadow on Jupiter's disc; user's pick). Every asset below is credited in the YouTube
+description block; nothing new was downloaded for delivery.
+
 ## Reused from Io (already in `../../_assets/`)
 | asset | licence | path | used in |
 |---|---|---|---|
