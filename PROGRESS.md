@@ -1,6 +1,22 @@
 # Europa · 木卫二 · 深渊: progress
 
-## State (2026-10-07)
+## State (2026-10-09)
+**DONE 2026-10-09: *Europa · 木卫二 · 深渊* delivered, Sprint 5.3 (branch `sprint-5.3-deliver`), signed off by the
+user, merged.** `out/europa.mp4` · `out/europa.srt` · `out/poster.png` (= candidate b, 02 at 6.5 s, Io + shadow on
+the disc; user's pick). User 2026-10-09: film accepted as is; **`frames/` (≈ 4.3 GB) kept until Sprint 6's 9:16 cut is
+done**; Sprint 6 (9:16) stays planned, start on the user's word. REFERENCES "Delivered" + root CLAUDE.md entry added.
+- 5.2 renders: see the Sprint 5.2 entry below (the OOMs were two Blenders at once; 04/05 kept as rendered).
+- `node compile.mjs` → `out/europa.mp4` 3840×2160, 24 fps, **122.75 s**, 157 MB, h264 yuv420p + AAC 48 k (2:41 min);
+  starts as the animatic (01 @ 1.00 · 02 @ 13.00 · 03 @ 27.25 · 04 @ 37.08 · 05 @ 56.50 · 06 @ 68.75 · 07 @ 87.75 ·
+  08 @ 101.25 · 09 @ 115.75); `out/europa.srt` 6 cues (as Sprint 4.0).
+- `check.mjs`: **−16.4 LUFS, TP −1.7 dBTP**; silence 47.7 + 4.6 s (04: music dead at first contact, intended); black
+  0–1.13 (head), 6.96–7.63 (01's dark pan mesa → disc, same in the animatic), 32.46–37.00 (03's tail + whip), 50.04–57.63
+  (04 after the Sun is gone + tilt), 108.92–end (08's black + card): all intended. Only FAIL "duration −2.75 s" = the
+  kit's end-to-end layout (no head, no dissolves), as in Io.
+- Joints in the final film (−2 f / mid / +1 f after each): all as designed.
+- Poster candidates (render frame ×2 lanczos, letterboxed, no caption) in `out/poster-candidates/`: a 04 17.5 s red
+  ring · b 02 6.5 s Io + shadow (chosen) · c 04 12.5 s arch over the ice · d 07 3 s breakthrough.
+
 **Sprint 5.2 (renders, user) done 2026-10-09: all 8 clips + card on disk; 04 and 05 kept as rendered (user 2026-10-09). Next: 5.3 deliver.** Run one clip at a time (`batch.mjs 01`, `02`, `08`), then the rest.
 - 01 done 18:15: 288/288, 5.1 s/frame (est. 6.2), 24.4 min. 02 done 18:43: 366/366, 4.5 s/frame (est. 5.8), 27.4 min.
   QC: frame counts = animatics; mp4 1920×1080 yuv444p 24 fps; strips vs animatic (10 % · 50 % · end) match; vs the
