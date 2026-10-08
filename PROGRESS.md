@@ -1,6 +1,40 @@
 # Europa · 木卫二 · 深渊: progress
 
 ## State (2026-10-07)
+**Sprint 5.2 (renders, user) done 2026-10-09: all 8 clips + card on disk; 04 and 05 kept as rendered (user 2026-10-09). Next: 5.3 deliver.** Run one clip at a time (`batch.mjs 01`, `02`, `08`), then the rest.
+- 01 done 18:15: 288/288, 5.1 s/frame (est. 6.2), 24.4 min. 02 done 18:43: 366/366, 4.5 s/frame (est. 5.8), 27.4 min.
+  QC: frame counts = animatics; mp4 1920×1080 yuv444p 24 fps; strips vs animatic (10 % · 50 % · end) match; vs the
+  5.0 64-spp refs: 02 70–73 dB, 01 54.6 · 65.6 dB and 44.6 at f25 (moving camera, mean luma 15.45 = 15.45: noise only).
+  01's stars are ~1 px in the render (animatic upscaled them into blocks): as designed.
+- 08 done 19:17: 348/348 (315 this run), 6.3 s/frame (est. 6.5). "Closures 65 > 64" on every frame = the known one
+  (2.3, frames clean). vs 5.0 refs 92–102 dB (same picture); resume seams 16→17 and 33→34 = their neighbours (29.6–32.8
+  dB frame to frame, moving camera); luma curve smooth (largest bump 0.09).
+- 04 done 19:54: 478/478, 5.4 s/frame (est. 5.9), 43 min. vs refs f8 · f289 · f385 = 78–102 dB, **f193 · f469 42/41
+  dB** (the Sun an oval, the ring smeared, Jupiter's bands softer from ~f60): see "sequence ≠ still" below. Whip head
+  luma 11.1 → 36.2 over frames 0–7 = the animatic's (±0.2); no other bump.
+- 03 done 21:00: 236/236, 15.6 s/frame (est. 16), 61 min. vs refs 58–84 dB.
+- **GPU out of memory overnight = two batches at once** (Metal "Insufficient Memory"): 07 (`batch.mjs 07`, 22:10) failed
+  at 258/336 one minute after `batch.mjs 06` started (01:12); 06 failed at 339/480 at 08:14, while `batch.mjs 05` was
+  being started (08:05–08:14, three OOMs at 0/312). Frames written before the failures are clean (07 244–258 luma a
+  smooth ramp; 06's spikes at 330 · 335 · 342 are the animatic's time-lapse flicker, render − animatic luma 0.87 ± 1.0).
+  **One Blender at a time** (M4 Pro, unified memory; 05/06/07 are the heavy volume shots).
+- 06 resumed 17:58 → done 18:31 (141 frames at 13.9 s/frame: the clear tail); 480/480.
+- 05 done 01:57 (10-09): 312/312, 84.8 s/frame (est. 80), 7.3 h. 07 resumed 09:22 → done 09:58 (78 frames, 26.9 s/frame).
+- QC 2026-10-09 (all 8): no truncated PNG; frames = animatics; 4:4:4 masters; luma curves track the animatics (render −
+  animatic −1.0 … +2.3, no bump that the animatic doesn't have, 05's is smoother); vs 5.0 refs 03 58–84 · 06 68–90 · 07
+  91–94 dB. **05 vs refs 28–38 dB** (f85 · f193 · f289; f37 95).
+- **Sequence ≠ still (04, 05):** a frame rendered inside an animation run differs from the same frame rendered as a still
+  (`--stills`, as preview.mjs and tools/ab.mjs do), deterministically: 04 f60 sequence with persist = without persist
+  (90 dB to the batch, 53 to the still); 05 slice 76–80 = the batch (89 dB), stills 79→80 = the lone still (82). Starts
+  after the head in both (04 f10/f20 88–93 dB, 05 f30 96). Not persistent data, not the start frame. Lead: both key
+  `render.motion_blur_shutter` (04 whip 1.0 → 0.5, 05 head 0.5 → 0): a still of 04 f60/f193 at `--mblur 1.0` comes to
+  66/65 dB of the batch (vs 53/42); 05's cause not found. 03 also keys the shutter (0.5 → 1.0 in the whip tail; refs
+  ok, stars only). Look: 04 nearly the same (a little more blur on Jupiter/the Sun); 05 the batch is smoother, the still
+  shows a darker wedge over the column (f80) and more texture in the puck's column (f289), batch 19 % darker at f289.
+  The animatics (also sequences) look like the batch. Fix if the user wants the stills' look: render 05 after the head
+  as stills (`--stills` in chunks, ≈ 5.7 h) or find the sequence-side cause.
+- Diagnostics in the session scratchpad (fresh stills, slices): not kept.
+- **User 2026-10-09: 05 is fine as rendered** (no re-render); 04 kept too. Next: 5.3 deliver.
 **Sprint 5.1 (batch + 09 credit) done 2026-10-07, branch `sprint-5.1-batch`. Next: 5.2, the user starts the renders.**
 - `batch.mjs` (from childhood-desktop's, film-local): default = every clip without `out/<id>.mp4`, **cheapest first by
   `spf` × frames** (09 card · 01 · 02 · 08 · 04 · 03 · 07 · 06 · 05); ids given (`08 2`, NN or bare numbers) render in
