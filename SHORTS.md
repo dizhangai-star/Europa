@@ -43,7 +43,7 @@ europa, jupiter, sunset on europa, sun falls into jupiter, jupiter eclipse, euro
 - **Viewed vs. swiped away** (Shorts' version of CTR): aim for 70 % or more viewed.
 - **Average percentage viewed**: above 100 % means people let it loop.
 - **Related video clicks** and the Europa film's traffic source "Shorts feed".
-- Compare with the Io baseline (CTR 2.4 %, 41 % viewed) before S2 goes up.
+- Compare with the Io baseline (CTR 2.4 %, 41 % viewed) and with S2 (uploaded the same day).
 
 ## S2 · Io and Europa's shadow (`out/shorts/S2.mp4`, 10.5 s, 1080×1920)
 
@@ -76,7 +76,7 @@ europa, io, jupiter, io transit, eclipse, moon shadow, shadow transit, europa mo
 ### Settings
 - **Related video**: Europa · https://youtu.be/aJyAfv9b_7I (as S1; the Io link is in the description).
 - Category: Science & Technology · Audience: not made for kids · **Studio → "AI use": No**.
-- Visibility: Public. **Upload S2 only after S1's 7-day read** (one variable at a time), at the same time of day as S1.
+- Visibility: Public. **Uploaded 2026-10-09 together with S1 (user)**: read both on 2026-10-16.
 - Thumbnail (YouTube app, cover button): **4.4 s**, Io black inside Europa's shadow (the poster's moment); or 7 s,
   Io with both dots above it.
 - Captions: burned in; no subtitle track. Comments: on. Pinned first comment:
