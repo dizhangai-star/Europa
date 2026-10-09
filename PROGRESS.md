@@ -20,6 +20,7 @@ disc whole, lanczos → 1080×1080 at y 360 on 1080×1920; hook above, captions 
   dots = Io's shadow and ours · "IO. WE STOOD THERE." (the film's line). `out/shorts/S2.mp4` 2.3 MB, −13.9 LUFS, TP
   −2.9; source −31.9 → +17.9 dB. Fix: `shorts.mjs` quotes the crop x (an eased expression's commas broke the
   filtergraph); S1 rebuilds byte-identical.
+- **S1 + S2 uploaded together 2026-10-09 (user); read both in Studio on 2026-10-16** (SHORTS.md "What to read").
 - Next: 6.2 S3 through the ice (05→08, edit list first) · 6.3
   `SHORTS.md` + `SHORTS-REUSE.md` (Io's source = `out/io.mp4`, picture 3840×1608 between 276 px bars) + merge.
 
