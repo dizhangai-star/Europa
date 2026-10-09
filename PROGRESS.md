@@ -13,7 +13,14 @@ disc whole, lanczos → 1080×1080 at y 360 on 1080×1920; hook above, captions 
   Europa"** = 04 1.00–17.98 s (ends where TILT45 starts: later the ring is cut by the tilt), x 960, 17.0 s,
   `out/shorts/S1.mp4` 4.2 MB, −14.0 LUFS, TP −1.5; source sound −33 LUFS → +19 dB (user: OK); loop ring → lit disc OK.
   No "COMPUTED COSMOS" tag (the Shorts UI covers the bottom and shows the channel anyway).
-- Next: **6.1** S2 "Io and Europa's shadow" (01's tail + 02) · 6.2 S3 through the ice (05→08, edit list first) · 6.3
+- **6.1 done 2026-10-09, signed off by the user; upload sheet in SHORTS.md** (branch `sprint-6.1-s2`): **S2 "Io and Europa's shadow"** = 02
+  0.50–11.00 s (10.5 s), no 01 tail (it's the same still disc 02 opens on); square eased x 765 → 960 over the zoom
+  (Short 0–2 s, centres measured on the frames); ends after Io sets, both shadows still on the bands (loops to Io
+  entering). Hook IO FROM EUROPA; caps: 81 min in 9.5 s · Io in Europa's shadow (eclipse 2.97–6.91 clip s) · two
+  dots = Io's shadow and ours · "IO. WE STOOD THERE." (the film's line). `out/shorts/S2.mp4` 2.3 MB, −13.9 LUFS, TP
+  −2.9; source −31.9 → +17.9 dB. Fix: `shorts.mjs` quotes the crop x (an eased expression's commas broke the
+  filtergraph); S1 rebuilds byte-identical.
+- Next: 6.2 S3 through the ice (05→08, edit list first) · 6.3
   `SHORTS.md` + `SHORTS-REUSE.md` (Io's source = `out/io.mp4`, picture 3840×1608 between 276 px bars) + merge.
 
 **DONE 2026-10-09: *Europa · 木卫二 · 深渊* delivered, Sprint 5.3 (branch `sprint-5.3-deliver`), signed off by the

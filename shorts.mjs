@@ -49,7 +49,8 @@ function xAt(x, t) {
   }
   return clampX(x[x.length - 1][1]);
 }
-const square = (xe) => `crop=${side}:${side}:${xe}:0,scale=${SQ}:${SQ}:flags=lanczos,setsar=1`;
+const square = (xe) => `crop=${side}:${side}:'${xe}':0,`   // quoted: the eased expression has commas
+  + `scale=${SQ}:${SQ}:flags=lanczos,setsar=1`;
 const place = `pad=${W}:${H}:0:${SQ_Y}:black`;
 
 const stills = A.opt('stills');
