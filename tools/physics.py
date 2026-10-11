@@ -346,7 +346,7 @@ def lapse02_start(fr, e_end, t_in=1.0, t_set=10.5, tr=1.5):
 # ---------------------------------------------------------------- Blender local frame (the libs copied from Io)
 # The scene frame at the site (SITE): +Y = toward Jupiter along the ground (azimuth 0), +X = right of it as you face
 # Jupiter, +Z = up. At Conamara Jupiter is about due west, so +X ≈ north and Jupiter's pole lies near horizontal:
-# its bands stand vertical. Same shape as Io's (west, south, up): blender/lib/jupiter.py, sky.py read only this.
+# its bands stand vertical. Same shape as Io's (west, south, up): ../_lib/planetkit/jupiter.py, sky.py read only this.
 def _local_axes(fr=None):
     fr = fr or site(*SITE[1:])
     up = fr[0]
@@ -1290,7 +1290,7 @@ def card(h_ice=ICE_H[1]):
 
 # Sound (Sprint 4.1): the physical events the score is cut to, in each clip's own seconds (its t = 0 as the layout
 # places it; heads from the joints included). Directed cues (breaths, the frost burst's moment) sit in the clips' `sfx`.
-PICTURE = (1920, 804)          # px, = blender/lib/shot.RES (04's frame height sets where the tilt goes black)
+PICTURE = (1920, 804)          # px, = ../_lib/planetkit/shot.RES (04's frame height sets where the tilt goes black)
 LAMP_GONE_EV = -12.5           # EV vs the lamp seen at 5 m: below it a channel is lost in 08's black at its fixed +4 EV
                                # (film pick, matched to the picture: blue point ~7 s, gone ~11 s on 08's clock)
 

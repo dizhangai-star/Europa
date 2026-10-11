@@ -30,12 +30,13 @@ import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 FILM = os.path.dirname(os.path.dirname(HERE))
-sys.path[:0] = [os.path.dirname(HERE), os.path.join(FILM, 'tools')]
+sys.path[:0] = [os.path.dirname(HERE), os.path.join(FILM, 'tools'), os.path.join(os.path.dirname(FILM), '_lib')]
 import importlib
 import bpy
 from mathutils import Vector
 import physics
-from lib import nodes, rig, shot, europa_world, jupiter, sky, moons
+from planetkit import nodes, rig, shot, jupiter, sky
+from lib import europa_world, moons
 for m in (physics, nodes, rig, shot, europa_world, jupiter, sky, moons):
     importlib.reload(m)
 P, W = physics, europa_world
@@ -99,7 +100,7 @@ if ELONG is not None:                         # the pre-4.0b sky
     sky.stars(sc, sky.px_angle(L0, A.pct), gain=float(A.opt('star-gain', 20.0)),
               density=float(A.opt('star-density', 0.06)), camera_only=True)
     jup, _ = jupiter.build(sc, mid)
-    jupiter.europa_shadow(sc, sun, jup, (0.0, 0.0, 0.0))
+    jupiter.moon_shadow(sc, sun, jup, (0.0, 0.0, 0.0), 'Europa', physics.R_EU)
     jupiter.lamp(sc, jup, float(ELONG))
 else:                                         # 02's first frame, built as s02_neighbour builds it
     sun = sky.sun(sc, SKY['elong'])
@@ -107,7 +108,7 @@ else:                                         # 02's first frame, built as s02_n
                              density=float(A.opt('star-density', 0.06)), axis=pole, camera_only=True)
     s_turn.outputs[0].default_value = math.radians(SKY['turn'])
     jup, _ = jupiter.build(sc, mid, grs=-40.0 - SKY['spin'])          # 02's: the GRS at −40° when Io enters
-    sj, _ = jupiter.europa_shadow(sc, sun, jup, (0.0, 0.0, 0.0))
+    sj, _ = jupiter.moon_shadow(sc, sun, jup, (0.0, 0.0, 0.0), 'Europa', physics.R_EU)
     jupiter.lamp(sc, jup, P.lapse(FR, E_END, SKY['dur'] / 2)['elong'])  # 02's lamp
     moons.io(sc, SKY['dlt'], mid, sun_jupiter=sj)
 

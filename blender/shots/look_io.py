@@ -6,7 +6,7 @@
 Night at Conamara, the Sun just below the eastern horizon (elongation `--elong`, default 178: Jupiter ~100 % lit),
 Io part-way down its transit (`--io` = fraction of the way from entering the top limb to setting into the ice,
 physics.io_track). Io's shadow and Europa's own shadow fall on the clouds where the Sun's lines meet them (scaled
-geometry, jupiter.europa_shadow + moons.io). Camera 135 mm at eye 1.6 m, aimed at `--aimel` deg up on Jupiter's
+geometry, jupiter.moon_shadow + moons.io). Camera 135 mm at eye 1.6 m, aimed at `--aimel` deg up on Jupiter's
 centre line, so the ice horizon cuts the frame's foot. Options: --elong --io --aimel --lens --exposure --grs
 """
 import math
@@ -15,12 +15,13 @@ import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 FILM = os.path.dirname(os.path.dirname(HERE))
-sys.path[:0] = [os.path.dirname(HERE), os.path.join(FILM, 'tools')]
+sys.path[:0] = [os.path.dirname(HERE), os.path.join(FILM, 'tools'), os.path.join(os.path.dirname(FILM), '_lib')]
 import importlib
 import bpy
 from mathutils import Vector
 import physics
-from lib import nodes, rig, shot, europa_world, jupiter, sky, moons
+from planetkit import nodes, rig, shot, jupiter, sky
+from lib import europa_world, moons
 for m in (physics, nodes, rig, shot, europa_world, jupiter, sky, moons):
     importlib.reload(m)
 P, W = physics, europa_world
@@ -44,7 +45,7 @@ cam_loc = Vector((0.0, 0.0, 1.6 + W.ground_z(hf, 0.0, 0.0)))
 sun = sky.sun(sc, ELONG)
 sky.stars(sc, sky.px_angle(LENS, A.pct), gain=20.0, camera_only=True)
 jup, _ = jupiter.build(sc, cam_loc, grs=float(A.opt('grs', -40.0)))
-sj, eu = jupiter.europa_shadow(sc, sun, jup, (0.0, 0.0, 0.0))
+sj, eu = jupiter.moon_shadow(sc, sun, jup, (0.0, 0.0, 0.0), 'Europa', physics.R_EU)
 fr = P.site(*P.SITE[1:])
 ent, end, _ = P.io_track(fr)
 dl = ent[1] + FRAC * (end[0] - ent[1])

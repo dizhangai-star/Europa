@@ -16,7 +16,7 @@ night side (jupiter.lightning, Galileo energies 1e9–1.6e10 J: V −0.2 … −
 it looked odd inside the eclipse (user 2026-10-05), `--flashes N` puts true flashes back.
 
 Light: the Sun lamp on the ground keyed by the uncovered fraction of its disc (physics.sun_visible); Jupiter has its
-own copy of the Sun (light linking) shadowed by the scaled Europa (jupiter.europa_shadow, as 03), never dimmed.
+own copy of the Sun (light linking) shadowed by the scaled Europa (jupiter.moon_shadow, as 03), never dimmed.
 
 Sprint 4.0c: the clip opens with the end of the whip from 03 (physics.WHIP34: `inn` frames decelerating onto the
 locked aim); the clock's 0 s (03's dawn) is the first locked frame, HEAD s into the clip; before it, real time.
@@ -36,13 +36,14 @@ import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 FILM = os.path.dirname(os.path.dirname(HERE))
-sys.path[:0] = [os.path.dirname(HERE), os.path.join(FILM, 'tools')]
+sys.path[:0] = [os.path.dirname(HERE), os.path.join(FILM, 'tools'), os.path.join(os.path.dirname(FILM), '_lib')]
 import importlib
 import bpy
 import numpy as np
 from mathutils import Quaternion, Vector
 import physics
-from lib import nodes, rig, shot, europa_world, jupiter, sky
+from planetkit import nodes, rig, shot, jupiter, sky
+from lib import europa_world
 for m in (physics, nodes, rig, shot, europa_world, jupiter, sky):
     importlib.reload(m)
 P, W = physics, europa_world
@@ -112,7 +113,7 @@ world, turn, smear = sky.stars(sc, px, gain=star_gain, density=float(A.opt('star
                                taps=3, camera_only=True)
 s0 = P.lapse(FR, E_END, H0_02)
 jup, shell = jupiter.build(sc, cam_loc, grs=float(A.opt('grs', -40.0)) - s0['spin'], ring=1.0, sun_elong=e0)
-sj, _ = jupiter.europa_shadow(sc, sun, jup, (0.0, 0.0, 0.0))
+sj, _ = jupiter.moon_shadow(sc, sun, jup, (0.0, 0.0, 0.0), 'Europa', physics.R_EU)
 sj.data = sun.data.copy()                                  # Jupiter's Sun is never dimmed (only the ground's is)
 sj.rotation_mode = 'QUATERNION'
 if not int(A.opt('jup-bounce', 0)):          # its own lit far side leaked onto the night face through the smooth-shaded

@@ -26,13 +26,14 @@ import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 FILM = os.path.dirname(os.path.dirname(HERE))
-sys.path[:0] = [os.path.dirname(HERE), os.path.join(FILM, 'tools')]
+sys.path[:0] = [os.path.dirname(HERE), os.path.join(FILM, 'tools'), os.path.join(os.path.dirname(FILM), '_lib')]
 import importlib
 import bpy
 import numpy as np
 from mathutils import Quaternion, Vector
 import physics
-from lib import nodes, rig, shot, europa_world, jupiter, sky, moons, cryobot, vent, astronaut, retarget
+from planetkit import nodes, rig, shot, jupiter, sky, astronaut, retarget
+from lib import europa_world, moons, cryobot, vent
 for m in (physics, nodes, rig, shot, europa_world, jupiter, sky, moons, cryobot, vent, astronaut, retarget):
     importlib.reload(m)
 P, W = physics, europa_world
@@ -114,7 +115,7 @@ jup, _ = jupiter.build(sc, cam_loc, grs=float(A.opt('grs', -40.0)) - s0['spin'])
 J_LOC, J_ROT, J_SCL = jup.matrix_world.decompose()
 jup.rotation_mode = 'QUATERNION'
 jup.rotation_quaternion = J_ROT @ Quaternion((0.0, 0.0, 1.0), math.radians(S['spin'] - s0['spin']))
-jupiter.europa_shadow(sc, sun, jup, (0.0, 0.0, 0.0))
+jupiter.moon_shadow(sc, sun, jup, (0.0, 0.0, 0.0), 'Europa', physics.R_EU)
 jupiter.lamp(sc, jup, S['elong'])
 gan = moons.ganymede(sc, S['dlt'], S['elong'], cam_loc)
 

@@ -18,12 +18,13 @@ import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 FILM = os.path.dirname(os.path.dirname(HERE))
-sys.path[:0] = [os.path.dirname(HERE), os.path.join(FILM, 'tools')]
+sys.path[:0] = [os.path.dirname(HERE), os.path.join(FILM, 'tools'), os.path.join(os.path.dirname(FILM), '_lib')]
 import importlib
 import bpy
 from mathutils import Vector
 import physics
-from lib import nodes, rig, shot, europa_world, jupiter, sky
+from planetkit import nodes, rig, shot, jupiter, sky
+from lib import europa_world
 for m in (physics, nodes, rig, shot, europa_world, jupiter, sky):
     importlib.reload(m)
 P, W = physics, europa_world
@@ -54,7 +55,7 @@ cam_loc = Vector((0.0, 0.0, EYE + W.ground_z(height, 0.0, 0.0)))
 sun = sky.sun(sc, ELONG)
 sky.stars(sc, sky.px_angle(LENS, A.pct), gain=20.0, camera_only=True)
 jup, _ = jupiter.build(sc, cam_loc)
-sj, eu = jupiter.europa_shadow(sc, sun, jup, (0.0, 0.0, 0.0))
+sj, eu = jupiter.moon_shadow(sc, sun, jup, (0.0, 0.0, 0.0), 'Europa', physics.R_EU)
 jupiter.lamp(sc, jup, ELONG)
 a = math.radians(HEAD)
 aim = cam_loc + Vector((math.sin(a), math.cos(a), math.tan(math.radians(float(A.opt('tilt', 4.0)))))) * 1000.0

@@ -2,7 +2,10 @@
 
 Episode 3 of the planet series, after `../Io` (Io · 永恒). Planned the same way: picture from **Blender 5.2 Cycles,
 built by Python**, sound / compile / QC from the shared kit (`../../_kit`). Use the **blender-film** skill.
-Reuse Io's code (`../Io/blender/lib`, its tools) by copying, not by importing across films.
+Shared Blender code (nodes, rig, shot, sky, jupiter, astronaut, retarget, lander, prints) is the series library
+`../_lib/planetkit` (planet Sprint 0, 2026-10-11); `blender/lib/` keeps only Europa's own modules. Never import from
+another film; a change to `../_lib` must keep Io's and Europa's frames unchanged (`python3 ../_lib/tools/regress.py`,
+see `../_lib/README.md`).
 
 **Start every session by reading `PROGRESS.md`.** `BRAINSTORM.md` = ideas and the reuse map (pre-treatment).
 Physics numbers come from `python3 tools/physics.py`; never type a number into a shot that the script doesn't produce.

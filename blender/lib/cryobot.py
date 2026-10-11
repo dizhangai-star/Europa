@@ -21,7 +21,7 @@ import bmesh
 import numpy as np
 from mathutils import Matrix, Vector
 
-from . import nodes
+from planetkit import nodes
 
 NSEG = 96
 PORT_AZ, PORT_Z_FRAC, PORT_TILT = 0.0, 0.57, 25.0       # deg / fraction of the bay / deg down: film picks

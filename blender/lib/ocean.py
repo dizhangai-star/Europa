@@ -27,7 +27,7 @@ import math
 import bpy
 import numpy as np
 
-from . import nodes
+from planetkit import nodes
 from .europa_world import fbm, _hash, smooth
 
 
