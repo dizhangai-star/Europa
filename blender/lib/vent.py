@@ -15,7 +15,7 @@ import math
 import bpy
 import numpy as np
 
-from . import nodes
+from planetkit import nodes
 
 
 def _flake_mesh(name, seed=2):

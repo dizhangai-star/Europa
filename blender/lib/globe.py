@@ -20,7 +20,8 @@ import bpy
 import numpy as np
 from mathutils import Matrix, Vector
 import physics as P
-from . import nodes, europa_world as W
+from planetkit import nodes
+from . import europa_world as W
 
 R = W.R_EU_M
 

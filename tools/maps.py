@@ -2,7 +2,7 @@
 Copied from Io (Sprint 0.3); `jupiter` shared as is, Io's `io` / `far` replaced by `europa` / `colour` in 0.4.
 
     python3 tools/maps.py jupiter    the Jupiter map's mean linear luminance and Great Red Spot position
-                                     (the constants at the top of blender/lib/jupiter.py)
+                                     (the constants at the top of ../_lib/planetkit/jupiter.py)
     python3 tools/maps.py europa     the site (physics.SITE, Conamara) cut out of the USGS 500 m Europa mosaic
                                      (greyscale) and reprojected to the film's local frame (physics: +X right of
                                      Jupiter ≈ north, +Y toward Jupiter = image top, site at the centre):

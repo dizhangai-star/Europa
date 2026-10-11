@@ -1,6 +1,12 @@
 # Europa · 木卫二 · 深渊: progress
 
 ## State (2026-10-09)
+**Planet Sprint 0 (2026-10-11, branch `sprint-0-planet-lib`):** the shared modules (nodes, rig, shot, sky, jupiter,
+astronaut, retarget, lander, prints) moved to `../_lib/planetkit`; `blender/lib/` keeps europa_world, globe, moons,
+ocean, shell, cryobot, vent. `jupiter.europa_shadow(…)` is now `jupiter.moon_shadow(…, 'Europa', physics.R_EU)`;
+`europa_world.astronaut_proxy` re-exports `planetkit.astronaut.proxy`. Every shot's scene fingerprint is unchanged
+(`../_lib/README.md`); Shorts (`shorts.mjs`) read rendered frames and are untouched.
+
 **Sprint 6 (Shorts, 9:16) started 2026-10-09 (user), after Io's analytics: 3.4K impressions, CTR 2.4 %, 41 % viewed, 50 %
 on phones, pushing stopped after day 3.** User decisions: **square in portrait** (an 804×804 square of the render, the
 disc whole, lanczos → 1080×1080 at y 360 on 1080×1920; hook above, captions below), English only, no new renders

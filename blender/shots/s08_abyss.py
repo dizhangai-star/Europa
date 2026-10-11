@@ -26,12 +26,13 @@ import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 FILM = os.path.dirname(os.path.dirname(HERE))
-sys.path[:0] = [os.path.dirname(HERE), os.path.join(FILM, 'tools')]
+sys.path[:0] = [os.path.dirname(HERE), os.path.join(FILM, 'tools'), os.path.join(os.path.dirname(FILM), '_lib')]
 import importlib
 import bpy
 from mathutils import Matrix, Vector
 import physics
-from lib import nodes, rig, shot, cryobot, ocean
+from planetkit import nodes, rig, shot
+from lib import cryobot, ocean
 for m in (physics, nodes, rig, shot, cryobot, ocean):
     importlib.reload(m)
 P = physics

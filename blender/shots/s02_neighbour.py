@@ -37,13 +37,14 @@ import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 FILM = os.path.dirname(os.path.dirname(HERE))
-sys.path[:0] = [os.path.dirname(HERE), os.path.join(FILM, 'tools')]
+sys.path[:0] = [os.path.dirname(HERE), os.path.join(FILM, 'tools'), os.path.join(os.path.dirname(FILM), '_lib')]
 import importlib
 import bpy
 import numpy as np
 from mathutils import Quaternion, Vector
 import physics
-from lib import nodes, rig, shot, europa_world, jupiter, sky, moons
+from planetkit import nodes, rig, shot, jupiter, sky
+from lib import europa_world, moons
 for m in (physics, nodes, rig, shot, europa_world, jupiter, sky, moons):
     importlib.reload(m)
 P, W = physics, europa_world
@@ -221,7 +222,7 @@ world, turn, smear = sky.stars(sc, PX0, gain=float(A.opt('star-gain', 20.0)),
 spots = [n for n in world.node_tree.nodes if n.type == 'MAP_RANGE' and abs(n.inputs[1].default_value - PX0 * 1.6) < 1e-9]
 GRS = float(A.opt('grs', -40.0))
 jup, _ = jupiter.build(sc, cam_loc, grs=GRS - s0['spin'])     # the GRS sits at `grs` when Io enters
-sj, _ = jupiter.europa_shadow(sc, sun, jup, (0.0, 0.0, 0.0))
+sj, _ = jupiter.moon_shadow(sc, sun, jup, (0.0, 0.0, 0.0), 'Europa', physics.R_EU)
 sj.rotation_mode = 'QUATERNION'
 jupiter.lamp(sc, jup, P.lapse(FR, E_END, DUR / 2)['elong'])
 io = moons.io(sc, s0['dlt'], cam_loc, sun_jupiter=sj)

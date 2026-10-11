@@ -6,7 +6,7 @@
 import { pathToFileURL } from 'node:url';
 import { rel } from '../../../_kit/lib/film.mjs';
 
-export const SRC = { w: 1920, h: 804 };           // blender/lib/shot.py RES
+export const SRC = { w: 1920, h: 804 };           // ../_lib/planetkit/shot.py RES
 export const LAYOUT = {
   W: 1080, H: 1920, SQ: 1080, SQ_Y: 360,
   max: 940,                                        // text width (px)

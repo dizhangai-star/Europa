@@ -19,7 +19,8 @@ import os
 import bpy
 import numpy as np
 import physics as P
-from . import nodes
+from planetkit import nodes
+from planetkit.astronaut import proxy as astronaut_proxy
 
 R_EU_M = P.R_EU * 1000.0
 
@@ -477,31 +478,6 @@ def _mat(name, color, rough=0.5, metal=0.0):
     g.set(b, 'Base Color', color)
     g.output(g.o(b, 'BSDF'))
     return m
-
-
-def astronaut_proxy(sc, loc, height=1.85, heading=0.0):
-    """Suit stand-in: a white capsule (body) + sphere (helmet) + pack box, 1.85 m tall."""
-    suit = _mat('SuitProxy', (0.80, 0.79, 0.76), 0.7)
-    parts = []
-    bpy.ops.mesh.primitive_cylinder_add(radius=0.28, depth=height * 0.62, location=(0, 0, height * 0.42))
-    parts.append(bpy.context.object)
-    bpy.ops.mesh.primitive_uv_sphere_add(radius=0.19, location=(0, 0, height * 0.85))
-    parts.append(bpy.context.object)
-    bpy.ops.mesh.primitive_cube_add(size=1, location=(0, 0.26, height * 0.55))
-    parts.append(bpy.context.object)
-    parts[-1].scale = (0.45, 0.22, 0.6)
-    for p in parts:
-        p.data.materials.append(suit)
-    bpy.ops.object.select_all(action='DESELECT')
-    for p in parts:
-        p.select_set(True)
-    bpy.context.view_layer.objects.active = parts[0]
-    bpy.ops.object.join()
-    ob = bpy.context.object
-    ob.name = 'Astronaut'
-    ob.location = loc
-    ob.rotation_euler = (0, 0, math.radians(heading))
-    return ob
 
 
 def lander_proxy(sc, loc, heading=0.0):

@@ -2,9 +2,9 @@
 New in Sprint 1 (look spike for 02).
 
 Everything far is scaled toward the camera by one factor k = jupiter.DIST / Jupiter's true distance (as jupiter.py
-and jupiter.europa_shadow do), so angles, phases and shadows stay exact: Io sits at k × its true position from the
+and jupiter.moon_shadow do), so angles, phases and shadows stay exact: Io sits at k × its true position from the
 site, radius k × R_IO (≈ 370 km out, 2.7 km wide). Io is lit by the main Sun lamp; to throw its shadow on Jupiter it
-joins Jupiter's own Sun's blocker collection (jupiter.europa_shadow), next to the scaled Europa.
+joins Jupiter's own Sun's blocker collection (jupiter.moon_shadow), next to the scaled Europa.
 
 Io's body frame: +X toward Jupiter (Io is locked: longitude 0 faces it), +Z = orbit north (Jupiter's axis),
 east longitude = atan2(y, x), so the map (tools/maps.py io_globe: column 0 = 0° E) wraps without a flip. During a
@@ -19,7 +19,7 @@ import os
 import bpy
 from mathutils import Matrix, Vector
 import physics as P
-from . import nodes, jupiter
+from planetkit import nodes, jupiter
 
 IO_MAP = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'textures/src/io_globe_2k.png')
 IO_LUM = 0.2442                  # mean linear luminance of IO_MAP (tools/maps.py io_globe)
@@ -59,7 +59,7 @@ def key_io(ob, dlt, cam_loc, frame):
 
 def io(sc, dlt, cam_loc, sun_jupiter=None):
     """Io at `dlt` rad from conjunction with Europa (physics.io_pos), seen from the site. `sun_jupiter`: Jupiter's own
-    Sun (jupiter.europa_shadow) → Io shadows Jupiter. Returns the object."""
+    Sun (jupiter.moon_shadow) → Io shadows Jupiter. Returns the object."""
     mw, p, r = io_matrix(dlt, cam_loc)
     k = k_scale()
     bpy.ops.mesh.primitive_uv_sphere_add(segments=128, ring_count=64, radius=1.0)
